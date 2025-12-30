@@ -10,7 +10,7 @@
  * - Stops before final checkout (safety constraint)
  */
 
-import { chromium, Browser, Page, BrowserContext } from 'playwright';
+import { chromium, Browser, Page, BrowserContext, ConsoleMessage } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -374,12 +374,12 @@ export class PlaywrightExecutionEngine {
 
     // Setup page logging
     if (this.options.enableConsoleLogging) {
-      this.page.on('console', (msg: any) => {
+      this.page.on('console', (msg: ConsoleMessage) => {
         const logMsg = `[Browser Console] ${msg.text()}`;
         this.consoleLogs.push(logMsg);
       });
 
-      this.page.on('pageerror', (error: any) => {
+      this.page.on('pageerror', (error: Error) => {
         const logMsg = `[Page Error] ${error.message}`;
         this.log(logMsg);
         this.consoleLogs.push(logMsg);
@@ -679,10 +679,10 @@ export class PlaywrightExecutionEngine {
   /**
    * Emit execution event
    */
-  private emitEvent(type: string, data?: any): void {
+  private emitEvent(type: ExecutionEventType, data?: any): void {
     if (this.eventCallback) {
       this.eventCallback({
-        type: type as any,
+        type,
         timestamp: new Date().toISOString(),
         data,
       });

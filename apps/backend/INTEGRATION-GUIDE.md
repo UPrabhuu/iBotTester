@@ -28,7 +28,7 @@ The new `PlaywrightExecutionEngine` is a drop-in replacement for `ExecutionAgent
 
 **Before (ExecutionAgentService):**
 ```typescript
-import { ExecutionAgentService } from './services/executionAgentService';
+import { ExecutionAgentService } from './src/services/executionAgentService';
 
 const agent = new ExecutionAgentService();
 const result = await agent.executeTestPlan(testPlan, options);
@@ -36,7 +36,7 @@ const result = await agent.executeTestPlan(testPlan, options);
 
 **After (PlaywrightExecutionEngine):**
 ```typescript
-import { PlaywrightExecutionEngine } from './engine';
+import { PlaywrightExecutionEngine } from './src/engine';
 
 const engine = new PlaywrightExecutionEngine(options);
 const result = await engine.executeTestPlan(testPlan);
