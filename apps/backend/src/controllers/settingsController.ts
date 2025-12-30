@@ -1,149 +1,218 @@
 // Settings controller
 import { Request, Response } from 'express';
-import { successResponse, errorResponse, updatedResponse } from '../utils/response';
-import { users, integrations as mockIntegrations } from '../data/mockData';
-import { User } from '../models/types';
+import {
+  successResponse,
+  errorResponse,
+  updatedResponse,
+} from '../utils/response';
+import { sanitizeUser, hashPassword, comparePassword } from '../utils/auth';
+import prisma from '../utils/prisma';
 
 // GET /api/settings/profile
-export const getProfile = (req: Request, res: Response) => {
-  const userId = req.user?.id;
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
 
-  if (!userId) {
-    return res.status(401).json(errorResponse('Unauthorized'));
+    if (!userId) {
+      return res.status(401).json(errorResponse('Unauthorized'));
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json(errorResponse('User not found'));
+    }
+
+    res.json(successResponse(sanitizeUser(user)));
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  const user = users.find((u) => u.id === userId);
-
-  if (!user) {
-    return res.status(404).json(errorResponse('User not found'));
-  }
-
-  // Remove password from response
-  const { password, ...profile } = user;
-
-  res.json(successResponse(profile));
 };
 
 // PUT /api/settings/profile
-export const updateProfile = (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const { firstName, lastName, phone, company, role } = req.body;
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { name, phone, company, role, avatar } = req.body;
 
-  if (!userId) {
-    return res.status(401).json(errorResponse('Unauthorized'));
+    if (!userId) {
+      return res.status(401).json(errorResponse('Unauthorized'));
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(name && { name }),
+        ...(phone !== undefined && { phone }),
+        ...(company !== undefined && { company }),
+        ...(role !== undefined && { role }),
+        ...(avatar !== undefined && { avatar }),
+      },
+    });
+
+    res.json(updatedResponse(sanitizeUser(updatedUser)));
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  const userIndex = users.findIndex((u) => u.id === userId);
-
-  if (userIndex === -1) {
-    return res.status(404).json(errorResponse('User not found'));
-  }
-
-  // Update fields
-  if (firstName) users[userIndex].firstName = firstName;
-  if (lastName) users[userIndex].lastName = lastName;
-  if (phone !== undefined) users[userIndex].phone = phone;
-  if (company !== undefined) users[userIndex].company = company;
-  if (role !== undefined) users[userIndex].role = role;
-  users[userIndex].updatedAt = new Date();
-
-  // Remove password from response
-  const { password, ...profile } = users[userIndex];
-
-  res.json(updatedResponse(profile));
 };
 
 // PUT /api/settings/password
-export const changePassword = (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const { currentPassword, newPassword } = req.body;
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword } = req.body;
 
-  if (!userId) {
-    return res.status(401).json(errorResponse('Unauthorized'));
+    if (!userId) {
+      return res.status(401).json(errorResponse('Unauthorized'));
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json(errorResponse('Current and new password are required'));
+    }
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json(errorResponse('User not found'));
+    }
+
+    // Verify current password
+    const isValid = await comparePassword(currentPassword, user.password);
+
+    if (!isValid) {
+      return res.status(401).json(errorResponse('Current password is incorrect'));
+    }
+
+    // Hash new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.json(successResponse({ message: 'Password updated successfully' }));
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json(errorResponse('Current password and new password are required'));
-  }
-
-  const userIndex = users.findIndex((u) => u.id === userId);
-
-  if (userIndex === -1) {
-    return res.status(404).json(errorResponse('User not found'));
-  }
-
-  // Verify current password
-  if (users[userIndex].password !== currentPassword) {
-    return res.status(401).json(errorResponse('Current password is incorrect'));
-  }
-
-  // Update password
-  users[userIndex].password = newPassword;
-  users[userIndex].updatedAt = new Date();
-
-  res.json(successResponse({ message: 'Password updated successfully' }));
 };
 
 // GET /api/settings/integrations
-export const getIntegrations = (req: Request, res: Response) => {
-  const userId = req.user?.id;
+export const getIntegrations = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
 
-  if (!userId) {
-    return res.status(401).json(errorResponse('Unauthorized'));
+    if (!userId) {
+      return res.status(401).json(errorResponse('Unauthorized'));
+    }
+
+    // Get or create user settings
+    let settings = await prisma.userSettings.findUnique({
+      where: { userId },
+    });
+
+    if (!settings) {
+      settings = await prisma.userSettings.create({
+        data: {
+          userId,
+          integrationsJson: {},
+        },
+      });
+    }
+
+    res.json(successResponse(settings.integrationsJson || {}));
+  } catch (error) {
+    console.error('Get integrations error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  res.json(successResponse(mockIntegrations));
 };
 
 // POST /api/settings/integrations
-export const connectIntegration = (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const { name, config } = req.body;
+export const connectIntegration = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { name, config } = req.body;
 
-  if (!userId) {
-    return res.status(401).json(errorResponse('Unauthorized'));
-  }
+    if (!userId) {
+      return res.status(401).json(errorResponse('Unauthorized'));
+    }
 
-  if (!name) {
-    return res.status(400).json(errorResponse('Integration name is required'));
-  }
+    if (!name) {
+      return res.status(400).json(errorResponse('Integration name is required'));
+    }
 
-  const integrationIndex = mockIntegrations.findIndex((i) => i.name === name);
+    // Get or create user settings
+    let settings = await prisma.userSettings.findUnique({
+      where: { userId },
+    });
 
-  if (integrationIndex === -1) {
-    return res.status(404).json(errorResponse('Integration not found'));
-  }
+    if (!settings) {
+      settings = await prisma.userSettings.create({
+        data: {
+          userId,
+          integrationsJson: {},
+        },
+      });
+    }
 
-  // Update integration
-  mockIntegrations[integrationIndex].connected = true;
-  if (config) {
-    mockIntegrations[integrationIndex].config = {
-      ...mockIntegrations[integrationIndex].config,
+    // Update integrations
+    const integrations = (settings.integrationsJson as any) || {};
+    integrations[name] = {
+      connected: true,
       ...config,
     };
-  }
 
-  res.json(updatedResponse(mockIntegrations[integrationIndex]));
+    const updated = await prisma.userSettings.update({
+      where: { userId },
+      data: { integrationsJson: integrations },
+    });
+
+    res.json(updatedResponse(updated.integrationsJson));
+  } catch (error) {
+    console.error('Connect integration error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
 };
 
 // DELETE /api/settings/integrations/:name
-export const disconnectIntegration = (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const { name } = req.params;
+export const disconnectIntegration = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { name } = req.params;
 
-  if (!userId) {
-    return res.status(401).json(errorResponse('Unauthorized'));
+    if (!userId) {
+      return res.status(401).json(errorResponse('Unauthorized'));
+    }
+
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId },
+    });
+
+    if (!settings) {
+      return res.status(404).json(errorResponse('Settings not found'));
+    }
+
+    // Update integrations
+    const integrations = (settings.integrationsJson as any) || {};
+    delete integrations[name];
+
+    const updated = await prisma.userSettings.update({
+      where: { userId },
+      data: { integrationsJson: integrations },
+    });
+
+    res.json(successResponse(updated.integrationsJson));
+  } catch (error) {
+    console.error('Disconnect integration error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  const integrationIndex = mockIntegrations.findIndex((i) => i.name === name);
-
-  if (integrationIndex === -1) {
-    return res.status(404).json(errorResponse('Integration not found'));
-  }
-
-  // Disconnect integration
-  mockIntegrations[integrationIndex].connected = false;
-  mockIntegrations[integrationIndex].config = {};
-
-  res.json(successResponse({ message: `${name} disconnected successfully` }));
 };
