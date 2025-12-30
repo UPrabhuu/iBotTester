@@ -148,7 +148,8 @@ app.post('/api/execute-test', async (req: Request, res: Response) => {
     await page.goto(url, { waitUntil: 'networkidle' });
     
     // Take screenshot
-    const screenshot = await page.screenshot({ encoding: 'base64' });
+    const screenshot = await page.screenshot();
+    const screenshotBase64 = screenshot.toString('base64');
     
     // Get page title
     const title = await page.title();
@@ -162,7 +163,7 @@ app.post('/api/execute-test', async (req: Request, res: Response) => {
         testPlanId,
         url,
         title,
-        screenshot: `data:image/png;base64,${screenshot}`,
+        screenshot: `data:image/png;base64,${screenshotBase64}`,
         status: 'completed',
         timestamp: new Date().toISOString()
       }
