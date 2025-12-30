@@ -1,0 +1,290 @@
+// API Service Layer - Connects Frontend to Backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+// Helper function to handle fetch requests
+async function fetchApi<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.message || 'An error occurred',
+      };
+    }
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error('API Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error',
+    };
+  }
+}
+
+// Auth API
+export const authApi = {
+  async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
+    return fetchApi('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+  },
+
+  async register(data: { name: string; email: string; password: string }): Promise<ApiResponse<{ user: User; token: string }>> {
+    return fetchApi('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async logout(): Promise<ApiResponse<void>> {
+    return fetchApi('/api/auth/logout', {
+      method: 'POST',
+    });
+  },
+
+  async forgotPassword(email: string): Promise<ApiResponse<void>> {
+    return fetchApi('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<ApiResponse<void>> {
+    return fetchApi('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
+  },
+};
+
+// Settings API
+export const settingsApi = {
+  async getProfile(): Promise<ApiResponse<User>> {
+    return fetchApi('/api/settings/profile');
+  },
+
+  async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
+    return fetchApi('/api/settings/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updatePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<void>> {
+    return fetchApi('/api/settings/password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
+
+  async getPaymentDetails(): Promise<ApiResponse<any>> {
+    return fetchApi('/api/settings/payment');
+  },
+
+  async updatePaymentDetails(data: any): Promise<ApiResponse<any>> {
+    return fetchApi('/api/settings/payment', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getIntegrations(): Promise<ApiResponse<any>> {
+    return fetchApi('/api/settings/integrations');
+  },
+
+  async connectIntegration(type: 'jira' | 'gitlab' | 'slack', credentials: any): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/settings/integrations/${type}`, {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+  },
+
+  async disconnectIntegration(type: 'jira' | 'gitlab' | 'slack'): Promise<ApiResponse<void>> {
+    return fetchApi(`/api/settings/integrations/${type}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Projects API
+export const projectsApi = {
+  async getAll(): Promise<ApiResponse<any[]>> {
+    return fetchApi('/api/projects');
+  },
+
+  async getById(id: string): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/projects/${id}`);
+  },
+
+  async create(data: any): Promise<ApiResponse<any>> {
+    return fetchApi('/api/projects', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: any): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<ApiResponse<void>> {
+    return fetchApi(`/api/projects/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Test Cases API
+export const testCasesApi = {
+  async getAll(projectId?: string): Promise<ApiResponse<any[]>> {
+    const query = projectId ? `?projectId=${projectId}` : '';
+    return fetchApi(`/api/test-cases${query}`);
+  },
+
+  async getById(id: string): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/test-cases/${id}`);
+  },
+
+  async create(data: any): Promise<ApiResponse<any>> {
+    return fetchApi('/api/test-cases', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: any): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/test-cases/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<ApiResponse<void>> {
+    return fetchApi(`/api/test-cases/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Executions API
+export const executionsApi = {
+  async getAll(testCaseId?: string): Promise<ApiResponse<any[]>> {
+    const query = testCaseId ? `?testCaseId=${testCaseId}` : '';
+    return fetchApi(`/api/executions${query}`);
+  },
+
+  async getById(id: string): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/executions/${id}`);
+  },
+
+  async execute(testCaseId: string): Promise<ApiResponse<any>> {
+    return fetchApi('/api/executions', {
+      method: 'POST',
+      body: JSON.stringify({ testCaseId }),
+    });
+  },
+};
+
+// Dashboard API
+export const dashboardApi = {
+  async getStats(): Promise<ApiResponse<any>> {
+    return fetchApi('/api/dashboard/stats');
+  },
+
+  async getRecentActivity(): Promise<ApiResponse<any[]>> {
+    return fetchApi('/api/dashboard/recent-activity');
+  },
+};
+
+// Chat API
+export const chatApi = {
+  async sendMessage(message: string, conversationId?: string): Promise<ApiResponse<any>> {
+    return fetchApi('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, conversationId }),
+    });
+  },
+
+  async getConversation(id: string): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/chat/${id}`);
+  },
+
+  async getConversations(): Promise<ApiResponse<any[]>> {
+    return fetchApi('/api/chat/conversations');
+  },
+};
+
+// Configuration API
+export const configApi = {
+  async get(): Promise<ApiResponse<any>> {
+    return fetchApi('/api/config');
+  },
+
+  async update(data: any): Promise<ApiResponse<any>> {
+    return fetchApi('/api/config', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Health Check API
+export const healthApi = {
+  async check(): Promise<ApiResponse<any>> {
+    return fetchApi('/api/health');
+  },
+};
+
+// Export all APIs
+export const api = {
+  auth: authApi,
+  settings: settingsApi,
+  projects: projectsApi,
+  testCases: testCasesApi,
+  executions: executionsApi,
+  dashboard: dashboardApi,
+  chat: chatApi,
+  config: configApi,
+  health: healthApi,
+};
+
+export default api;
