@@ -20,21 +20,10 @@ export interface TestExecution {
   id: string;
   suiteName: string;
   labels: string[];
-  localExecution?: {
-    status: 'running' | 'passed' | 'failed' | 'pending';
-    timestamp: Date;
-    duration?: number;
-    results?: string;
-  };
-  gridExecution?: {
-    status: 'running' | 'passed' | 'failed' | 'pending';
-    timestamp: Date;
-    duration?: number;
-    results?: string;
-    gridDetails?: string;
-  };
   status: 'running' | 'passed' | 'failed' | 'pending';
+  timestamp: Date;
   duration: number; // in milliseconds
+  results?: string;
   triggeredBy: string;
   projectId: string;
   branchId: string;
@@ -100,7 +89,7 @@ export interface ProjectConfiguration {
   };
 }
 
-export type TabType = 'home' | 'dashboard' | 'test-list' | 'test-execution' | 'editor' | 'config';
+export type TabType = 'home' | 'dashboard' | 'test-list' | 'test-execution' | 'editor' | 'config' | 'live-execution' | 'settings' | 'docs' | 'login';
 
 // Sidebar navigation state
 export interface SidebarNavigation {

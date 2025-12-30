@@ -58,52 +58,49 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Suite Name
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Labels
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                Local Execution
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                Grid Execution
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                Timestamp
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Duration
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Triggered By
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
+          <tbody className="divide-y divide-neutral-200">
             {executions.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center">
+                <td colSpan={6} className="px-4 py-12 text-center">
                   <div className="flex flex-col items-center justify-center space-y-3">
                     <div className="text-4xl">📋</div>
-                    <p className="text-sm font-medium text-slate-600">No test executions yet</p>
-                    <p className="text-xs text-slate-500">Run tests to see execution history</p>
+                    <p className="text-sm font-medium text-neutral-600">No test executions yet</p>
+                    <p className="text-xs text-neutral-500">Run tests to see execution history</p>
                   </div>
                 </td>
               </tr>
             ) : (
               executions.map((execution) => (
-                <tr key={execution.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-slate-800">
+                <tr key={execution.id} className="hover:bg-neutral-50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-neutral-800">
                     {execution.suiteName}
                   </td>
                   <td className="px-4 py-3">
@@ -111,7 +108,7 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
                       {execution.labels.map((label, index) => (
                         <span
                           key={index}
-                          className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded"
+                          className="px-2 py-1 text-xs font-medium bg-primary-50 text-primary-700 rounded"
                         >
                           {label}
                         </span>
@@ -119,46 +116,22 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {execution.localExecution ? (
-                      <div className="text-xs space-y-1">
-                        <div>{getStatusBadge(execution.localExecution.status)}</div>
-                        <div className="text-slate-500">
-                          {formatTimestamp(execution.localExecution.timestamp)}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {execution.gridExecution ? (
-                      <div className="text-xs space-y-1">
-                        <div>{getStatusBadge(execution.gridExecution.status)}</div>
-                        <div className="text-slate-500">
-                          {formatTimestamp(execution.gridExecution.timestamp)}
-                        </div>
-                        {execution.gridExecution.gridDetails && (
-                          <div className="text-slate-400">{execution.gridExecution.gridDetails}</div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
                     {getStatusBadge(execution.status)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
+                  <td className="px-4 py-3 text-sm text-neutral-600">
+                    {formatTimestamp(execution.timestamp)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-neutral-600">
                     {formatDuration(execution.duration)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
+                  <td className="px-4 py-3 text-sm text-neutral-600">
                     {execution.triggeredBy}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => onView(execution.id)}
-                        className="px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                        className="px-3 py-1 text-xs font-medium text-primary-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
                         title="View details"
                       >
                         View

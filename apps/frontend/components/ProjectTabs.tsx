@@ -15,7 +15,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ activeTab, onTabChange }) => 
   ];
 
   return (
-    <div className="bg-white border-b border-slate-200 shadow-sm">
+    <div className="bg-white border-b border-neutral-200 shadow-sm">
       <div className="flex px-6">
         {tabs.map((tab) => (
           <button
@@ -23,8 +23,8 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ activeTab, onTabChange }) => 
             onClick={() => onTabChange(tab.id)}
             className={`px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${
               activeTab === tab.id
-                ? 'text-blue-600 border-blue-600'
-                : 'text-slate-600 border-transparent hover:text-slate-800 hover:border-slate-300'
+                ? 'text-primary-600 border-blue-600'
+                : 'text-neutral-600 border-transparent hover:text-neutral-800 hover:border-neutral-300'
             }`}
           >
             <span className="flex items-center space-x-2">

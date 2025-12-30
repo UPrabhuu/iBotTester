@@ -83,18 +83,18 @@ const TestListView: React.FC<TestListViewProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search test cases..."
-              className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-64"
+              className="pl-10 pr-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm w-64"
             />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-              🔍
-            </span>
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
 
           {/* Sort */}
           <select
             value={sortBy}
             onChange={(e) => handleSortChange(e.target.value as typeof sortBy)}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white cursor-pointer"
+            className="px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm bg-white cursor-pointer"
           >
             <option value="name">Sort by Name</option>
             <option value="created">Sort by Created Date</option>
@@ -104,7 +104,7 @@ const TestListView: React.FC<TestListViewProps> = ({
 
           <button
             onClick={() => handleSortChange(sortBy)}
-            className="px-3 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            className="px-3 py-2 border border-neutral-300 rounded-xl hover:bg-neutral-50 transition-smooth"
             title={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
           >
             {sortOrder === 'asc' ? '↑' : '↓'}
@@ -115,51 +115,55 @@ const TestListView: React.FC<TestListViewProps> = ({
         <button
           onClick={onOpenAllTestCases}
           disabled={testCases.length === 0}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-500 hover:to-purple-500 disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed transition-all shadow-md font-semibold text-sm"
+          className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-smooth font-medium text-sm"
         >
           Open All Test Cases
         </button>
       </div>
 
       {/* Test Cases List */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-soft border border-neutral-200 overflow-hidden">
         {filteredAndSortedTestCases.length === 0 ? (
           <div className="px-4 py-12 text-center">
             <div className="flex flex-col items-center justify-center space-y-3">
-              <div className="text-4xl">📝</div>
-              <p className="text-sm font-medium text-slate-600">
+              <div className="w-16 h-16 bg-neutral-100 rounded-2xl flex items-center justify-center">
+                <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-neutral-700">
                 {searchTerm ? 'No test cases found' : 'No test cases yet'}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-neutral-500">
                 {searchTerm ? 'Try a different search term' : 'Create test cases to get started'}
               </p>
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-neutral-200">
             {filteredAndSortedTestCases.map((testCase) => (
               <div
                 key={testCase.id}
-                className="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="px-6 py-4 hover:bg-neutral-50 transition-smooth cursor-pointer"
                 onClick={() => onOpenTestCase(testCase.id)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-sm font-semibold text-slate-800">
+                      <h3 className="text-sm font-semibold text-neutral-900">
                         {testCase.name}
                       </h3>
                       {getStatusBadge(testCase.status)}
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-neutral-500">
                         {testCase.steps.length} steps
                       </span>
                     </div>
                     {testCase.description && (
-                      <p className="text-sm text-slate-600 mb-2">
+                      <p className="text-sm text-neutral-600 mb-2">
                         {testCase.description}
                       </p>
                     )}
-                    <div className="flex items-center space-x-4 text-xs text-slate-500">
+                    <div className="flex items-center space-x-4 text-xs text-neutral-500">
                       <span>Created: {formatDate(testCase.createdAt)}</span>
                       <span>Modified: {formatDate(testCase.lastModified)}</span>
                     </div>
@@ -170,7 +174,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                         e.stopPropagation();
                         onOpenTestCase(testCase.id);
                       }}
-                      className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-smooth"
                     >
                       Open →
                     </button>
@@ -184,7 +188,7 @@ const TestListView: React.FC<TestListViewProps> = ({
 
       {/* Results Count */}
       {testCases.length > 0 && (
-        <div className="text-sm text-slate-600 text-center">
+        <div className="text-sm text-neutral-600 text-center">
           Showing {filteredAndSortedTestCases.length} of {testCases.length} test cases
         </div>
       )}
