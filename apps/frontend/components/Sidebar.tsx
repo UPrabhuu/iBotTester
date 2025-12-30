@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNewChat, chatHistory, activeChat, o
           <span className="text-3xl">🤖</span>
           <div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              iBotTesting
+              iBotTester
             </h1>
           </div>
         </div>
