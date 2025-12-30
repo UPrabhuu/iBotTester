@@ -6,228 +6,278 @@ import {
   createdResponse,
   deletedResponse,
 } from '../utils/response';
-import { testExecutions, testCases, projects, generateId } from '../data/mockData';
-import { TestExecution } from '../models/types';
+import prisma from '../utils/prisma';
 
 // GET /api/executions
-export const listExecutions = (req: Request, res: Response) => {
-  const { projectId, branchId, status } = req.query;
-  const userId = req.user?.id;
+export const listExecutions = async (req: Request, res: Response) => {
+  try {
+    const { testCaseId, status, limit = '50' } = req.query;
+    const userId = req.user?.id;
 
-  let filtered = [...testExecutions];
-
-  // Filter by project and verify user access
-  if (projectId) {
-    const project = projects.find((p) => p.id === projectId && p.userId === userId);
-    if (!project) {
-      return res.status(403).json(errorResponse('Access denied to this project'));
+    const where: any = {};
+    if (testCaseId) {
+      where.testCaseId = testCaseId as string;
     }
-    filtered = filtered.filter((ex) => ex.projectId === projectId);
+    if (status) {
+      where.status = status as string;
+    }
+
+    const executions = await prisma.execution.findMany({
+      where,
+      orderBy: { startedAt: 'desc' },
+      take: parseInt(limit as string),
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { id: true, name: true, userId: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Filter by user ownership
+    const filtered = executions.filter(ex => ex.testCase.project.userId === userId);
+
+    res.json(successResponse(filtered));
+  } catch (error) {
+    console.error('List executions error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Filter by branch
-  if (branchId) {
-    filtered = filtered.filter((ex) => ex.branchId === branchId);
-  }
-
-  // Filter by status
-  if (status) {
-    filtered = filtered.filter((ex) => ex.status === status);
-  }
-
-  // Sort by timestamp descending
-  filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-  res.json(successResponse(filtered));
 };
 
 // GET /api/executions/:id
-export const getExecution = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const getExecution = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const execution = testExecutions.find((ex) => ex.id === id);
+    const execution = await prisma.execution.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { id: true, name: true, userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (!execution) {
-    return res.status(404).json(errorResponse('Execution not found'));
+    if (!execution) {
+      return res.status(404).json(errorResponse('Execution not found'));
+    }
+
+    // Verify user has access
+    if (execution.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    res.json(successResponse(execution));
+  } catch (error) {
+    console.error('Get execution error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === execution.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  res.json(successResponse(execution));
 };
 
 // POST /api/executions
-export const createExecution = (req: Request, res: Response) => {
-  const { testCaseId, projectId, branchId } = req.body;
-  const userId = req.user?.id;
+export const createExecution = async (req: Request, res: Response) => {
+  try {
+    const { testCaseId } = req.body;
+    const userId = req.user?.id;
 
-  if (!testCaseId && !projectId) {
-    return res.status(400).json(errorResponse('testCaseId or projectId is required'));
-  }
+    if (!testCaseId) {
+      return res.status(400).json(errorResponse('testCaseId is required'));
+    }
 
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied to this project'));
-  }
+    // Verify user has access to test case
+    const testCase = await prisma.testCase.findUnique({
+      where: { id: testCaseId },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+      },
+    });
 
-  // Get test case if provided
-  let testCase = null;
-  if (testCaseId) {
-    testCase = testCases.find((tc) => tc.id === testCaseId);
     if (!testCase) {
       return res.status(404).json(errorResponse('Test case not found'));
     }
-  }
 
-  const newExecution: TestExecution = {
-    id: generateId('exec'),
-    suiteName: testCase?.name || 'Manual Execution',
-    labels: testCase ? ['automated'] : ['manual'],
-    status: 'running',
-    timestamp: new Date(),
-    duration: 0,
-    triggeredBy: req.user?.email || 'unknown',
-    projectId: projectId,
-    branchId: branchId || project.currentBranch,
-    testCaseId: testCaseId,
-    logs: [],
-    screenshots: [],
-    createdAt: new Date(),
-  };
-
-  testExecutions.push(newExecution);
-
-  // Simulate execution completing after a delay
-  setTimeout(() => {
-    const execIndex = testExecutions.findIndex((e) => e.id === newExecution.id);
-    if (execIndex > -1) {
-      testExecutions[execIndex].status = 'passed';
-      testExecutions[execIndex].duration = Math.floor(Math.random() * 50000) + 10000;
-      testExecutions[execIndex].results = 'All tests passed';
+    if (testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
     }
-  }, 5000);
 
-  res.status(201).json(createdResponse(newExecution));
+    // Create execution
+    const execution = await prisma.execution.create({
+      data: {
+        testCaseId,
+        status: 'running',
+        startedAt: new Date(),
+      },
+    });
+
+    res.status(201).json(createdResponse(execution));
+  } catch (error) {
+    console.error('Create execution error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
 };
 
 // POST /api/executions/:id/rerun
-export const rerunExecution = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const rerunExecution = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const execution = testExecutions.find((ex) => ex.id === id);
+    // Get original execution
+    const execution = await prisma.execution.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (!execution) {
-    return res.status(404).json(errorResponse('Execution not found'));
-  }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === execution.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  // Create new execution based on the old one
-  const newExecution: TestExecution = {
-    ...execution,
-    id: generateId('exec'),
-    status: 'running',
-    timestamp: new Date(),
-    duration: 0,
-    results: undefined,
-    createdAt: new Date(),
-  };
-
-  testExecutions.push(newExecution);
-
-  // Simulate execution completing
-  setTimeout(() => {
-    const execIndex = testExecutions.findIndex((e) => e.id === newExecution.id);
-    if (execIndex > -1) {
-      testExecutions[execIndex].status = 'passed';
-      testExecutions[execIndex].duration = Math.floor(Math.random() * 50000) + 10000;
-      testExecutions[execIndex].results = 'All tests passed';
+    if (!execution) {
+      return res.status(404).json(errorResponse('Execution not found'));
     }
-  }, 5000);
 
-  res.status(201).json(createdResponse(newExecution));
+    // Verify user has access
+    if (execution.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Create new execution
+    const newExecution = await prisma.execution.create({
+      data: {
+        testCaseId: execution.testCaseId,
+        status: 'running',
+        startedAt: new Date(),
+      },
+    });
+
+    res.status(201).json(createdResponse(newExecution));
+  } catch (error) {
+    console.error('Rerun execution error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
 };
 
 // DELETE /api/executions/:id
-export const deleteExecution = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const deleteExecution = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const executionIndex = testExecutions.findIndex((ex) => ex.id === id);
+    // Get execution
+    const execution = await prisma.execution.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (executionIndex === -1) {
-    return res.status(404).json(errorResponse('Execution not found'));
+    if (!execution) {
+      return res.status(404).json(errorResponse('Execution not found'));
+    }
+
+    // Verify user has access
+    if (execution.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Delete execution
+    await prisma.execution.delete({
+      where: { id },
+    });
+
+    res.json(deletedResponse('Execution deleted successfully'));
+  } catch (error) {
+    console.error('Delete execution error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find(
-    (p) => p.id === testExecutions[executionIndex].projectId && p.userId === userId
-  );
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  testExecutions.splice(executionIndex, 1);
-
-  res.json(deletedResponse('Execution deleted successfully'));
 };
 
 // GET /api/executions/:id/logs
-export const getExecutionLogs = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const getExecutionLogs = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const execution = testExecutions.find((ex) => ex.id === id);
+    const execution = await prisma.execution.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (!execution) {
-    return res.status(404).json(errorResponse('Execution not found'));
+    if (!execution) {
+      return res.status(404).json(errorResponse('Execution not found'));
+    }
+
+    if (execution.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    const logs = execution.resultsJson || [];
+    res.json(successResponse(logs));
+  } catch (error) {
+    console.error('Get execution logs error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === execution.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  const logs = execution.logs || [
-    '[INFO] Starting test execution',
-    '[INFO] Navigating to target URL',
-    '[INFO] Performing test actions',
-    '[SUCCESS] Test completed successfully',
-  ];
-
-  res.json(successResponse(logs));
 };
 
 // GET /api/executions/:id/screenshots
-export const getExecutionScreenshots = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const getExecutionScreenshots = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const execution = testExecutions.find((ex) => ex.id === id);
+    const execution = await prisma.execution.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (!execution) {
-    return res.status(404).json(errorResponse('Execution not found'));
+    if (!execution) {
+      return res.status(404).json(errorResponse('Execution not found'));
+    }
+
+    if (execution.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    const screenshots = execution.screenshotsJson || [];
+    res.json(successResponse(screenshots));
+  } catch (error) {
+    console.error('Get execution screenshots error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === execution.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  const screenshots = execution.screenshots || [];
-
-  res.json(successResponse(screenshots));
 };

@@ -1,154 +1,135 @@
 // Authentication controller
 import { Request, Response } from 'express';
 import { successResponse, errorResponse } from '../utils/response';
-import { users } from '../data/mockData';
-import { User } from '../models/types';
-
-// Mock JWT token generation (in production, use actual JWT library)
-const generateMockToken = (user: User): string => {
-  const payload = {
-    id: user.id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-  };
-  // In real app: return jwt.sign(payload, SECRET_KEY, { expiresIn: '24h' });
-  return Buffer.from(JSON.stringify(payload)).toString('base64') + '.mock.token';
-};
-
-// Remove password from user object
-const sanitizeUser = (user: User) => {
-  const { password, ...sanitized } = user;
-  return sanitized;
-};
+import { generateToken, hashPassword, comparePassword, sanitizeUser } from '../utils/auth';
+import prisma from '../utils/prisma';
 
 // POST /api/auth/login
-export const login = (req: Request, res: Response) => {
-  const { email, password } = req.body;
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json(errorResponse('Email and password are required'));
+    if (!email || !password) {
+      return res.status(400).json(errorResponse('Email and password are required'));
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(401).json(errorResponse('Invalid credentials'));
+    }
+
+    // Verify password
+    const isValidPassword = await comparePassword(password, user.password);
+
+    if (!isValidPassword) {
+      return res.status(401).json(errorResponse('Invalid credentials'));
+    }
+
+    // Generate token
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    });
+
+    res.json(
+      successResponse({
+        user: sanitizeUser(user),
+        token,
+      })
+    );
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Find user
-  const user = users.find((u) => u.email === email);
-
-  if (!user || user.password !== password) {
-    return res.status(401).json(errorResponse('Invalid credentials'));
-  }
-
-  // Generate token
-  const token = generateMockToken(user);
-
-  res.json(
-    successResponse({
-      user: sanitizeUser(user),
-      token,
-    })
-  );
 };
 
 // POST /api/auth/google
-export const googleLogin = (req: Request, res: Response) => {
-  const { token } = req.body;
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
 
-  // Mock Google OAuth
-  // In real app, verify Google token and get user info
-  const mockUser = {
-    id: 'user-google-1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@gmail.com',
-    phone: '',
-    company: '',
-    role: 'User',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  const authToken = generateMockToken(mockUser as User);
-
-  res.json(
-    successResponse({
-      user: mockUser,
-      token: authToken,
-    })
-  );
+    // TODO: Implement actual Google OAuth verification
+    // For now, this is a mock implementation
+    
+    res.status(501).json(errorResponse('Google login not yet implemented'));
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
 };
 
 // POST /api/auth/github
-export const githubLogin = (req: Request, res: Response) => {
-  const { code } = req.body;
+export const githubLogin = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
 
-  // Mock GitHub OAuth
-  // In real app, exchange code for access token and get user info
-  const mockUser = {
-    id: 'user-github-1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@github.com',
-    phone: '',
-    company: '',
-    role: 'Developer',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  const authToken = generateMockToken(mockUser as User);
-
-  res.json(
-    successResponse({
-      user: mockUser,
-      token: authToken,
-    })
-  );
+    // TODO: Implement actual GitHub OAuth
+    // For now, this is a mock implementation
+    
+    res.status(501).json(errorResponse('GitHub login not yet implemented'));
+  } catch (error) {
+    console.error('GitHub login error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
 };
 
 // POST /api/auth/logout
 export const logout = (req: Request, res: Response) => {
-  // In real app, invalidate token or clear session
+  // With JWT, logout is handled client-side by removing the token
   res.json(successResponse({ message: 'Logged out successfully' }));
 };
 
 // POST /api/auth/forgot-password
-export const forgotPassword = (req: Request, res: Response) => {
-  const { email } = req.body;
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json(errorResponse('Email is required'));
-  }
+    if (!email) {
+      return res.status(400).json(errorResponse('Email is required'));
+    }
 
-  // Find user
-  const user = users.find((u) => u.email === email);
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  if (!user) {
     // Don't reveal if email exists for security
-    return res.json(
+    // In production, send password reset email here
+    
+    res.json(
       successResponse({
         message: 'If the email exists, a password reset link has been sent',
       })
     );
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // In real app, send password reset email
-  res.json(
-    successResponse({
-      message: 'Password reset link has been sent to your email',
-    })
-  );
 };
 
 // GET /api/auth/me
-export const getCurrentUser = (req: Request, res: Response) => {
-  if (!req.user) {
-    return res.status(401).json(errorResponse('Not authenticated'));
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json(errorResponse('Not authenticated'));
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      return res.status(404).json(errorResponse('User not found'));
+    }
+
+    res.json(successResponse(sanitizeUser(user)));
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  const user = users.find((u) => u.id === req.user!.id);
-
-  if (!user) {
-    return res.status(404).json(errorResponse('User not found'));
-  }
-
-  res.json(successResponse(sanitizeUser(user)));
 };
