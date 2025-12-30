@@ -1,144 +1,169 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import Sidebar from '@/components/Sidebar';
+import ChatPanel, { Message, ExecutionStep } from '@/components/ChatPanel';
+import LiveExecutionPanel from '@/components/LiveExecutionPanel';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-interface TestResult {
+interface ChatHistory {
   id: string;
-  prompt: string;
-  steps: any[];
-  status: string;
+  title: string;
+  timestamp: Date;
+}
+
+interface Screenshot {
+  id: string;
+  label: string;
+  url: string;
+  timestamp: Date;
 }
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [error, setError] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Mock chat history
+  const [chatHistory] = useState<ChatHistory[]>([
+    { id: '1', title: 'Nike Checkout Flow', timestamp: new Date(Date.now() - 86400000) },
+    { id: '2', title: 'Login Flow', timestamp: new Date(Date.now() - 172800000) },
+    { id: '3', title: 'Real Estate Flow', timestamp: new Date(Date.now() - 259200000) },
+  ]);
+
+  const simulateExecution = async (steps: ExecutionStep[]) => {
+    setIsExecuting(true);
+    setLogs([]);
     
-    if (!prompt.trim()) {
-      setError('Please enter a test prompt');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setTestResult(null);
-
-    try {
-      const response = await axios.post(`${API_URL}/api/test-plan`, {
-        prompt: prompt.trim()
+    for (let i = 0; i < steps.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Update step status
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.steps) {
+          lastMessage.steps[i].status = 'in-progress';
+        }
+        return newMessages;
       });
 
-      if (response.data.success) {
-        setTestResult(response.data.testPlan);
-      } else {
-        setError('Failed to create test plan');
-      }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : 'Unknown error occurred';
-      setError(err instanceof Error && err.message.includes('Network') 
-        ? 'Failed to connect to API server. Please ensure the backend is running.' 
-        : 'Failed to create test plan. Please try again.');
-    } finally {
-      setLoading(false);
+      // Add log
+      setLogs(prev => [...prev, `Step ${i + 1}: ${steps[i].description}`]);
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Complete step
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.steps) {
+          lastMessage.steps[i].status = i === steps.length - 1 ? 'success' : 'done';
+        }
+        return newMessages;
+      });
     }
+
+    // Add screenshots after execution
+    setScreenshots([
+      { id: '1', label: 'Previous Run', url: '', timestamp: new Date() },
+      { id: '2', label: 'Current Run', url: '', timestamp: new Date() },
+    ]);
+
+    setIsExecuting(false);
+  };
+
+  const handleSendMessage = async (content: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: `msg-${Date.now()}`,
+      type: 'user',
+      content,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setIsProcessing(true);
+
+    // Simulate AI processing
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Create agent response with execution steps
+    const executionSteps: ExecutionStep[] = [
+      { id: 'step-1', description: 'Navigating to amazon.com', status: 'pending' },
+      { id: 'step-2', description: 'Searching for Nike shoes size 9 under $150', status: 'pending' },
+      { id: 'step-3', description: 'Filtering and selecting product', status: 'pending' },
+      { id: 'step-4', description: 'Adding to cart', status: 'pending' },
+      { id: 'step-5', description: 'Proceeding to checkout', status: 'pending' },
+    ];
+
+    const agentMessage: Message = {
+      id: `msg-${Date.now() + 1}`,
+      type: 'agent',
+      content: `Perfect! I'll help you create a functional test to purchase Nike shoes size 9 under $150 on Amazon.
+
+Here's my plan:
+1. Navigate to amazon.com
+2. Search for Nike shoes with the specified criteria
+3. Filter results and select a suitable product
+4. Add the product to cart
+5. Proceed through checkout flow
+
+Starting execution now...`,
+      timestamp: new Date(),
+      steps: executionSteps,
+    };
+
+    setMessages(prev => [...prev, agentMessage]);
+    setIsProcessing(false);
+
+    // Start simulated execution
+    await simulateExecution(executionSteps);
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setLogs([]);
+    setScreenshots([]);
+    setActiveChat(null);
+  };
+
+  const handleSelectChat = (id: string) => {
+    setActiveChat(id);
+    // In a real app, this would load the chat history
+    // For now, we'll just clear and show a sample message
+    const sampleMessage: Message = {
+      id: `msg-sample-${id}`,
+      type: 'agent',
+      content: `Loading chat history for ${chatHistory.find(c => c.id === id)?.title}...`,
+      timestamp: new Date(),
+    };
+    setMessages([sampleMessage]);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-900">🤖 iBotTester</h1>
-          <p className="text-gray-600">AI-Powered Autonomous Functional Testing Agent</p>
-        </div>
-      </header>
-      
-      <main className="max-w-7xl mx-auto py-12 px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-          <h2 className="text-2xl font-semibold mb-4">Create a Test</h2>
-          <p className="text-gray-700 mb-6">
-            Describe what you want to test using natural language. For example:
-            <em className="block mt-2 text-gray-600">
-              "Purchase Nike shoes under $150 on amazon.com and validate checkout until payment page."
-            </em>
-          </p>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-2">
-                Test Prompt
-              </label>
-              <textarea
-                id="prompt"
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter your test scenario..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-            
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                {error}
-              </div>
-            )}
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Creating Test Plan...' : 'Create Test Plan'}
-            </button>
-          </form>
-        </div>
+    <div className="flex h-screen overflow-hidden bg-slate-100">
+      {/* Left Sidebar */}
+      <Sidebar
+        onNewChat={handleNewChat}
+        chatHistory={chatHistory}
+        activeChat={activeChat}
+        onSelectChat={handleSelectChat}
+      />
 
-        {testResult && (
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h3 className="text-xl font-semibold mb-4 text-green-700">✓ Test Plan Created</h3>
-            <div className="space-y-3">
-              <div>
-                <span className="font-medium text-gray-700">Test ID:</span>
-                <span className="ml-2 text-gray-900">{testResult.id}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Prompt:</span>
-                <p className="ml-2 text-gray-900 mt-1">{testResult.prompt}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">Status:</span>
-                <span className="ml-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                  {testResult.status}
-                </span>
-              </div>
-              {testResult.steps && testResult.steps.length > 0 && (
-                <div>
-                  <span className="font-medium text-gray-700">Steps:</span>
-                  <ul className="ml-2 mt-1 space-y-1">
-                    {testResult.steps.map((step, index) => (
-                      <li key={index} className="text-gray-900">
-                        {index + 1}. {step}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </main>
+      {/* Center Chat Panel */}
+      <ChatPanel
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        isProcessing={isProcessing}
+      />
 
-      <footer className="max-w-7xl mx-auto py-6 px-4 text-center text-gray-600">
-        <p>iBotTester - AI-Powered Autonomous Functional Testing</p>
-      </footer>
+      {/* Right Execution Panel */}
+      <LiveExecutionPanel
+        isExecuting={isExecuting}
+        currentUrl="https://www.amazon.com"
+        screenshots={screenshots}
+        logs={logs}
+      />
     </div>
   );
 }
