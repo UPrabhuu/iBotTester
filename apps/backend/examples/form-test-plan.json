@@ -1,0 +1,104 @@
+{
+  "testId": "example-form-001",
+  "name": "Web Form Submission Test",
+  "description": "Fill out and submit a web form with validation",
+  "steps": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "url": "https://www.example.com/contact",
+      "description": "Navigate to contact form",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 30000
+      },
+      "critical": true
+    },
+    {
+      "step": 2,
+      "action": "type",
+      "target": "#name",
+      "value": "John Doe",
+      "description": "Enter name in form",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 10000
+      }
+    },
+    {
+      "step": 3,
+      "action": "type",
+      "target": "#email",
+      "value": "john.doe@example.com",
+      "description": "Enter email address",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 10000
+      }
+    },
+    {
+      "step": 4,
+      "action": "type",
+      "target": "#message",
+      "value": "This is a test message from the iBotTester automation engine.",
+      "description": "Enter message text",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 10000
+      }
+    },
+    {
+      "step": 5,
+      "action": "select",
+      "target": "#subject",
+      "value": "General Inquiry",
+      "description": "Select subject from dropdown",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 10000
+      }
+    },
+    {
+      "step": 6,
+      "action": "screenshot",
+      "description": "Capture filled form before submission"
+    },
+    {
+      "step": 7,
+      "action": "click",
+      "target": "Submit",
+      "description": "Click submit button",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 15000
+      }
+    },
+    {
+      "step": 8,
+      "action": "wait",
+      "value": "2000",
+      "description": "Wait for submission to process"
+    },
+    {
+      "step": 9,
+      "action": "validate",
+      "rule": "Thank you message visible",
+      "description": "Verify success message appears",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 10000
+      }
+    },
+    {
+      "step": 10,
+      "action": "screenshot",
+      "description": "Capture success confirmation"
+    }
+  ],
+  "createdAt": "2025-12-30T19:00:00.000Z",
+  "metadata": {
+    "category": "forms",
+    "priority": "medium",
+    "tags": ["contact", "form", "validation"]
+  }
+}

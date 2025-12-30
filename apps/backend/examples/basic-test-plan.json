@@ -1,0 +1,33 @@
+{
+  "testId": "example-basic-001",
+  "name": "Basic Website Navigation Test",
+  "description": "A simple test that navigates to a website and validates it loaded",
+  "steps": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "url": "https://example.com",
+      "description": "Navigate to example.com",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 30000
+      }
+    },
+    {
+      "step": 2,
+      "action": "validate",
+      "rule": "page loaded successfully",
+      "description": "Verify page loaded"
+    },
+    {
+      "step": 3,
+      "action": "screenshot",
+      "description": "Capture homepage screenshot"
+    }
+  ],
+  "createdAt": "2025-12-30T19:00:00.000Z",
+  "metadata": {
+    "category": "smoke",
+    "priority": "high"
+  }
+}
