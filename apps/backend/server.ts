@@ -14,6 +14,10 @@ import dashboardRoutes from './src/routes/dashboard';
 import configRoutes from './src/routes/config';
 import settingsRoutes from './src/routes/settings';
 
+// Import agent services
+import { AIAgentService } from './src/services/aiAgentService';
+import { ExecutionAgentService } from './src/services/executionAgentService';
+
 // Load environment variables
 dotenv.config();
 
@@ -28,6 +32,9 @@ if (process.env.OPENAI_API_KEY) {
   });
 }
 
+// Initialize AI Agent Service
+const aiAgentService = new AIAgentService(process.env.OPENAI_API_KEY);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -40,7 +47,15 @@ app.get('/', (req: Request, res: Response) => {
     status: 'running',
     features: {
       playwright: true,
-      openai: !!openai
+      openai: !!openai,
+      aiAgent: aiAgentService.isAIAvailable(),
+      capabilities: {
+        testPlanGeneration: true,
+        autonomousExecution: true,
+        selfHealing: true,
+        evidenceCapture: true,
+        flowDetection: true
+      }
     },
     endpoints: {
       auth: '/api/auth',
@@ -50,7 +65,11 @@ app.get('/', (req: Request, res: Response) => {
       chat: '/api/chat',
       dashboard: '/api/dashboard',
       config: '/api/config',
-      settings: '/api/settings'
+      settings: '/api/settings',
+      testPlan: '/api/test-plan',
+      executeTest: '/api/execute-test',
+      executeTestPlan: '/api/execute-test-plan',
+      runTest: '/api/run-test'
     }
   });
 });
@@ -62,7 +81,8 @@ app.get('/api/health', (req: Request, res: Response) => {
     services: {
       api: 'running',
       playwright: 'available',
-      openai: openai ? 'configured' : 'not configured'
+      openai: openai ? 'configured' : 'not configured',
+      aiAgent: aiAgentService.isAIAvailable() ? 'active' : 'fallback mode'
     }
   });
 });
@@ -79,7 +99,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/settings', settingsRoutes);
 
 app.post('/api/test-plan', async (req: Request, res: Response) => {
-  const { prompt } = req.body;
+  const { prompt, environment = 'staging', runType = 'single', options = {} } = req.body;
   
   if (!prompt) {
     return res.status(400).json({ 
@@ -89,65 +109,18 @@ app.post('/api/test-plan', async (req: Request, res: Response) => {
   }
 
   try {
-    let steps: string[] = [];
-    
-    // If OpenAI is configured, generate intelligent test steps
-    if (openai) {
-      try {
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4",
-          messages: [
-            {
-              role: "system",
-              content: "You are a test automation expert. Convert user prompts into clear, actionable test steps. Return a JSON array of step descriptions."
-            },
-            {
-              role: "user",
-              content: `Create test steps for: ${prompt}`
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 500
-        });
-
-        const content = completion.choices[0]?.message?.content;
-        if (content) {
-          try {
-            steps = JSON.parse(content);
-          } catch {
-            // If not valid JSON, split by newlines
-            steps = content.split('\n').filter(s => s.trim());
-          }
-        }
-      } catch (aiError) {
-        console.error('OpenAI error:', aiError);
-        // Fallback to basic step generation
-        steps = [
-          'Navigate to the target website',
-          'Perform the requested action',
-          'Validate the expected result'
-        ];
-      }
-    } else {
-      // Basic step generation without AI
-      steps = [
-        'Navigate to the target website',
-        'Perform the requested action',
-        'Validate the expected result'
-      ];
-    }
-
-    const testPlan = {
-      id: `test-${Date.now()}`,
+    // Use the AI Agent Service to generate structured test plan
+    const testPlan = await aiAgentService.generateTestPlan({
       prompt,
-      steps,
-      status: 'created',
-      createdAt: new Date().toISOString()
-    };
+      environment,
+      runType,
+      options,
+    });
 
     res.json({
       success: true,
-      testPlan
+      testPlan,
+      aiEnabled: aiAgentService.isAIAvailable(),
     });
   } catch (error) {
     console.error('Error creating test plan:', error);
@@ -211,6 +184,96 @@ app.post('/api/execute-test', async (req: Request, res: Response) => {
   }
 });
 
+// New endpoint: Execute a complete test plan with AI agent
+app.post('/api/execute-test-plan', async (req: Request, res: Response) => {
+  const { testPlan, options = {} } = req.body;
+  
+  if (!testPlan || !testPlan.steps) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Test plan with steps is required' 
+    });
+  }
+
+  try {
+    const executionAgent = new ExecutionAgentService();
+    
+    const result = await executionAgent.executeTestPlan(testPlan, {
+      headless: options.headless !== false,
+      recordVideo: options.recordVideo || false,
+      screenshots: options.screenshots !== false,
+    });
+
+    // Generate AI summary if available
+    if (aiAgentService.isAIAvailable()) {
+      const aiSummary = await aiAgentService.generateTestSummary(testPlan, result.steps);
+      result.summary = aiSummary;
+    }
+
+    res.json({
+      success: true,
+      execution: result,
+    });
+  } catch (error: any) {
+    console.error('Error executing test plan:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to execute test plan',
+      details: error.message,
+    });
+  }
+});
+
+// New endpoint: Generate and execute test in one call
+app.post('/api/run-test', async (req: Request, res: Response) => {
+  const { prompt, environment = 'staging', runType = 'single', options = {} } = req.body;
+  
+  if (!prompt) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Prompt is required' 
+    });
+  }
+
+  try {
+    // Step 1: Generate test plan
+    const testPlan = await aiAgentService.generateTestPlan({
+      prompt,
+      environment,
+      runType,
+      options,
+    });
+
+    // Step 2: Execute test plan
+    const executionAgent = new ExecutionAgentService();
+    const result = await executionAgent.executeTestPlan(testPlan, {
+      headless: options.headless !== false,
+      recordVideo: options.recordVideo || false,
+      screenshots: options.screenshots !== false,
+    });
+
+    // Step 3: Generate AI summary
+    if (aiAgentService.isAIAvailable()) {
+      const aiSummary = await aiAgentService.generateTestSummary(testPlan, result.steps);
+      result.summary = aiSummary;
+    }
+
+    res.json({
+      success: true,
+      testPlan,
+      execution: result,
+      aiEnabled: aiAgentService.isAIAvailable(),
+    });
+  } catch (error: any) {
+    console.error('Error running test:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to run test',
+      details: error.message,
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
@@ -221,4 +284,9 @@ app.listen(PORT, () => {
   console.log(`✅ iBotTester API Server running on port ${PORT}`);
   console.log(`📊 Playwright: Available`);
   console.log(`🤖 OpenAI: ${openai ? 'Configured' : 'Not configured (set OPENAI_API_KEY)'}`);
+  console.log(`🧠 AI Agent: ${aiAgentService.isAIAvailable() ? 'Active' : 'Fallback mode'}`);
+  console.log(`\n🚀 New Agent Endpoints:`);
+  console.log(`   POST /api/test-plan - Generate test plan from prompt`);
+  console.log(`   POST /api/execute-test-plan - Execute existing test plan`);
+  console.log(`   POST /api/run-test - Generate and execute in one call`);
 });
