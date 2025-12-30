@@ -4,6 +4,16 @@ import dotenv from 'dotenv';
 import { chromium } from 'playwright';
 import OpenAI from 'openai';
 
+// Import routes
+import authRoutes from './src/routes/auth';
+import projectRoutes from './src/routes/projects';
+import testRoutes, { testStepRouter } from './src/routes/tests';
+import executionRoutes from './src/routes/executions';
+import chatRoutes from './src/routes/chat';
+import dashboardRoutes from './src/routes/dashboard';
+import configRoutes from './src/routes/config';
+import settingsRoutes from './src/routes/settings';
+
 // Load environment variables
 dotenv.config();
 
@@ -22,15 +32,25 @@ if (process.env.OPENAI_API_KEY) {
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Root route
 app.get('/', (req: Request, res: Response) => {
   res.json({
     message: 'iBotTester API Server',
-    version: '1.0.0',
+    version: '2.0.0',
     status: 'running',
     features: {
       playwright: true,
       openai: !!openai
+    },
+    endpoints: {
+      auth: '/api/auth',
+      projects: '/api/projects',
+      tests: '/api/test-cases',
+      executions: '/api/executions',
+      chat: '/api/chat',
+      dashboard: '/api/dashboard',
+      config: '/api/config',
+      settings: '/api/settings'
     }
   });
 });
@@ -46,6 +66,17 @@ app.get('/api/health', (req: Request, res: Response) => {
     }
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/test-cases', testRoutes);
+app.use('/api/test-steps', testStepRouter);
+app.use('/api/executions', executionRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.post('/api/test-plan', async (req: Request, res: Response) => {
   const { prompt } = req.body;
