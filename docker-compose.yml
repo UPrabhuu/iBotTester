@@ -1,9 +1,59 @@
 version: '3.8'
 
 services:
-  frontend:
-    image: placeholder/frontend:latest
-    restart: unless-stopped
+  postgres:
+    image: postgres:15-alpine
+    container_name: ibottester-postgres
+    environment:
+      POSTGRES_USER: ibottester
+      POSTGRES_PASSWORD: ibottester123
+      POSTGRES_DB: ibottester
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ibottester"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
-    image: placeholder/backend:latest
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: ibottester-backend
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://ibottester:ibottester123@postgres:5432/ibottester
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: ibottester-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:
+
