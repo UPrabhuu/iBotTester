@@ -17,6 +17,44 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
   testCaseName = 'Test Case',
 }) => {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [showTestData, setShowTestData] = useState(false);
+  const [isEditingTestData, setIsEditingTestData] = useState(false);
+  
+  // Sample test data - this could come from props in the future
+  const [testData, setTestData] = useState<Record<string, string>>({
+    username: 'testuser@example.com',
+    password: 'Test@123',
+    firstName: 'John',
+    lastName: 'Doe',
+    phoneNumber: '+1234567890',
+    address: '123 Test Street',
+    city: 'Test City',
+    zipCode: '12345'
+  });
+
+  const handleImportTestData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const json = JSON.parse(e.target?.result as string);
+          setTestData(json);
+        } catch (error) {
+          alert('Invalid JSON file');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleTestDataChange = (key: string, value: string) => {
+    setTestData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveTestData = () => {
+    setIsEditingTestData(false);
+  };
 
   // Group test steps by UI section
   const groupedSteps: TestStepGroup[] = testSteps.reduce((groups, step) => {
@@ -51,175 +89,301 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
     : null;
 
   return (
-    <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {selectedFolder && (
-            <button
-              onClick={handleBackToFolders}
-              className="px-4 py-2 text-sm font-bold text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-xl transition-colors"
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Header - Google Material Design Style */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {selectedFolder && (
+              <button
+                onClick={handleBackToFolders}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+            )}
+            <div>
+              <h1 className="text-xl font-normal text-gray-900">
+                {selectedFolder || testCaseName}
+              </h1>
+              {!selectedFolder && (
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {groupedSteps.length} section{groupedSteps.length !== 1 ? 's' : ''}, {testSteps.length} step{testSteps.length !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowTestData(!showTestData)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              ← Back to Folders
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+              </svg>
+              Test Data
             </button>
-          )}
-          <h3 className="text-2xl font-bold text-neutral-800">
-            {selectedFolder ? selectedFolder : testCaseName}
-          </h3>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            className="flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50 rounded-lg transition-smooth"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span>Edit</span>
-          </button>
-          <button
-            className="flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50 rounded-lg transition-smooth"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
-            <span>Save</span>
-          </button>
-          <button
-            className="flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-smooth shadow-soft"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Run</span>
-          </button>
-          <button
-            onClick={() => selectedFolder ? onAddStep(selectedFolder) : onAddStep('')}
-            className="flex items-center space-x-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-smooth shadow-soft"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Add New Step</span>
-          </button>
+            <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              Save
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Run Test
+            </button>
+            <button
+              onClick={() => selectedFolder ? onAddStep(selectedFolder) : onAddStep('')}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Step
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Folders Grid View or Steps View */}
-      {!selectedFolder ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {groupedSteps.length === 0 ? (
-            <div className="col-span-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg border-2 border-dashed border-neutral-300 px-8 py-20 text-center">
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-lg">
-                  <svg className="w-12 h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-auto px-6 py-6">
+        {!selectedFolder ? (
+          /* Sections Grid */
+          <div className="max-w-7xl mx-auto">
+            {groupedSteps.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <p className="text-xl font-bold text-neutral-700">No test steps yet</p>
-                <p className="text-sm text-neutral-500">Create your first test step to get started</p>
+                <h3 className="text-base font-medium text-gray-900 mb-1">No test steps yet</h3>
+                <p className="text-sm text-gray-500 mb-6">Get started by adding your first test step</p>
+                <button
+                  onClick={() => onAddStep('')}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add First Step
+                </button>
               </div>
-            </div>
-          ) : (
-            groupedSteps.map((group) => (
-              <div
-                key={group.sectionName}
-                className="bg-white rounded-2xl shadow-soft border border-neutral-200 overflow-hidden hover:shadow-medium hover:border-primary-300 transition-smooth cursor-pointer"
-                onClick={() => handleFolderClick(group.sectionName)}
-              >
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 px-6 py-6">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    {/* Medium Folder Icon */}
-                    <div className="w-24 h-24 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                      <span className="text-5xl drop-shadow-lg">📁</span>
-                    </div>
-                    {/* Folder Info */}
-                    <div className="w-full">
-                      <h4 className="text-xl font-black text-white mb-2 drop-shadow-md break-words">
-                        {group.sectionName}
-                      </h4>
-                      <div className="flex flex-col items-center space-y-2">
-                        <span className="px-3 py-1.5 text-xs font-bold bg-white/90 text-blue-700 rounded-xl shadow-md">
-                          {group.steps.length} {group.steps.length === 1 ? 'step' : 'steps'}
-                        </span>
-                        <span className="px-3 py-1.5 text-xs font-bold bg-white/20 text-white rounded-xl">
-                          Click to open
-                        </span>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {groupedSteps.map((group) => {
+                  // Determine section type based on name
+                  const sharedSections = ['Login', 'Navigation', 'Header', 'Footer', 'Search', 'Form'];
+                  const isShared = sharedSections.some(s => group.sectionName.toLowerCase().includes(s.toLowerCase()));
+                  
+                  return (
+                    <div
+                      key={group.sectionName}
+                      onClick={() => handleFolderClick(group.sectionName)}
+                      className="bg-white border border-gray-200 rounded-lg p-6 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-gray-900 truncate">{group.sectionName}</h3>
+                            {isShared && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                Shared
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            {group.steps.length} step{group.steps.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <svg className="w-5 h-5 text-gray-400 flex-shrink-0 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Steps Grid View */
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentFolder?.steps.map((step, index) => (
+                <div
+                  key={step.id}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:border-blue-500 hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                      <span className="text-lg font-semibold text-blue-600">{step.stepNumber}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 mb-1">Step {step.stepNumber}</h3>
+                      <p className="text-xs text-gray-500">
+                        {step.action.length > 30 ? step.action.substring(0, 30) + '...' : step.action}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-3 mb-4">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Action</p>
+                      <p className="text-sm text-gray-900 line-clamp-2">{step.action}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Expected Result</p>
+                      <p className="text-sm text-gray-700 line-clamp-2">{step.expectedResult}</p>
+                    </div>
+                    {step.elementLocator && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Locator</p>
+                        <code className="text-xs bg-gray-50 text-gray-800 px-2 py-1 rounded border border-gray-200 font-mono block truncate">
+                          {step.elementLocator}
+                        </code>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                    <button
+                      onClick={() => onEditStep(step.id)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit step"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDeleteStep(step.id)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete step"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      ) : (
-        /* Steps Grid View for Selected Folder */
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {currentFolder?.steps.map((step) => (
-            <div
-              key={step.id}
-              className="bg-white rounded-2xl shadow-xl border-2 border-neutral-200 overflow-hidden hover:shadow-2xl hover:border-blue-400 transition-all transform hover:scale-105"
-            >
-              {/* Card Header */}
-              <div className="bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-6 text-center">
-                <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">📝</span>
-                </div>
-                <h5 className="mt-3 text-base font-bold text-white">
-                  Step {step.stepNumber}
-                </h5>
-              </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
-              {/* Card Content */}
-              <div className="p-6 space-y-4">
-                <div>
-                  <h6 className="text-xs font-bold text-primary-600 uppercase tracking-wide mb-2">
-                    Action
-                  </h6>
-                  <p className="text-sm text-neutral-700 font-medium leading-relaxed">
-                    {step.action}
-                  </p>
-                </div>
-
-                <div>
-                  <h6 className="text-xs font-bold text-green-600 uppercase tracking-wide mb-2">
-                    Expected Result
-                  </h6>
-                  <p className="text-sm text-neutral-700 leading-relaxed">
-                    {step.expectedResult}
-                  </p>
-                </div>
-
-                {step.elementLocator && (
-                  <div>
-                    <h6 className="text-xs font-bold text-purple-600 uppercase tracking-wide mb-2">
-                      Element Locator
-                    </h6>
-                    <code className="block text-xs bg-neutral-800 text-green-400 px-3 py-2 rounded-xl font-mono break-all">
-                      {step.elementLocator}
-                    </code>
+      {/* Test Data Modal */}
+      {showTestData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowTestData(false)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Test Data</h2>
+              <button
+                onClick={() => setShowTestData(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="px-6 py-4 max-h-96 overflow-y-auto">
+              <div className="space-y-3">
+                {Object.entries(testData).map(([key, value]) => (
+                  <div key={key} className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex-1">
+                      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{key}</div>
+                      {isEditingTestData ? (
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) => handleTestDataChange(key, e.target.value)}
+                          className="w-full text-sm text-gray-900 font-mono bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <div className="text-sm text-gray-900 font-mono">{value}</div>
+                      )}
+                    </div>
+                    {!isEditingTestData && (
+                      <button
+                        onClick={() => navigator.clipboard.writeText(value)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="Copy value"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
+                ))}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
+              <div className="flex gap-2">
+                <label className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Import JSON
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportTestData}
+                    className="hidden"
+                  />
+                </label>
+                {isEditingTestData ? (
+                  <button
+                    onClick={handleSaveTestData}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsEditingTestData(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
                 )}
               </div>
-
-              {/* Card Actions */}
-              <div className="border-t-2 border-neutral-200 bg-neutral-50 px-6 py-4 flex items-center justify-center space-x-3">
+              <div className="flex gap-2">
                 <button
-                  onClick={() => onEditStep(step.id)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-smooth"
+                  onClick={() => setShowTestData(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  ✏️ Edit
+                  Close
                 </button>
                 <button
-                  onClick={() => onDeleteStep(step.id)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-smooth"
+                  onClick={() => navigator.clipboard.writeText(JSON.stringify(testData, null, 2))}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                 >
-                  🗑️ Delete
+                  Copy All JSON
                 </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

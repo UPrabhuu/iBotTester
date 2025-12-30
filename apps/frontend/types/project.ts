@@ -18,13 +18,14 @@ export interface Project {
 
 export interface TestExecution {
   id: string;
-  suiteName: string;
+  executionName: string;
   labels: string[];
   status: 'running' | 'passed' | 'failed' | 'pending';
   timestamp: Date;
   duration: number; // in milliseconds
   results?: string;
   triggeredBy: string;
+  executionType: 'Local' | 'CLI' | 'CI/CD' | 'Scheduled';
   projectId: string;
   branchId: string;
   createdAt: Date;

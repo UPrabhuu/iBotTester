@@ -91,38 +91,41 @@ export default function Home() {
   const [testExecutions] = useState<TestExecution[]>([
     {
       id: 'exec-1',
-      suiteName: 'Nike Checkout Flow',
+      executionName: 'Nike Checkout Flow',
       labels: ['checkout', 'e2e'],
       status: 'passed',
       timestamp: new Date(Date.now() - 3600000),
       duration: 45000,
       results: 'All tests passed',
       triggeredBy: 'john@example.com',
+      executionType: 'Local',
       projectId: 'project-1',
       branchId: 'branch-1',
       createdAt: new Date(Date.now() - 3600000),
     },
     {
       id: 'exec-2',
-      suiteName: 'Login Flow Test',
+      executionName: 'Login Flow Test',
       labels: ['authentication', 'smoke'],
       status: 'running',
       timestamp: new Date(Date.now() - 300000),
       duration: 15000,
       triggeredBy: 'jane@example.com',
+      executionType: 'CLI',
       projectId: 'project-1',
       branchId: 'branch-1',
       createdAt: new Date(Date.now() - 300000),
     },
     {
       id: 'exec-3',
-      suiteName: 'Product Search',
+      executionName: 'Product Search',
       labels: ['search', 'regression'],
       status: 'failed',
       timestamp: new Date(Date.now() - 7200000),
       duration: 32000,
       results: '2 of 5 tests failed',
       triggeredBy: 'admin@example.com',
+      executionType: 'CI/CD',
       projectId: 'project-1',
       branchId: 'branch-2',
       createdAt: new Date(Date.now() - 7200000),
@@ -140,7 +143,7 @@ export default function Home() {
       lastModified: new Date(Date.now() - 86400000),
       projectId: 'project-1',
       branchId: 'branch-1',
-      steps: [],
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
     },
     {
       id: 'test-2',
@@ -151,7 +154,7 @@ export default function Home() {
       lastModified: new Date(Date.now() - 2 * 86400000),
       projectId: 'project-1',
       branchId: 'branch-1',
-      steps: [],
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
     },
     {
       id: 'test-3',
@@ -162,7 +165,150 @@ export default function Home() {
       lastModified: new Date(Date.now() - 3600000),
       projectId: 'project-1',
       branchId: 'branch-1',
-      steps: [],
+      steps: [{} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-4',
+      name: 'User Registration Flow',
+      description: 'Complete user registration with email verification',
+      status: 'active',
+      createdAt: new Date(Date.now() - 10 * 86400000),
+      lastModified: new Date(Date.now() - 4 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-5',
+      name: 'Password Reset Workflow',
+      description: 'Test forgot password and reset password functionality',
+      status: 'active',
+      createdAt: new Date(Date.now() - 12 * 86400000),
+      lastModified: new Date(Date.now() - 5 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-6',
+      name: 'Add to Cart Functionality',
+      description: 'Test adding multiple products to shopping cart',
+      status: 'active',
+      createdAt: new Date(Date.now() - 8 * 86400000),
+      lastModified: new Date(Date.now() - 3 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-7',
+      name: 'Wishlist Management',
+      description: 'Add, remove, and manage items in wishlist',
+      status: 'inactive',
+      createdAt: new Date(Date.now() - 15 * 86400000),
+      lastModified: new Date(Date.now() - 10 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-8',
+      name: 'Apply Discount Coupon',
+      description: 'Test discount coupon validation and application',
+      status: 'active',
+      createdAt: new Date(Date.now() - 6 * 86400000),
+      lastModified: new Date(Date.now() - 2 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-9',
+      name: 'Product Review Submission',
+      description: 'Submit and edit product reviews with ratings',
+      status: 'draft',
+      createdAt: new Date(Date.now() - 4 * 86400000),
+      lastModified: new Date(Date.now() - 1 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-10',
+      name: 'Order History Verification',
+      description: 'Verify order history displays correctly with all details',
+      status: 'active',
+      createdAt: new Date(Date.now() - 20 * 86400000),
+      lastModified: new Date(Date.now() - 8 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-11',
+      name: 'Payment Gateway Integration',
+      description: 'Test payment processing with different payment methods',
+      status: 'active',
+      createdAt: new Date(Date.now() - 9 * 86400000),
+      lastModified: new Date(Date.now() - 3 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-12',
+      name: 'Profile Update Workflow',
+      description: 'Update user profile information and avatar',
+      status: 'active',
+      createdAt: new Date(Date.now() - 11 * 86400000),
+      lastModified: new Date(Date.now() - 6 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-13',
+      name: 'Multi-Language Support',
+      description: 'Test language switching and content translation',
+      status: 'inactive',
+      createdAt: new Date(Date.now() - 25 * 86400000),
+      lastModified: new Date(Date.now() - 15 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-14',
+      name: 'Newsletter Subscription',
+      description: 'Subscribe and unsubscribe from newsletter',
+      status: 'draft',
+      createdAt: new Date(Date.now() - 2 * 86400000),
+      lastModified: new Date(Date.now() - 1 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-15',
+      name: 'Advanced Search Filters',
+      description: 'Test all search filters and sorting options',
+      status: 'active',
+      createdAt: new Date(Date.now() - 14 * 86400000),
+      lastModified: new Date(Date.now() - 7 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
+    },
+    {
+      id: 'test-16',
+      name: 'Mobile Responsive Testing',
+      description: 'Verify mobile responsive design across different screen sizes',
+      status: 'active',
+      createdAt: new Date(Date.now() - 13 * 86400000),
+      lastModified: new Date(Date.now() - 5 * 86400000),
+      projectId: 'project-1',
+      branchId: 'branch-1',
+      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
     },
   ]);
 
@@ -716,9 +862,6 @@ export default function Home() {
       case 'test-list':
         return (
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">
-              Test Cases
-            </h2>
             <TestListView
               testCases={filteredTestCases}
               onOpenTestCase={handleOpenTestCase}
@@ -809,20 +952,22 @@ export default function Home() {
 
   return (
     <div className={`flex h-screen overflow-hidden ${activeTab === 'home' ? 'bg-[#1f1f1f]' : 'bg-neutral-50'}`}>
-      {/* Left Sidebar */}
-      <Sidebar
-        chatHistory={chatHistory}
-        activeChat={activeChat}
-        onSelectChat={handleSelectChat}
-        onNewChat={handleNewChat}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        projects={projects}
-        selectedProject={selectedProject}
-        onProjectChange={handleProjectChange}
-        onLogout={handleLogout}
-        user={user}
-      />
+      {/* Left Sidebar - only show when authenticated */}
+      {isAuthenticated && (
+        <Sidebar
+          chatHistory={chatHistory}
+          activeChat={activeChat}
+          onSelectChat={handleSelectChat}
+          onNewChat={handleNewChat}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          projects={projects}
+          selectedProject={selectedProject}
+          onProjectChange={handleProjectChange}
+          onLogout={handleLogout}
+          user={user}
+        />
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -830,7 +975,7 @@ export default function Home() {
         {isAuthenticated && activeTab !== 'login' && (
           <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
             <div className="flex-1">
-              {/* Left side - can add breadcrumbs or page title here if needed */}
+              {/* Left side - breadcrumbs or page title if needed */}
             </div>
             <div className="flex items-center gap-4">
               {/* Docs Button */}
