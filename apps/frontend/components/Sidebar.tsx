@@ -15,8 +15,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onNewChat, chatHistory, activeChat, onSelectChat }) => {
   const menuItems = [
-    { icon: '📊', label: 'Dashboard', href: '#dashboard' },
-    { icon: '🔄', label: 'Test Flows', href: '#flows' },
     { icon: '📜', label: 'Run History', href: '#history' },
     { icon: '⚙️', label: 'Settings', href: '#settings' },
   ];
