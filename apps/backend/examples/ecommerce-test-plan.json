@@ -1,0 +1,86 @@
+{
+  "testId": "example-ecommerce-001",
+  "name": "E-commerce Product Search Test",
+  "description": "Search for a product, view details, and add to cart (stops before checkout)",
+  "steps": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "url": "https://www.amazon.com",
+      "description": "Navigate to Amazon homepage",
+      "retryPolicy": {
+        "maxRetries": 3,
+        "timeout": 30000
+      },
+      "critical": true
+    },
+    {
+      "step": 2,
+      "action": "search",
+      "query": "wireless headphones",
+      "description": "Search for wireless headphones",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 30000
+      }
+    },
+    {
+      "step": 3,
+      "action": "wait",
+      "value": "2000",
+      "description": "Wait for search results to load"
+    },
+    {
+      "step": 4,
+      "action": "screenshot",
+      "description": "Capture search results"
+    },
+    {
+      "step": 5,
+      "action": "click",
+      "target": "first product",
+      "description": "Click on first product in results",
+      "retryPolicy": {
+        "maxRetries": 2,
+        "timeout": 15000
+      }
+    },
+    {
+      "step": 6,
+      "action": "wait",
+      "value": "3000",
+      "description": "Wait for product page to load"
+    },
+    {
+      "step": 7,
+      "action": "screenshot",
+      "description": "Capture product details page"
+    },
+    {
+      "step": 8,
+      "action": "add_to_cart",
+      "description": "Add product to shopping cart",
+      "retryPolicy": {
+        "maxRetries": 3,
+        "timeout": 20000
+      }
+    },
+    {
+      "step": 9,
+      "action": "wait",
+      "value": "2000",
+      "description": "Wait for cart confirmation"
+    },
+    {
+      "step": 10,
+      "action": "screenshot",
+      "description": "Capture cart confirmation"
+    }
+  ],
+  "createdAt": "2025-12-30T19:00:00.000Z",
+  "metadata": {
+    "category": "e-commerce",
+    "priority": "high",
+    "tags": ["shopping", "search", "cart"]
+  }
+}
