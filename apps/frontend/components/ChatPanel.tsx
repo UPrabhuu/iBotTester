@@ -82,11 +82,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ messages, onSendMessage, isProces
                 Welcome to iBotTester
               </h3>
               <p className="text-slate-600 max-w-md">
-                Describe your test scenario in natural language, and I'll help you create and run it.
+                Describe your test scenario in natural language, and I&apos;ll help you create and run it.
               </p>
               <div className="bg-white rounded-lg p-4 max-w-md shadow-sm border border-slate-200">
                 <p className="text-sm text-slate-600 italic">
-                  Try: "I want to create a functional test to purchase Nike shoes size 9 under $150 on amazon.com..."
+                  Try: &quot;I want to create a functional test to purchase Nike shoes size 9 under $150 on amazon.com...&quot;
                 </p>
               </div>
             </div>

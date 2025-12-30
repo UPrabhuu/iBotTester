@@ -68,7 +68,7 @@ const LiveExecutionPanel: React.FC<LiveExecutionPanelProps> = ({
                     <h3 className="text-sm font-semibold text-slate-800 mb-1">
                       Nike Air Max Running Shoes
                     </h3>
-                    <p className="text-xs text-slate-600 mb-2">Men's Size 9</p>
+                    <p className="text-xs text-slate-600 mb-2">Men&apos;s Size 9</p>
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-emerald-600">$129.99</span>
                       <button className="bg-yellow-400 hover:bg-yellow-500 text-slate-900 px-3 py-1 rounded text-xs font-semibold">
