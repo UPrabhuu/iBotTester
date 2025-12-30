@@ -38,8 +38,13 @@ export default function Home() {
       } else {
         setError('Failed to create test plan');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to connect to API server');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'Unknown error occurred';
+      setError(err instanceof Error && err.message.includes('Network') 
+        ? 'Failed to connect to API server. Please ensure the backend is running.' 
+        : 'Failed to create test plan. Please try again.');
     } finally {
       setLoading(false);
     }

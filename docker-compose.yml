@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: ibottester-postgres
     environment:
-      POSTGRES_USER: ibottester
-      POSTGRES_PASSWORD: ibottester123
-      POSTGRES_DB: ibottester
+      POSTGRES_USER: ${POSTGRES_USER:-ibottester}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ibottester123}
+      POSTGRES_DB: ${POSTGRES_DB:-ibottester}
     ports:
       - "5432:5432"
     volumes:
@@ -25,7 +25,7 @@ services:
     container_name: ibottester-backend
     environment:
       PORT: 3001
-      DATABASE_URL: postgresql://ibottester:ibottester123@postgres:5432/ibottester
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ibottester}:${POSTGRES_PASSWORD:-ibottester123}@postgres:5432/${POSTGRES_DB:-ibottester}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     ports:
       - "3001:3001"

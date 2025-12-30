@@ -2,6 +2,8 @@
 FROM node:18-alpine
 
 # Install Playwright dependencies
+# Note: Using system chromium for lighter image. For production,
+# consider using playwright's managed browsers or official Docker image
 RUN apk add --no-cache \
     chromium \
     nss \

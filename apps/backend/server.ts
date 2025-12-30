@@ -144,8 +144,8 @@ app.post('/api/execute-test', async (req: Request, res: Response) => {
     const context = await browser.newContext();
     const page = await context.newPage();
 
-    // Navigate to URL
-    await page.goto(url, { waitUntil: 'networkidle' });
+    // Navigate to URL with a more reliable wait condition
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     
     // Take screenshot
     const screenshot = await page.screenshot();
