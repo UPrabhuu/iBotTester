@@ -50,7 +50,7 @@ interface SettingsViewProps {
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
-  const [activeSection, setActiveSection] = useState<'profile' | 'payment' | 'security' | 'integrations' | 'pricing'>('profile');
+  const [activeSection, setActiveSection] = useState<'profile' | 'payment' | 'security' | 'integrations' | 'pricing' | 'connection'>('profile');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   
   // User profile state
