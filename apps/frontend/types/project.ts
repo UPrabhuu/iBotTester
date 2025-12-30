@@ -100,4 +100,52 @@ export interface ProjectConfiguration {
   };
 }
 
-export type TabType = 'test-execution' | 'test-list' | 'test-editor' | 'configuration';
+export type TabType = 'home' | 'dashboard' | 'test-list' | 'test-execution' | 'editor' | 'config';
+
+// Sidebar navigation state
+export interface SidebarNavigation {
+  home: boolean;
+  selectedProject: string | null;
+  selectedBranch: string | null;
+  activeTab: 'dashboard' | 'test-list' | 'test-execution' | 'editor' | 'config' | null;
+}
+
+// Dashboard metrics and analytics
+export interface DashboardMetrics {
+  totalTests: number;
+  passRate: number;
+  avgDuration: number;
+  activeSuites: number;
+  executionTrends: ExecutionTrendData[];
+  recentActivity: ActivityItem[];
+  slowestTests: SlowTestItem[];
+  testDistribution: TestDistribution;
+}
+
+export interface ExecutionTrendData {
+  date: string;
+  passed: number;
+  failed: number;
+  total: number;
+}
+
+export interface ActivityItem {
+  id: string;
+  testName: string;
+  status: 'passed' | 'failed' | 'running';
+  timestamp: Date;
+  duration?: number;
+}
+
+export interface SlowTestItem {
+  id: string;
+  name: string;
+  duration: number;
+}
+
+export interface TestDistribution {
+  passed: number;
+  failed: number;
+  skipped: number;
+  running: number;
+}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import LiveExecutionPanel from '@/components/LiveExecutionPanel';
-import ProjectSelector from '@/components/ProjectSelector';
-import ProjectTabs from '@/components/ProjectTabs';
+import HomeView from '@/components/HomeView';
+import DashboardView from '@/components/DashboardView';
 import TestExecutionTable from '@/components/TestExecutionTable';
 import TestListView from '@/components/TestListView';
 import TestEditorView from '@/components/TestEditorView';
@@ -33,11 +33,11 @@ export default function Home() {
   // Execution state (for future integration with live execution)
   const [isExecuting] = useState(false);
   const [activeChat, setActiveChat] = useState<string | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
+  const [logs] = useState<string[]>([]);
+  const [screenshots] = useState<Screenshot[]>([]);
 
-  // Project state
-  const [activeTab, setActiveTab] = useState<TabType>('test-execution');
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<TabType>('home');
   
   // Mock projects data
   const [projects, setProjects] = useState<Project[]>([
@@ -274,18 +274,23 @@ export default function Home() {
     { id: '3', title: 'Real Estate Flow', timestamp: new Date(Date.now() - 259200000) },
   ]);
 
-  // Load saved project and branch from localStorage
+  // Load saved project and tab from localStorage
   useEffect(() => {
     const savedProjectId = localStorage.getItem('selectedProjectId');
+    const savedTab = localStorage.getItem('activeTab') as TabType;
     if (savedProjectId && projects.find((p) => p.id === savedProjectId)) {
       setSelectedProjectId(savedProjectId);
     }
+    if (savedTab && ['home', 'dashboard', 'test-list', 'test-execution', 'editor', 'config'].includes(savedTab)) {
+      setActiveTab(savedTab);
+    }
   }, [projects]);
 
-  // Save selected project to localStorage
+  // Save selected project and tab to localStorage
   useEffect(() => {
     localStorage.setItem('selectedProjectId', selectedProjectId);
-  }, [selectedProjectId]);
+    localStorage.setItem('activeTab', activeTab);
+  }, [selectedProjectId, activeTab]);
 
   // Handlers for project selector
   const handleProjectChange = (projectId: string) => {
@@ -321,7 +326,7 @@ export default function Home() {
   // Handlers for test list
   const handleOpenTestCase = (testCaseId: string) => {
     console.log('Open test case:', testCaseId);
-    setActiveTab('test-editor');
+    setActiveTab('editor');
   };
 
   const handleOpenAllTestCases = () => {
@@ -351,6 +356,13 @@ export default function Home() {
     // TODO: Implement save configuration
   };
 
+  // Handler for chat
+  const handleSelectChat = (id: string) => {
+    setActiveChat(id);
+    // In a real app, this would load the chat history
+    console.log('Loading chat:', chatHistory.find(c => c.id === id)?.title);
+  };
+
   // Filter data by selected project and branch
   const filteredExecutions = testExecutions.filter(
     (exec) =>
@@ -373,90 +385,92 @@ export default function Home() {
     );
   });
 
-  const handleNewChat = () => {
-    setLogs([]);
-    setScreenshots([]);
-    setActiveChat(null);
-  };
-
-  const handleSelectChat = (id: string) => {
-    setActiveChat(id);
-    // In a real app, this would load the chat history
-    console.log('Loading chat:', chatHistory.find(c => c.id === id)?.title);
+  // Render main content based on active tab
+  const renderMainContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <HomeView />;
+      
+      case 'dashboard':
+        return <DashboardView />;
+      
+      case 'test-execution':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">
+              Test Execution History
+            </h2>
+            <TestExecutionTable
+              executions={filteredExecutions}
+              onView={handleViewExecution}
+              onRerun={handleRerunExecution}
+              onDelete={handleDeleteExecution}
+            />
+          </div>
+        );
+      
+      case 'test-list':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">
+              Test Cases
+            </h2>
+            <TestListView
+              testCases={filteredTestCases}
+              onOpenTestCase={handleOpenTestCase}
+              onOpenAllTestCases={handleOpenAllTestCases}
+            />
+          </div>
+        );
+      
+      case 'editor':
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">
+              Test Editor
+            </h2>
+            <TestEditorView
+              testSteps={filteredTestSteps}
+              onEditStep={handleEditStep}
+              onDeleteStep={handleDeleteStep}
+              onAddStep={handleAddStep}
+            />
+          </div>
+        );
+      
+      case 'config':
+        return (
+          <ConfigurationView
+            configuration={configuration}
+            onSave={handleSaveConfiguration}
+          />
+        );
+      
+      default:
+        return <HomeView />;
+    }
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100">
       {/* Left Sidebar */}
       <Sidebar
-        onNewChat={handleNewChat}
         chatHistory={chatHistory}
         activeChat={activeChat}
         onSelectChat={handleSelectChat}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        projects={projects}
+        selectedProject={selectedProject}
+        onProjectChange={handleProjectChange}
+        onBranchChange={handleBranchChange}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Project Selector */}
-        <ProjectSelector
-          projects={projects}
-          selectedProject={selectedProject}
-          onProjectChange={handleProjectChange}
-          onBranchChange={handleBranchChange}
-        />
-
-        {/* Project Tabs */}
-        <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto bg-slate-50 p-6">
-          {activeTab === 'test-execution' && (
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                Test Execution History
-              </h2>
-              <TestExecutionTable
-                executions={filteredExecutions}
-                onView={handleViewExecution}
-                onRerun={handleRerunExecution}
-                onDelete={handleDeleteExecution}
-              />
-            </div>
-          )}
-
-          {activeTab === 'test-list' && (
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                Test Cases
-              </h2>
-              <TestListView
-                testCases={filteredTestCases}
-                onOpenTestCase={handleOpenTestCase}
-                onOpenAllTestCases={handleOpenAllTestCases}
-              />
-            </div>
-          )}
-
-          {activeTab === 'test-editor' && (
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                Test Editor
-              </h2>
-              <TestEditorView
-                testSteps={filteredTestSteps}
-                onEditStep={handleEditStep}
-                onDeleteStep={handleDeleteStep}
-                onAddStep={handleAddStep}
-              />
-            </div>
-          )}
-
-          {activeTab === 'configuration' && (
-            <ConfigurationView
-              configuration={configuration}
-              onSave={handleSaveConfiguration}
-            />
-          )}
+          {renderMainContent()}
         </div>
       </div>
 
