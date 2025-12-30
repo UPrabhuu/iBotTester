@@ -1,7 +1,8 @@
 // Authentication middleware
 import { Request, Response, NextFunction } from 'express';
 import { errorResponse } from '../utils/response';
-import { users } from '../data/mockData';
+import { verifyToken } from '../utils/auth';
+import prisma from '../utils/prisma';
 
 // Extend Express Request to include user
 declare global {
@@ -10,74 +11,68 @@ declare global {
       user?: {
         id: string;
         email: string;
-        firstName: string;
-        lastName: string;
+        name: string;
       };
     }
   }
 }
 
-// Simple auth middleware (mock implementation)
-// In production, this would validate JWT tokens
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  // Check for Authorization header or session
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.replace('Bearer ', '');
-
-  // For mock purposes, extract email from token or use default
-  let userEmail = 'john.doe@example.com'; // Default mock user
-
-  // Simple token parsing (in real app, verify JWT)
-  if (token && token !== 'null' && token !== 'undefined') {
-    try {
-      // Mock token decode - in real app use jwt.verify()
-      const decoded = JSON.parse(Buffer.from(token.split('.')[1] || '{}', 'base64').toString());
-      userEmail = decoded.email || userEmail;
-    } catch (e) {
-      // Ignore parsing errors, use default
+// Authentication middleware using JWT
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Check for Authorization header
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json(errorResponse('No token provided'));
     }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // Verify token
+    const decoded = verifyToken(token);
+
+    // Find user in database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, name: true },
+    });
+
+    if (!user) {
+      return res.status(401).json(errorResponse('User not found'));
+    }
+
+    // Attach user to request
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return res.status(401).json(errorResponse('Invalid or expired token'));
   }
-
-  // Find user
-  const user = users.find((u) => u.email === userEmail);
-
-  if (!user) {
-    return res.status(401).json(errorResponse('Unauthorized'));
-  }
-
-  // Attach user to request
-  req.user = {
-    id: user.id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-  };
-
-  next();
 };
 
 // Optional auth middleware - doesn't fail if no user
-export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (token && token !== 'null' && token !== 'undefined') {
-    try {
-      const decoded = JSON.parse(Buffer.from(token.split('.')[1] || '{}', 'base64').toString());
-      const user = users.find((u) => u.email === decoded.email);
+export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const decoded = verifyToken(token);
+      
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { id: true, email: true, name: true },
+      });
       
       if (user) {
-        req.user = {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        };
+        req.user = user;
       }
-    } catch (e) {
-      // Ignore errors
     }
+  } catch (error) {
+    // Silently fail for optional auth
+    console.log('Optional auth failed:', error);
   }
-
+  
   next();
 };

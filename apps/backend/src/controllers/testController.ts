@@ -7,295 +7,425 @@ import {
   updatedResponse,
   deletedResponse,
 } from '../utils/response';
-import { testCases, testSteps, generateId, projects } from '../data/mockData';
-import { TestCase, TestStep } from '../models/types';
+import prisma from '../utils/prisma';
 
 // GET /api/test-cases
-export const listTestCases = (req: Request, res: Response) => {
-  const { projectId, branchId, status } = req.query;
-  const userId = req.user?.id;
+export const listTestCases = async (req: Request, res: Response) => {
+  try {
+    const { projectId, status } = req.query;
+    const userId = req.user?.id;
 
-  let filtered = [...testCases];
+    // If projectId provided, verify user has access
+    if (projectId) {
+      const project = await prisma.project.findFirst({
+        where: { id: projectId as string, userId },
+      });
 
-  // Filter by project and verify user access
-  if (projectId) {
-    const project = projects.find((p) => p.id === projectId && p.userId === userId);
-    if (!project) {
-      return res.status(403).json(errorResponse('Access denied to this project'));
+      if (!project) {
+        return res.status(403).json(errorResponse('Access denied to this project'));
+      }
     }
-    filtered = filtered.filter((tc) => tc.projectId === projectId);
-  }
 
-  // Filter by branch
-  if (branchId) {
-    filtered = filtered.filter((tc) => tc.branchId === branchId);
-  }
+    // Build filter
+    const where: any = {};
+    if (projectId) {
+      where.projectId = projectId as string;
+    }
+    if (status) {
+      where.status = status as string;
+    }
 
-  // Filter by status
-  if (status) {
-    filtered = filtered.filter((tc) => tc.status === status);
-  }
+    // Get test cases
+    const testCases = await prisma.testCase.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            userId: true,
+          },
+        },
+        _count: {
+          select: { testSteps: true, executions: true },
+        },
+      },
+    });
 
-  res.json(successResponse(filtered));
+    // Filter by user ownership
+    const filtered = testCases.filter(tc => tc.project.userId === userId);
+
+    res.json(successResponse(filtered));
+  } catch (error) {
+    console.error('List test cases error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
 };
 
 // GET /api/test-cases/:id
-export const getTestCase = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const getTestCase = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const testCase = testCases.find((tc) => tc.id === id);
+    const testCase = await prisma.testCase.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            userId: true,
+          },
+        },
+        testSteps: {
+          orderBy: { stepNumber: 'asc' },
+        },
+        executions: {
+          orderBy: { startedAt: 'desc' },
+          take: 5,
+        },
+      },
+    });
 
-  if (!testCase) {
-    return res.status(404).json(errorResponse('Test case not found'));
+    if (!testCase) {
+      return res.status(404).json(errorResponse('Test case not found'));
+    }
+
+    // Verify user has access
+    if (testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    res.json(successResponse(testCase));
+  } catch (error) {
+    console.error('Get test case error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === testCase.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  res.json(successResponse(testCase));
 };
 
 // POST /api/test-cases
-export const createTestCase = (req: Request, res: Response) => {
-  const { name, description, projectId, branchId, status } = req.body;
-  const userId = req.user?.id;
+export const createTestCase = async (req: Request, res: Response) => {
+  try {
+    const { name, description, projectId, status, stepsJson } = req.body;
+    const userId = req.user?.id;
 
-  if (!name || !projectId || !branchId) {
-    return res.status(400).json(errorResponse('Name, projectId, and branchId are required'));
+    if (!name || !projectId) {
+      return res.status(400).json(errorResponse('Name and projectId are required'));
+    }
+
+    // Verify user has access to project
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, userId },
+    });
+
+    if (!project) {
+      return res.status(403).json(errorResponse('Access denied to this project'));
+    }
+
+    const newTestCase = await prisma.testCase.create({
+      data: {
+        name,
+        description: description || null,
+        projectId,
+        status: status || 'active',
+        stepsJson: stepsJson || null,
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json(createdResponse(newTestCase));
+  } catch (error) {
+    console.error('Create test case error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied to this project'));
-  }
-
-  const newTestCase: TestCase = {
-    id: generateId('test'),
-    name,
-    description: description || '',
-    status: status || 'draft',
-    projectId,
-    branchId,
-    steps: [],
-    createdAt: new Date(),
-    lastModified: new Date(),
-  };
-
-  testCases.push(newTestCase);
-
-  res.status(201).json(createdResponse(newTestCase));
 };
 
 // PUT /api/test-cases/:id
-export const updateTestCase = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { name, description, status } = req.body;
-  const userId = req.user?.id;
+export const updateTestCase = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, description, status, stepsJson } = req.body;
+    const userId = req.user?.id;
 
-  const testCaseIndex = testCases.findIndex((tc) => tc.id === id);
+    // Get test case with project
+    const testCase = await prisma.testCase.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+      },
+    });
 
-  if (testCaseIndex === -1) {
-    return res.status(404).json(errorResponse('Test case not found'));
+    if (!testCase) {
+      return res.status(404).json(errorResponse('Test case not found'));
+    }
+
+    // Verify user has access
+    if (testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Update test case
+    const updated = await prisma.testCase.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(description !== undefined && { description }),
+        ...(status && { status }),
+        ...(stepsJson !== undefined && { stepsJson }),
+      },
+    });
+
+    res.json(updatedResponse(updated));
+  } catch (error) {
+    console.error('Update test case error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find(
-    (p) => p.id === testCases[testCaseIndex].projectId && p.userId === userId
-  );
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  // Update fields
-  if (name) testCases[testCaseIndex].name = name;
-  if (description !== undefined) testCases[testCaseIndex].description = description;
-  if (status) testCases[testCaseIndex].status = status;
-  testCases[testCaseIndex].lastModified = new Date();
-
-  res.json(updatedResponse(testCases[testCaseIndex]));
 };
 
 // DELETE /api/test-cases/:id
-export const deleteTestCase = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const deleteTestCase = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const testCaseIndex = testCases.findIndex((tc) => tc.id === id);
+    // Get test case with project
+    const testCase = await prisma.testCase.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+      },
+    });
 
-  if (testCaseIndex === -1) {
-    return res.status(404).json(errorResponse('Test case not found'));
+    if (!testCase) {
+      return res.status(404).json(errorResponse('Test case not found'));
+    }
+
+    // Verify user has access
+    if (testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Delete test case (cascades to steps and executions)
+    await prisma.testCase.delete({
+      where: { id },
+    });
+
+    res.json(deletedResponse('Test case deleted successfully'));
+  } catch (error) {
+    console.error('Delete test case error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find(
-    (p) => p.id === testCases[testCaseIndex].projectId && p.userId === userId
-  );
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  // Delete associated steps
-  const stepsToDelete = testSteps.filter((s) => s.testCaseId === id);
-  stepsToDelete.forEach((step) => {
-    const stepIndex = testSteps.findIndex((s) => s.id === step.id);
-    if (stepIndex > -1) testSteps.splice(stepIndex, 1);
-  });
-
-  testCases.splice(testCaseIndex, 1);
-
-  res.json(deletedResponse('Test case deleted successfully'));
 };
 
 // GET /api/test-cases/:id/steps
-export const getTestSteps = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const getTestSteps = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const testCase = testCases.find((tc) => tc.id === id);
+    // Get test case with project
+    const testCase = await prisma.testCase.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+        testSteps: {
+          orderBy: { stepNumber: 'asc' },
+        },
+      },
+    });
 
-  if (!testCase) {
-    return res.status(404).json(errorResponse('Test case not found'));
+    if (!testCase) {
+      return res.status(404).json(errorResponse('Test case not found'));
+    }
+
+    // Verify user has access
+    if (testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    res.json(successResponse(testCase.testSteps));
+  } catch (error) {
+    console.error('Get test steps error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === testCase.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  const steps = testSteps.filter((s) => s.testCaseId === id).sort((a, b) => a.stepNumber - b.stepNumber);
-
-  res.json(successResponse(steps));
 };
 
 // POST /api/test-cases/:id/steps
-export const createTestStep = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { action, expectedResult, elementLocator, uiSection, stepNumber } = req.body;
-  const userId = req.user?.id;
+export const createTestStep = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { action, expectedResult, selector, uiSection, stepNumber } = req.body;
+    const userId = req.user?.id;
 
-  const testCase = testCases.find((tc) => tc.id === id);
+    // Get test case with project
+    const testCase = await prisma.testCase.findUnique({
+      where: { id },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+        testSteps: {
+          orderBy: { stepNumber: 'desc' },
+          take: 1,
+        },
+      },
+    });
 
-  if (!testCase) {
-    return res.status(404).json(errorResponse('Test case not found'));
+    if (!testCase) {
+      return res.status(404).json(errorResponse('Test case not found'));
+    }
+
+    // Verify user has access
+    if (testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    if (!action || !expectedResult) {
+      return res.status(400).json(errorResponse('Action and expectedResult are required'));
+    }
+
+    // Calculate step number if not provided
+    const maxStepNumber = testCase.testSteps.length > 0 
+      ? testCase.testSteps[0].stepNumber 
+      : 0;
+
+    const newStep = await prisma.testStep.create({
+      data: {
+        testCaseId: id,
+        stepNumber: stepNumber || maxStepNumber + 1,
+        action,
+        expectedResult,
+        selector: selector || null,
+        uiSection: uiSection || null,
+      },
+    });
+
+    // Update test case updatedAt
+    await prisma.testCase.update({
+      where: { id },
+      data: { updatedAt: new Date() },
+    });
+
+    res.status(201).json(createdResponse(newStep));
+  } catch (error) {
+    console.error('Create test step error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === testCase.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  if (!action || !expectedResult) {
-    return res.status(400).json(errorResponse('Action and expectedResult are required'));
-  }
-
-  // Calculate step number if not provided
-  const existingSteps = testSteps.filter((s) => s.testCaseId === id);
-  const maxStepNumber = existingSteps.length > 0 
-    ? Math.max(...existingSteps.map((s) => s.stepNumber)) 
-    : 0;
-
-  const newStep: TestStep = {
-    id: generateId('step'),
-    stepNumber: stepNumber || maxStepNumber + 1,
-    action,
-    expectedResult,
-    elementLocator,
-    uiSection: uiSection || 'General',
-    testCaseId: id,
-  };
-
-  testSteps.push(newStep);
-
-  // Update test case
-  const testCaseIndex = testCases.findIndex((tc) => tc.id === id);
-  if (testCaseIndex > -1) {
-    testCases[testCaseIndex].steps.push(newStep.id);
-    testCases[testCaseIndex].lastModified = new Date();
-  }
-
-  res.status(201).json(createdResponse(newStep));
 };
 
 // PUT /api/test-steps/:id
-export const updateTestStep = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { action, expectedResult, elementLocator, uiSection, stepNumber } = req.body;
-  const userId = req.user?.id;
+export const updateTestStep = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { action, expectedResult, selector, uiSection, stepNumber } = req.body;
+    const userId = req.user?.id;
 
-  const stepIndex = testSteps.findIndex((s) => s.id === id);
+    // Get test step with test case and project
+    const step = await prisma.testStep.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (stepIndex === -1) {
-    return res.status(404).json(errorResponse('Test step not found'));
+    if (!step) {
+      return res.status(404).json(errorResponse('Test step not found'));
+    }
+
+    // Verify user has access
+    if (step.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Update test step
+    const updated = await prisma.testStep.update({
+      where: { id },
+      data: {
+        ...(action && { action }),
+        ...(expectedResult && { expectedResult }),
+        ...(selector !== undefined && { selector }),
+        ...(uiSection && { uiSection }),
+        ...(stepNumber && { stepNumber }),
+      },
+    });
+
+    // Update test case updatedAt
+    await prisma.testCase.update({
+      where: { id: step.testCaseId },
+      data: { updatedAt: new Date() },
+    });
+
+    res.json(updatedResponse(updated));
+  } catch (error) {
+    console.error('Update test step error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  const step = testSteps[stepIndex];
-  const testCase = testCases.find((tc) => tc.id === step.testCaseId);
-
-  if (!testCase) {
-    return res.status(404).json(errorResponse('Associated test case not found'));
-  }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === testCase.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  // Update fields
-  if (action) testSteps[stepIndex].action = action;
-  if (expectedResult) testSteps[stepIndex].expectedResult = expectedResult;
-  if (elementLocator !== undefined) testSteps[stepIndex].elementLocator = elementLocator;
-  if (uiSection) testSteps[stepIndex].uiSection = uiSection;
-  if (stepNumber) testSteps[stepIndex].stepNumber = stepNumber;
-
-  // Update test case lastModified
-  const testCaseIndex = testCases.findIndex((tc) => tc.id === step.testCaseId);
-  if (testCaseIndex > -1) {
-    testCases[testCaseIndex].lastModified = new Date();
-  }
-
-  res.json(updatedResponse(testSteps[stepIndex]));
 };
 
 // DELETE /api/test-steps/:id
-export const deleteTestStep = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
+export const deleteTestStep = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-  const stepIndex = testSteps.findIndex((s) => s.id === id);
+    // Get test step with test case and project
+    const step = await prisma.testStep.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+      },
+    });
 
-  if (stepIndex === -1) {
-    return res.status(404).json(errorResponse('Test step not found'));
+    if (!step) {
+      return res.status(404).json(errorResponse('Test step not found'));
+    }
+
+    // Verify user has access
+    if (step.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Delete test step
+    await prisma.testStep.delete({
+      where: { id },
+    });
+
+    // Update test case updatedAt
+    await prisma.testCase.update({
+      where: { id: step.testCaseId },
+      data: { updatedAt: new Date() },
+    });
+
+    res.json(deletedResponse('Test step deleted successfully'));
+  } catch (error) {
+    console.error('Delete test step error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
   }
-
-  const step = testSteps[stepIndex];
-  const testCase = testCases.find((tc) => tc.id === step.testCaseId);
-
-  if (!testCase) {
-    return res.status(404).json(errorResponse('Associated test case not found'));
-  }
-
-  // Verify user has access to project
-  const project = projects.find((p) => p.id === testCase.projectId && p.userId === userId);
-  if (!project) {
-    return res.status(403).json(errorResponse('Access denied'));
-  }
-
-  // Remove from test case steps array
-  const testCaseIndex = testCases.findIndex((tc) => tc.id === step.testCaseId);
-  if (testCaseIndex > -1) {
-    testCases[testCaseIndex].steps = testCases[testCaseIndex].steps.filter((sid) => sid !== id);
-    testCases[testCaseIndex].lastModified = new Date();
-  }
-
-  testSteps.splice(stepIndex, 1);
-
-  res.json(deletedResponse('Test step deleted successfully'));
 };
