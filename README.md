@@ -207,6 +207,44 @@ on amazon.com and validate checkout until payment page.
 
 ## 📡 API Endpoints
 
+The backend provides a comprehensive REST API. See [API Documentation](./docs/API.md) for complete details.
+
+### Quick Reference
+
+**Authentication:**
+- `POST /api/auth/login` - Email/password login
+- `POST /api/auth/google` - Google OAuth
+- `POST /api/auth/github` - GitHub OAuth
+- `GET /api/auth/me` - Get current user
+
+**Projects:**
+- `GET /api/projects` - List projects
+- `POST /api/projects` - Create project
+- `GET /api/projects/:id/branches` - List branches
+
+**Test Management:**
+- `GET /api/test-cases` - List test cases
+- `POST /api/test-cases` - Create test case
+- `GET /api/test-cases/:id/steps` - Get test steps
+- `POST /api/test-cases/:id/steps` - Add test step
+
+**Execution:**
+- `GET /api/executions` - List executions
+- `POST /api/executions` - Run test execution
+- `POST /api/executions/:id/rerun` - Re-run test
+
+**Chat & AI:**
+- `POST /api/chat/message` - Send message to AI
+- `GET /api/chat/history` - Get chat history
+
+**Dashboard:**
+- `GET /api/dashboard/metrics` - Get metrics
+- `GET /api/dashboard/activity` - Recent activity
+
+**Configuration & Settings:**
+- `GET /api/config/:projectId` - Get project config
+- `PUT /api/settings/profile` - Update user profile
+
 ### Health Check
 ```bash
 GET /

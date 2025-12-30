@@ -59,10 +59,11 @@ export const getDashboardMetrics = (req: Request, res: Response) => {
   const recentActivity = filteredExecutions
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     .slice(0, 10)
+    .filter((ex) => ex.status !== 'pending') // Filter out pending status
     .map((ex) => ({
       id: ex.id,
       testName: ex.suiteName,
-      status: ex.status,
+      status: ex.status as 'passed' | 'failed' | 'running',
       timestamp: ex.timestamp,
       duration: ex.duration,
     }));
