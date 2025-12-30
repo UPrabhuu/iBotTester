@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: placeholder/frontend:latest
+    restart: unless-stopped
+  backend:
+    image: placeholder/backend:latest
+    restart: unless-stopped
