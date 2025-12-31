@@ -17,6 +17,7 @@ import settingsRoutes from './src/routes/settings';
 // Import agent services
 import { AIAgentService } from './src/services/aiAgentService';
 import { ExecutionAgentService } from './src/services/executionAgentService';
+import { OrchestratorAgent } from './src/agents/OrchestratorAgent';
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,9 @@ if (process.env.OPENAI_API_KEY) {
 
 // Initialize AI Agent Service
 const aiAgentService = new AIAgentService(process.env.OPENAI_API_KEY);
+
+// Initialize Orchestrator Agent
+const orchestratorAgent = new OrchestratorAgent(process.env.OPENAI_API_KEY);
 
 // Middleware
 app.use(cors());
@@ -69,7 +73,8 @@ app.get('/', (req: Request, res: Response) => {
       testPlan: '/api/test-plan',
       executeTest: '/api/execute-test',
       executeTestPlan: '/api/execute-test-plan',
-      runTest: '/api/run-test'
+      runTest: '/api/run-test',
+      orchestratedTest: '/api/orchestrated-test'
     }
   });
 });
@@ -274,6 +279,50 @@ app.post('/api/run-test', async (req: Request, res: Response) => {
   }
 });
 
+// New endpoint: Full orchestrated test flow with all agents
+app.post('/api/orchestrated-test', async (req: Request, res: Response) => {
+  const { prompt, environment = 'staging', runType = 'single', options = {} } = req.body;
+  
+  if (!prompt) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Prompt is required' 
+    });
+  }
+
+  try {
+    console.log(`\n🚀 Starting orchestrated test flow for: "${prompt}"\n`);
+    
+    // Execute complete agent flow
+    const result = await orchestratorAgent.executeTestFlow({
+      prompt,
+      environment,
+      runType,
+      options,
+    });
+
+    const agentStatus = orchestratorAgent.getAgentStatus();
+
+    res.json({
+      success: result.status !== 'FAIL',
+      execution: result,
+      agentStatus,
+      message: result.status === 'PASS' 
+        ? '✅ Test completed successfully' 
+        : result.status === 'PARTIAL'
+        ? '⚠️ Test completed with partial success'
+        : '❌ Test failed',
+    });
+  } catch (error: any) {
+    console.error('Error in orchestrated test:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to execute orchestrated test',
+      details: error.message,
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
@@ -285,8 +334,11 @@ app.listen(PORT, () => {
   console.log(`📊 Playwright: Available`);
   console.log(`🤖 OpenAI: ${openai ? 'Configured' : 'Not configured (set OPENAI_API_KEY)'}`);
   console.log(`🧠 AI Agent: ${aiAgentService.isAIAvailable() ? 'Active' : 'Fallback mode'}`);
-  console.log(`\n🚀 New Agent Endpoints:`);
+  console.log(`\n🚀 Agent Endpoints:`);
   console.log(`   POST /api/test-plan - Generate test plan from prompt`);
   console.log(`   POST /api/execute-test-plan - Execute existing test plan`);
   console.log(`   POST /api/run-test - Generate and execute in one call`);
+  console.log(`   POST /api/orchestrated-test - Full agent flow (Intent → Plan → Execute → Evidence → Diff → Report)`);
+  console.log(`\n🤖 Agent Flow:`);
+  console.log(`   User Prompt → Intent Parser → Test Planner → Execution → Evidence → Diff/Validation → Report`);
 });

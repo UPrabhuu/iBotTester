@@ -52,23 +52,37 @@ iBotTester introduces _Intent-Based Testing_ powered by an autonomous AI agent:
 
 ## 🧠 How It Works
 
+**Complete Agent Flow:**
+
 User Prompt  
-→ AI Test Planner  
-→ Structured Test Plan (JSON)  
-→ Autonomous Execution Agent  
-→ Real Browser (Playwright)  
-→ Evidence, Analysis & Diff
+→ **Intent Parser Agent** (Understands what you want to test)  
+→ **Test Planner Agent** (Generates structured JSON test plan)  
+→ **Execution Agent** (Runs tests in real browser with Playwright)  
+→ **Evidence Collector** (Captures screenshots, logs, videos)  
+→ **Diff & Validation Agent** (Compares with previous runs)  
+→ **Report Generator** (Creates detailed, human-readable report)
+
+**Agent Personality:**
+- Calm and methodical (like a senior QA engineer)
+- Deterministic and repeatable
+- Clear explanations of failures
+- Never hallucinates results
+- States uncertainties explicitly
+- Provides confidence scores and actionable suggestions
 
 ---
 
 ## ✨ Key Features
 
-- Natural language test creation (ChatGPT/Gemini-style UI)
-- Autonomous browser execution
-- Screenshot & video recording
-- Flow change detection
-- Human-readable failure explanations
-- Test history & dashboard
+- **Natural language test creation** - ChatGPT-style UI for test authoring
+- **Complete agent orchestration** - 6-stage agent flow from intent to report
+- **Self-healing execution** - Automatically adapts to UI changes
+- **Comprehensive evidence** - Screenshots, videos, and detailed logs
+- **Flow change detection** - Compares runs and classifies differences (breaking/non-breaking/cosmetic)
+- **Human-readable reports** - Senior QA engineer-style failure explanations
+- **Confidence scoring** - AI-powered analysis with confidence metrics
+- **Suggested fixes** - Actionable recommendations for test failures
+- **Test history & dashboard** - Track all executions and trends
 
 ---
 
@@ -236,6 +250,7 @@ The backend provides a comprehensive REST API. See [API Documentation](./docs/AP
 **Chat & AI:**
 - `POST /api/chat/message` - Send message to AI
 - `GET /api/chat/history` - Get chat history
+- `POST /api/orchestrated-test` - **NEW: Complete agent flow** (Intent → Plan → Execute → Evidence → Diff → Report)
 
 **Dashboard:**
 - `GET /api/dashboard/metrics` - Get metrics
