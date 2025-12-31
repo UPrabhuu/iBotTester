@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import api from '../services/api';
+import { Button, Text, Badge, Spinner } from './ui';
 
 interface ConnectionStatus {
   backend: 'connected' | 'disconnected' | 'checking';

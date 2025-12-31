@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Heading, Text, Card, CardHeader, CardTitle, CardContent, Divider } from './ui';
 import { Search, BookOpen, Code, Zap, Settings, Terminal, FileText, ChevronRight } from 'lucide-react';
 
 interface DocSection {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { chatApi } from '../services/api';
+import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
 
 interface Branch {
   id: string;
@@ -201,70 +202,44 @@ const HomeView: React.FC<HomeViewProps> = ({
                       <span className="text-xs font-medium text-gray-500">CONTEXT:</span>
                       
                       {/* Project Selector */}
-                      <div className="relative">
-                        <button
-                          type="button"
-                          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 hover:border-purple-400 transition-all"
-                          onClick={(e) => {
-                            const select = e.currentTarget.nextElementSibling as HTMLSelectElement;
-                            select?.focus();
-                            select?.click();
-                          }}
-                        >
+                      <Select
+                        value={selectedProject.id}
+                        onChange={(e) => onProjectChange?.(e.target.value)}
+                        size="sm"
+                        fullWidth={false}
+                        className="min-w-[140px]"
+                        leftIcon={
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                           </svg>
-                          <span>{selectedProject.name}</span>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        <select
-                          value={selectedProject.id}
-                          onChange={(e) => onProjectChange?.(e.target.value)}
-                          className="absolute opacity-0 pointer-events-auto inset-0 w-full h-full cursor-pointer"
-                          aria-label="Select project"
-                        >
-                          {projects.map((project) => (
-                            <option key={project.id} value={project.id}>
-                              {project.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                        }
+                      >
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>
+                            {project.name}
+                          </option>
+                        ))}
+                      </Select>
 
                       {/* Branch Selector */}
-                      <div className="relative">
-                        <button
-                          type="button"
-                          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 hover:border-purple-400 transition-all"
-                          onClick={(e) => {
-                            const select = e.currentTarget.nextElementSibling as HTMLSelectElement;
-                            select?.focus();
-                            select?.click();
-                          }}
-                        >
+                      <Select
+                        value={selectedBranchId}
+                        onChange={(e) => handleBranchChange(e.target.value)}
+                        size="sm"
+                        fullWidth={false}
+                        className="min-w-[140px]"
+                        leftIcon={
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                           </svg>
-                          <span>{selectedProject.branches.find(b => b.id === selectedBranchId)?.name || 'Select branch'}</span>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        <select
-                          value={selectedBranchId}
-                          onChange={(e) => handleBranchChange(e.target.value)}
-                          className="absolute opacity-0 pointer-events-auto inset-0 w-full h-full cursor-pointer"
-                          aria-label="Select branch"
-                        >
-                          {selectedProject.branches.map((branch) => (
-                            <option key={branch.id} value={branch.id}>
-                              {branch.name} {branch.isDefault ? '(default)' : ''}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                        }
+                      >
+                        {selectedProject.branches.map((branch) => (
+                          <option key={branch.id} value={branch.id}>
+                            {branch.name} {branch.isDefault ? '(default)' : ''}
+                          </option>
+                        ))}
+                      </Select>
                     </div>
                   </div>
                 )}
@@ -418,70 +393,44 @@ const HomeView: React.FC<HomeViewProps> = ({
                   <span className="text-xs font-medium text-gray-500">CONTEXT:</span>
                   
                   {/* Project Selector */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 hover:border-purple-400 transition-all"
-                      onClick={(e) => {
-                        const select = e.currentTarget.nextElementSibling as HTMLSelectElement;
-                        select?.focus();
-                        select?.click();
-                      }}
-                    >
+                  <Select
+                    value={selectedProject.id}
+                    onChange={(e) => onProjectChange?.(e.target.value)}
+                    size="sm"
+                    fullWidth={false}
+                    className="min-w-[140px]"
+                    leftIcon={
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                       </svg>
-                      <span>{selectedProject.name}</span>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    <select
-                      value={selectedProject.id}
-                      onChange={(e) => onProjectChange?.(e.target.value)}
-                      className="absolute opacity-0 pointer-events-auto inset-0 w-full h-full cursor-pointer"
-                      aria-label="Select project"
-                    >
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    }
+                  >
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </Select>
 
                   {/* Branch Selector */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 hover:border-purple-400 transition-all"
-                      onClick={(e) => {
-                        const select = e.currentTarget.nextElementSibling as HTMLSelectElement;
-                        select?.focus();
-                        select?.click();
-                      }}
-                    >
+                  <Select
+                    value={selectedBranchId}
+                    onChange={(e) => handleBranchChange(e.target.value)}
+                    size="sm"
+                    fullWidth={false}
+                    className="min-w-[140px]"
+                    leftIcon={
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                       </svg>
-                      <span>{selectedProject.branches.find(b => b.id === selectedBranchId)?.name || 'Select branch'}</span>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    <select
-                      value={selectedBranchId}
-                      onChange={(e) => handleBranchChange(e.target.value)}
-                      className="absolute opacity-0 pointer-events-auto inset-0 w-full h-full cursor-pointer"
-                      aria-label="Select branch"
-                    >
-                      {selectedProject.branches.map((branch) => (
-                        <option key={branch.id} value={branch.id}>
-                          {branch.name} {branch.isDefault ? '(default)' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    }
+                  >
+                    {selectedProject.branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name} {branch.isDefault ? '(default)' : ''}
+                      </option>
+                    ))}
+                  </Select>
                 </div>
               </div>
             )}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Zap, Shield, Users, BarChart, Clock, Infinity } from 'lucide-react';
 import { useAlert } from '../contexts/AlertContext';
+import { Button, Heading, Text, Card, CardHeader, CardTitle, CardContent, Badge } from './ui';
 
 interface PricingPlan {
   name: string;

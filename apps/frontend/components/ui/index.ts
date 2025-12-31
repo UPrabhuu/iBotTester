@@ -42,3 +42,6 @@ export type { SpinnerProps, SpinnerSize, SpinnerVariant } from './Spinner';
 
 export { default as Divider } from './Divider';
 export type { DividerProps, DividerOrientation, DividerVariant } from './Divider';
+
+export { default as Select } from './Select';
+export type { SelectProps, SelectSize, SelectVariant, SelectOption } from './Select';

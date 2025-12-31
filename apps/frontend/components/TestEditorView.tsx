@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TestStep, TestStepGroup } from '@/types/project';
 import { useAlert } from '../contexts/AlertContext';
+import { Button, Input, Textarea, Heading, Text, Card, CardHeader, CardTitle, CardContent, Badge } from './ui';
 
 interface TestEditorViewProps {
   testSteps: TestStep[];

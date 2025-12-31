@@ -15,6 +15,7 @@ import {
 import ConnectionStatus from './ConnectionStatus';
 import { settingsApi } from '../services/api';
 import { useAlert } from '../contexts/AlertContext';
+import { Button, Input, Heading, Text, Card, CardHeader, CardTitle, CardContent, Badge } from './ui';
 
 interface UserProfile {
   id: string;

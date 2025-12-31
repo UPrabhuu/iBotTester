@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button, Input, Textarea, Heading, Text, Card, CardHeader, CardTitle, CardContent, Select } from './ui';
 import { ProjectConfiguration } from '@/types/project';
 
 interface ConfigurationViewProps {
@@ -140,18 +141,16 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
                 <h4 className="text-lg font-semibold text-neutral-800 mb-4">Browser Configuration</h4>
                 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Browser Type
-                  </label>
-                  <select
+                  <Select
                     value={config.browser.type}
                     onChange={(e) => updateBrowser('type', e.target.value)}
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white"
+                    label="Browser Type"
+                    size="md"
                   >
                     <option value="chromium">Chromium</option>
                     <option value="firefox">Firefox</option>
                     <option value="webkit">WebKit</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="flex items-center space-x-2">

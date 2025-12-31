@@ -1,5 +1,6 @@
 import React from 'react';
 import { TabType } from '@/types/project';
+import { Button, Badge, Text } from './ui';
 
 interface ProjectTabsProps {
   activeTab: TabType;

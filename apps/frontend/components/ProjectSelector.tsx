@@ -1,5 +1,6 @@
 import React from 'react';
 import { Project } from '@/types/project';
+import { Button, Text, Badge, Select } from './ui';
 
 interface ProjectSelectorProps {
   projects: Project[];
@@ -20,43 +21,38 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       <div className="flex items-center justify-between">
         {/* Project Selector */}
         <div className="flex items-center space-x-4">
-          <div>
-            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
-              Project
-            </label>
-            <select
-              value={selectedProject.id}
-              onChange={(e) => onProjectChange(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white text-neutral-800 font-semibold cursor-pointer hover:border-neutral-400 transition-colors"
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            value={selectedProject.id}
+            onChange={(e) => onProjectChange(e.target.value)}
+            label="Project"
+            size="md"
+            fullWidth={false}
+            className="min-w-[200px]"
+          >
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </Select>
 
           {/* Branch Selector */}
-          <div>
-            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
-              Branch
-            </label>
-            <div className="relative">
-              <select
-                value={selectedProject.currentBranch}
-                onChange={(e) => onBranchChange(e.target.value)}
-                className="pl-4 pr-10 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white text-neutral-800 font-medium cursor-pointer hover:border-neutral-400 transition-colors appearance-none"
-              >
-                {selectedProject.branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.name}
-                    {branch.isDefault ? ' (default)' : ''}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
+          <Select
+            value={selectedProject.currentBranch}
+            onChange={(e) => onBranchChange(e.target.value)}
+            label="Branch"
+            size="md"
+            fullWidth={false}
+            className="min-w-[200px]"
+          >
+            {selectedProject.branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+                {branch.isDefault ? ' (default)' : ''}
+              </option>
+            ))}
+          </Select>
+        </div>
                   className="w-4 h-4 text-neutral-500"
                   fill="none"
                   stroke="currentColor"

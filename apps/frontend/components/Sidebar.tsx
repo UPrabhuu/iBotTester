@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Project, TabType } from '@/types/project';
+import { Button, Badge, Text } from './ui';
 
 interface ChatHistory {
   id: string;

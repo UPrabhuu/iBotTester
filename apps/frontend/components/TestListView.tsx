@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { TestCase } from '@/types/project';
+import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
 
 interface Folder {
   id: string;
@@ -553,19 +554,21 @@ const TestListView: React.FC<TestListViewProps> = ({
                   <div className="flex items-center gap-2">
                     {selectedTests.size > 0 && (
                       <div className="flex gap-2">
-                        <select
+                        <Select
                           onChange={(e) => {
                             const folderId = e.target.value || null;
                             moveTestsToFolder(folderId);
                           }}
-                          className="text-sm px-4 py-2 border border-gray-300 rounded-xl bg-white shadow-sm font-medium text-gray-700 focus:ring-2 focus:ring-blue-500/50"
+                          size="sm"
+                          fullWidth={false}
+                          className="min-w-[180px]"
                         >
                           <option value="">Move to...</option>
                           <option value="">📂 Root</option>
                           {folders.map(f => (
                             <option key={f.id} value={f.id}>📁 {f.name}</option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
                     )}
                   </div>

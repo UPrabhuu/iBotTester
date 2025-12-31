@@ -1,5 +1,6 @@
 import React from 'react';
 import { TestExecution } from '@/types/project';
+import { Button, Heading, Text, Badge } from './ui';
 
 interface TestExecutionTableProps {
   executions: TestExecution[];
