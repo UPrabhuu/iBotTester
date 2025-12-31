@@ -221,7 +221,7 @@ on amazon.com and validate checkout until payment page.
 
 ## 📡 API Endpoints
 
-The backend provides a comprehensive REST API. See [API Documentation](./docs/API.md) for complete details.
+The backend provides a comprehensive REST API. See [API Documentation](./docs/API.md) and [Agent API Documentation](./docs/AGENT_API.md) for complete details.
 
 ### Quick Reference
 
@@ -326,23 +326,28 @@ Content-Type: application/json
 ## 🔧 Development Status
 
 ### ✅ Implemented Features
-- ✅ Next.js frontend with Tailwind CSS
-- ✅ TypeScript backend with Express
-- ✅ Playwright browser automation
+- ✅ Complete 6-agent orchestration flow
+- ✅ Intent parsing from natural language
+- ✅ Structured JSON test plan generation
+- ✅ Playwright browser automation with self-healing
+- ✅ Evidence collection (screenshots, videos, logs)
+- ✅ Flow difference detection and classification
+- ✅ AI-powered report generation with confidence scores
 - ✅ Natural language test creation UI
-- ✅ REST API for test planning
-- ✅ Browser execution with screenshots
+- ✅ REST API for all agent operations
 - ✅ Docker support
 - ✅ OpenAI integration (optional)
 
 ### 🚧 Roadmap
+- [x] Complete agent orchestration flow
+- [x] Self-healing selector system
+- [x] Confidence scoring and suggested fixes
+- [x] Flow difference detection and classification
 - [ ] Database integration (PostgreSQL/SQLite)
-- [ ] Test history and dashboard
-- [ ] Video recording
-- [ ] Flow change detection
-- [ ] Advanced AI test planning
+- [ ] Advanced AI test planning with vision
 - [ ] Multi-browser support
 - [ ] CI/CD integration
+- [ ] Performance testing capabilities
 
 ---
 

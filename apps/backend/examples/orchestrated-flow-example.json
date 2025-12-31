@@ -1,0 +1,230 @@
+{
+  "name": "Complete Agent Flow Example",
+  "description": "Demonstrates the full orchestrated agent flow",
+  "endpoint": "/api/orchestrated-test",
+  "request": {
+    "prompt": "Test login with valid credentials on example.com and verify dashboard loads",
+    "environment": "staging",
+    "runType": "single",
+    "options": {
+      "headless": true,
+      "recordVideo": true,
+      "screenshots": true
+    }
+  },
+  "expectedFlow": [
+    {
+      "agent": "IntentParserAgent",
+      "action": "Parse user prompt",
+      "output": {
+        "action": "login",
+        "target": "valid credentials",
+        "url": "https://example.com",
+        "expectedOutcome": "dashboard loads",
+        "confidence": 0.9
+      }
+    },
+    {
+      "agent": "TestPlannerAgent",
+      "action": "Generate structured test plan",
+      "output": {
+        "name": "Login and Dashboard Verification Test",
+        "steps": [
+          {
+            "step": 1,
+            "action": "navigate",
+            "url": "https://example.com"
+          },
+          {
+            "step": 2,
+            "action": "click",
+            "target": "login button"
+          },
+          {
+            "step": 3,
+            "action": "type",
+            "target": "username field",
+            "value": "testuser"
+          },
+          {
+            "step": 4,
+            "action": "type",
+            "target": "password field",
+            "value": "password123"
+          },
+          {
+            "step": 5,
+            "action": "click",
+            "target": "submit button"
+          },
+          {
+            "step": 6,
+            "action": "validate",
+            "rule": "dashboard page loaded"
+          }
+        ]
+      }
+    },
+    {
+      "agent": "ExecutionAgent",
+      "action": "Execute test with Playwright",
+      "features": [
+        "Self-healing selectors",
+        "Retry logic (max 2 retries)",
+        "Screenshot after each step",
+        "Video recording",
+        "Console and network logging"
+      ]
+    },
+    {
+      "agent": "EvidenceCollectorAgent",
+      "action": "Collect execution evidence",
+      "collects": [
+        "Screenshots (6 total, one per step)",
+        "Execution logs with timestamps",
+        "Video of entire session",
+        "Browser console logs",
+        "Network request logs"
+      ]
+    },
+    {
+      "agent": "DiffValidationAgent",
+      "action": "Compare with previous runs",
+      "analyzes": [
+        "Page structure changes",
+        "Element selector changes",
+        "Flow order differences",
+        "Self-healing events"
+      ],
+      "classifies": [
+        "Breaking changes (test fails)",
+        "Non-breaking changes (self-healing worked)",
+        "Cosmetic changes (visual only)"
+      ]
+    },
+    {
+      "agent": "ReportGeneratorAgent",
+      "action": "Generate comprehensive report",
+      "includes": [
+        "Human-readable summary",
+        "Step-by-step execution status",
+        "Failure root cause analysis",
+        "Confidence score",
+        "Suggested fixes",
+        "Change classification",
+        "Evidence summary"
+      ],
+      "personality": "Senior QA Engineer - calm, precise, actionable"
+    }
+  ],
+  "sampleResponse": {
+    "success": true,
+    "execution": {
+      "testId": "test-1735608923-abc123",
+      "status": "PASS",
+      "steps": [
+        {
+          "step": 1,
+          "status": "PASS",
+          "action": "navigate",
+          "timestamp": "2025-12-31T01:35:23.000Z",
+          "screenshot": "data:image/png;base64,iVBOR...",
+          "fallbackUsed": false
+        },
+        {
+          "step": 2,
+          "status": "PASS",
+          "action": "click",
+          "timestamp": "2025-12-31T01:35:25.000Z",
+          "screenshot": "data:image/png;base64,iVBOR...",
+          "fallbackUsed": false
+        },
+        {
+          "step": 3,
+          "status": "PASS",
+          "action": "type",
+          "timestamp": "2025-12-31T01:35:27.000Z",
+          "screenshot": "data:image/png;base64,iVBOR...",
+          "fallbackUsed": false
+        }
+      ],
+      "evidence": {
+        "screenshots": ["...", "...", "..."],
+        "video": "./test-results/videos/session-123.webm",
+        "logs": [
+          "[2025-12-31T01:35:23.000Z] Executing step 1: navigate",
+          "[2025-12-31T01:35:23.500Z] Step 1 completed successfully"
+        ]
+      },
+      "diff": [
+        {
+          "type": "non-breaking",
+          "description": "Self-healing selector used (element text changed from 'Sign In' to 'Login')",
+          "element": "login button"
+        }
+      ],
+      "summary": "Test completed successfully. The login flow functioned as expected. A minor UI change was detected in step 2 where the button text changed from 'Sign In' to 'Login', but the self-healing mechanism successfully adapted. This is a non-breaking change - the test works correctly without modification, though updating the test plan to reflect the new label is recommended.",
+      "confidence": 0.92,
+      "suggestedFixes": [
+        "Update test plan step 2 to use 'Login' instead of 'Sign In' for clarity"
+      ],
+      "intent": {
+        "action": "login",
+        "target": "valid credentials",
+        "url": "https://example.com",
+        "constraints": [],
+        "expectedOutcome": "dashboard loads",
+        "confidence": 0.9
+      },
+      "report": {
+        "summary": "Test completed successfully with minor UI adaptation...",
+        "status": "PASS",
+        "confidence": 0.92,
+        "executionDetails": {
+          "totalSteps": 6,
+          "passedSteps": 6,
+          "failedSteps": 0,
+          "skippedSteps": 0
+        },
+        "changes": {
+          "breaking": 0,
+          "nonBreaking": 1,
+          "cosmetic": 0,
+          "summary": "Detected 1 non-breaking change. Test adapted successfully using self-healing."
+        }
+      },
+      "agentFlow": {
+        "intentParser": {
+          "completed": true,
+          "timestamp": "2025-12-31T01:35:20.000Z"
+        },
+        "testPlanner": {
+          "completed": true,
+          "timestamp": "2025-12-31T01:35:21.500Z"
+        },
+        "execution": {
+          "completed": true,
+          "timestamp": "2025-12-31T01:35:30.000Z"
+        },
+        "evidenceCollector": {
+          "completed": true,
+          "timestamp": "2025-12-31T01:35:30.100Z"
+        },
+        "diffValidation": {
+          "completed": true,
+          "timestamp": "2025-12-31T01:35:30.300Z"
+        },
+        "reportGenerator": {
+          "completed": true,
+          "timestamp": "2025-12-31T01:35:31.000Z"
+        }
+      }
+    },
+    "agentStatus": {
+      "intentParser": true,
+      "testPlanner": true,
+      "reportGenerator": true
+    },
+    "message": "✅ Test completed successfully"
+  }
+}
