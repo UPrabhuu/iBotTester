@@ -90,7 +90,7 @@ export interface ProjectConfiguration {
   };
 }
 
-export type TabType = 'home' | 'dashboard' | 'test-list' | 'test-execution' | 'editor' | 'config' | 'live-execution' | 'settings' | 'docs' | 'login';
+export type TabType = 'home' | 'dashboard' | 'test-list' | 'test-execution' | 'editor' | 'config' | 'live-execution' | 'settings' | 'docs' | 'login' | 'register';
 
 // Sidebar navigation state
 export interface SidebarNavigation {
