@@ -83,6 +83,11 @@ export const changePassword = async (req: Request, res: Response) => {
       return res.status(404).json(errorResponse('User not found'));
     }
 
+    // Check if user has a password (OAuth users may not)
+    if (!user.password) {
+      return res.status(400).json(errorResponse('Cannot change password for OAuth accounts'));
+    }
+
     // Verify current password
     const isValid = await comparePassword(currentPassword, user.password);
 

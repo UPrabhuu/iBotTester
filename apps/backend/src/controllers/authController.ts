@@ -1,4 +1,5 @@
 // Authentication controller
+/// <reference path="../types/express.d.ts" />
 import { Request, Response, NextFunction } from 'express';
 import { successResponse, errorResponse } from '../utils/response';
 import { generateToken, hashPassword, comparePassword, sanitizeUser } from '../utils/auth';
