@@ -126,9 +126,12 @@ export class OrchestratorAgent {
     } catch (error: any) {
       console.error('❌ Test flow error:', error);
       
+      // Generate unique error ID using timestamp and random string
+      const errorId = `error-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      
       // Return error result
       const errorOutput: OrchestratedTestOutput = {
-        testId: `error-${Date.now()}`,
+        testId: errorId,
         status: 'FAIL',
         steps: [],
         evidence: { screenshots: [], logs: [error.message] },

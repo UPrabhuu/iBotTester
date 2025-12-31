@@ -49,13 +49,14 @@ export class ReportGeneratorAgent {
     const failures = this.extractFailures(testOutput.steps);
     
     // Generate AI-powered analysis if available
+    // AI analysis is valuable for all tests (failures, self-healing, performance)
     let summary = testOutput.summary;
     let suggestedFixes: string[] = [];
     let confidence = 0.8;
 
-    if (this.openai && failures && failures.length > 0) {
+    if (this.openai) {
       try {
-        const aiAnalysis = await this.generateAIAnalysis(testOutput, failures);
+        const aiAnalysis = await this.generateAIAnalysis(testOutput, failures, differences);
         summary = aiAnalysis.summary;
         suggestedFixes = aiAnalysis.suggestedFixes;
         confidence = aiAnalysis.confidence;
@@ -153,20 +154,31 @@ export class ReportGeneratorAgent {
    */
   private async generateAIAnalysis(
     testOutput: TestOutput,
-    failures: TestReport['failures']
+    failures: TestReport['failures'],
+    differences?: FlowDifference[]
   ): Promise<{ summary: string; suggestedFixes: string[]; confidence: number }> {
     if (!this.openai) {
       throw new Error('OpenAI not configured');
     }
+
+    const hasFailures = failures && failures.length > 0;
+    const hasDifferences = differences && differences.length > 0;
+    const selfHealingUsed = testOutput.steps.some(s => s.fallbackUsed);
 
     const completion = await this.openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content: `You are a senior QA engineer analyzing test failures. Be calm, precise, and helpful. 
-Explain failures in clear language and provide actionable suggestions.
+          content: `You are a senior QA engineer analyzing test executions. Be calm, precise, and helpful. 
+Explain results in clear language and provide actionable suggestions.
 Never hallucinate - if uncertain, state it clearly.
+
+Analyze ALL test results, not just failures:
+- Successful tests with self-healing
+- Flow differences detected
+- Performance insights
+- Potential improvements
 
 Provide your response in JSON format:
 {
@@ -180,7 +192,9 @@ Provide your response in JSON format:
           content: `Analyze this test execution:
 Test ID: ${testOutput.testId}
 Status: ${testOutput.status}
-Failures: ${JSON.stringify(failures, null, 2)}
+${hasFailures ? `Failures: ${JSON.stringify(failures, null, 2)}` : 'No failures'}
+${hasDifferences ? `Differences: ${JSON.stringify(differences, null, 2)}` : 'No differences detected'}
+${selfHealingUsed ? 'Self-healing was used during execution' : 'No self-healing needed'}
 
 Provide analysis in JSON format.`,
         },

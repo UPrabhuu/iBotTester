@@ -11,6 +11,11 @@ export interface ExecutionSnapshot {
 
 export class DiffValidationAgent {
   private executionHistory: Map<string, ExecutionSnapshot[]> = new Map();
+  private readonly MAX_HISTORY_SIZE: number;
+
+  constructor(maxHistorySize: number = 10) {
+    this.MAX_HISTORY_SIZE = maxHistorySize;
+  }
 
   /**
    * Store execution snapshot for future comparison
@@ -23,8 +28,8 @@ export class DiffValidationAgent {
     const history = this.executionHistory.get(testId)!;
     history.push(snapshot);
     
-    // Keep only last 10 executions
-    if (history.length > 10) {
+    // Keep only last N executions (configurable)
+    if (history.length > this.MAX_HISTORY_SIZE) {
       history.shift();
     }
   }

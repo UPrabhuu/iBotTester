@@ -95,6 +95,8 @@ expectedFlow.forEach((agent, index) => {
 
 console.log('\n✨ Validation Summary:\n');
 
+let exitCode = 0;
+
 if (allFilesExist) {
   console.log('✅ All agent files created successfully');
   console.log('✅ Server updated with new endpoints');
@@ -104,8 +106,10 @@ if (allFilesExist) {
   console.log('  1. Install dependencies: npm install');
   console.log('  2. Start the server: npm run dev');
   console.log('  3. Test the orchestrated endpoint: POST /api/orchestrated-test');
-  process.exit(0);
 } else {
   console.log('❌ Some files are missing. Please check the implementation.');
-  process.exit(1);
+  exitCode = 1;
 }
+
+// Exit naturally by setting exit code
+process.exitCode = exitCode;

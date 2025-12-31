@@ -87,9 +87,9 @@ Return ONLY valid JSON with these fields. Be precise and deterministic.`,
   private parseIntentBasic(prompt: string): ParsedIntent {
     const lowerPrompt = prompt.toLowerCase();
     
-    // Extract URL
-    const urlMatch = prompt.match(/(?:on|at|from|visit)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
-    const url = urlMatch ? `https://${urlMatch[1]}` : undefined;
+    // Extract URL - more comprehensive pattern
+    const urlMatch = prompt.match(/(?:on|at|from|visit)\s+((?:https?:\/\/)?(?:[\w-]+\.)+[\w-]+(?::\d+)?(?:\/[^\s]*)?)/i);
+    const url = urlMatch ? (urlMatch[1].startsWith('http') ? urlMatch[1] : `https://${urlMatch[1]}`) : undefined;
 
     // Determine action
     let action = 'navigate';
