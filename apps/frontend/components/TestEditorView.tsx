@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TestStep, TestStepGroup } from '@/types/project';
+import { useAlert } from '../contexts/AlertContext';
 
 interface TestEditorViewProps {
   testSteps: TestStep[];
@@ -16,6 +17,7 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
   onAddStep,
   testCaseName = 'Test Case',
 }) => {
+  const { showError } = useAlert();
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [showTestData, setShowTestData] = useState(false);
   const [isEditingTestData, setIsEditingTestData] = useState(false);
@@ -41,7 +43,7 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
           const json = JSON.parse(e.target?.result as string);
           setTestData(json);
         } catch (error) {
-          alert('Invalid JSON file');
+          showError('Invalid JSON file');
         }
       };
       reader.readAsText(file);

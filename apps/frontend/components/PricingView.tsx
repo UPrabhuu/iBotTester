@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, Zap, Shield, Users, BarChart, Clock, Infinity } from 'lucide-react';
+import { useAlert } from '../contexts/AlertContext';
 
 interface PricingPlan {
   name: string;
@@ -12,6 +13,7 @@ interface PricingPlan {
 }
 
 const PricingView: React.FC = () => {
+  const { showInfo } = useAlert();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   const plans: PricingPlan[] = [
@@ -107,7 +109,7 @@ const PricingView: React.FC = () => {
 
   const handleSubscribe = (planName: string) => {
     console.log('Subscribe to:', planName);
-    alert(`Subscribing to ${planName} plan! (This is a demo)`);
+    showInfo(`Subscribing to ${planName} plan! (This is a demo)`);
   };
 
   return (

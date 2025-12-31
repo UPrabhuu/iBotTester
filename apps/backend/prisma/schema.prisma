@@ -11,16 +11,20 @@ datasource db {
 
 // User model
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  avatar    String?
-  company   String?
-  role      String?
-  phone     String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  name          String
+  firstName     String?  @map("first_name")
+  lastName      String?  @map("last_name")
+  email         String   @unique
+  password      String?
+  avatar        String?
+  company       String?
+  role          String?
+  phone         String?
+  provider      String?  // 'local', 'google', 'github'
+  providerId    String?  @map("provider_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
   settings         UserSettings?
@@ -28,6 +32,7 @@ model User {
   chatConversations ChatConversation[]
 
   @@index([email])
+  @@index([provider, providerId])
   @@map("users")
 }
 

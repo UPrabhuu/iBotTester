@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
+import { useAlert } from '../contexts/AlertContext';
 
 interface LoginViewProps {
-  onLogin?: (email: string, password: string) => void;
+  onLogin?: (email: string, password: string) => Promise<string | void>;
   onGoogleLogin?: () => void;
   onGithubLogin?: () => void;
   onForgotPassword?: (email: string) => void;
+  onNavigateToRegister?: () => void;
 }
 
 const LoginView: React.FC<LoginViewProps> = ({
@@ -13,39 +15,44 @@ const LoginView: React.FC<LoginViewProps> = ({
   onGoogleLogin,
   onGithubLogin,
   onForgotPassword,
+  onNavigateToRegister,
 }) => {
+  const { showSuccess } = useAlert();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setApiError('');
     
-    // Simulate API call
-    setTimeout(() => {
-      onLogin?.(email, password);
+    try {
+      const error = await onLogin?.(email, password);
+      if (error) {
+        setApiError(error);
+      }
+    } catch (error) {
+      setApiError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleGoogleLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      onGoogleLogin?.();
-      setIsLoading(false);
-    }, 1000);
+    // Redirect to backend OAuth endpoint
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    window.location.href = `${backendUrl}/api/auth/google`;
   };
 
   const handleGithubLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      onGithubLogin?.();
-      setIsLoading(false);
-    }, 1000);
+    // Redirect to backend OAuth endpoint
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    window.location.href = `${backendUrl}/api/auth/github`;
   };
 
   const handleForgotPasswordSubmit = (e: React.FormEvent) => {
@@ -53,7 +60,7 @@ const LoginView: React.FC<LoginViewProps> = ({
     onForgotPassword?.(forgotEmail);
     setForgotEmail('');
     setShowForgotPassword(false);
-    alert('Password reset link sent to your email!');
+    showSuccess('Password reset link sent to your email!');
   };
 
   if (showForgotPassword) {
@@ -178,6 +185,16 @@ const LoginView: React.FC<LoginViewProps> = ({
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* API Error Message */}
+            {apiError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
+                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm">{apiError}</span>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Email Address
@@ -248,9 +265,12 @@ const LoginView: React.FC<LoginViewProps> = ({
           {/* Sign Up Link */}
           <p className="mt-6 text-center text-sm text-slate-600">
             Don't have an account?{' '}
-            <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold">
+            <button
+              onClick={onNavigateToRegister}
+              className="text-blue-600 hover:text-blue-700 font-semibold"
+            >
               Sign up for free
-            </a>
+            </button>
           </p>
         </div>
 

@@ -7,6 +7,13 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegisterCredentials {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -26,32 +33,64 @@ async function fetchApi<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
+    // Get auth token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
     });
+
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // Handle non-JSON responses (like HTML error pages)
+      const text = await response.text();
+      console.error('Non-JSON response:', text);
+      
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `Server error: ${response.status} ${response.statusText}. Please ensure the backend server is running.`,
+        };
+      }
+      
+      return {
+        success: false,
+        error: 'Server returned an unexpected response format.',
+      };
+    }
 
     const data = await response.json();
 
     if (!response.ok) {
       return {
         success: false,
-        error: data.message || 'An error occurred',
+        error: data.message || data.error || `Error: ${response.status} ${response.statusText}`,
       };
     }
 
     return {
       success: true,
-      data,
+      data: data.data || data,
     };
   } catch (error) {
     console.error('API Error:', error);
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Unable to connect to server. Please ensure the backend is running on ' + API_BASE_URL,
+      };
+    }
+    
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Network error',
+      error: error instanceof Error ? error.message : 'Network error occurred',
     };
   }
 }
@@ -65,10 +104,10 @@ export const authApi = {
     });
   },
 
-  async register(data: { name: string; email: string; password: string }): Promise<ApiResponse<{ user: User; token: string }>> {
+  async register(credentials: RegisterCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
     return fetchApi('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(credentials),
     });
   },
 

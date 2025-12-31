@@ -1,5 +1,5 @@
 # Backend Dockerfile
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Install Playwright dependencies
 # Note: Using system chromium for lighter image. For production,

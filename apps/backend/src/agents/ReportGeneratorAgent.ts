@@ -46,7 +46,7 @@ export class ReportGeneratorAgent {
     differences?: FlowDifference[]
   ): Promise<TestReport> {
     const executionDetails = this.analyzeExecutionDetails(testOutput.steps);
-    const failures = this.extractFailures(testOutput.steps);
+    const failures = this.extractFailures(testOutput.steps) || [];
     
     // Generate AI-powered analysis if available
     // AI analysis is valuable for all tests (failures, self-healing, performance)

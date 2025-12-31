@@ -1,8 +1,10 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import session from 'express-session';
 import { chromium } from 'playwright';
 import OpenAI from 'openai';
+import passport from './src/config/passport';
 
 // Import routes
 import authRoutes from './src/routes/auth';
@@ -40,8 +42,28 @@ const aiAgentService = new AIAgentService(process.env.OPENAI_API_KEY);
 const orchestratorAgent = new OrchestratorAgent(process.env.OPENAI_API_KEY);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
+
+// Session configuration for OAuth
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'ibottester-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  })
+);
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Root route
 app.get('/', (req: Request, res: Response) => {

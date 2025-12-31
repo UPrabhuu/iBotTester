@@ -31,7 +31,7 @@ export const comparePassword = async (password: string, hash: string): Promise<b
 };
 
 // Remove password from user object
-export const sanitizeUser = <T extends { password?: string }>(user: T): Omit<T, 'password'> => {
+export const sanitizeUser = <T extends { password?: string | null }>(user: T): Omit<T, 'password'> => {
   const { password, ...sanitized } = user;
   return sanitized;
 };

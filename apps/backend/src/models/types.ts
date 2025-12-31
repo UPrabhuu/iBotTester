@@ -5,11 +5,13 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  password?: string; // Only for authentication, not returned in API
+  password?: string | null; // Only for authentication, not returned in API
   phone?: string;
   company?: string;
   role?: string;
   avatar?: string;
+  provider?: string | null; // 'local', 'google', 'github'
+  providerId?: string | null; // OAuth provider user ID
   createdAt: Date;
   updatedAt: Date;
 }

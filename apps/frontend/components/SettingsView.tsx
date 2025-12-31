@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   CreditCard, 
@@ -13,15 +13,18 @@ import {
   Activity
 } from 'lucide-react';
 import ConnectionStatus from './ConnectionStatus';
+import { settingsApi } from '../services/api';
+import { useAlert } from '../contexts/AlertContext';
 
 interface UserProfile {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  phone: string;
-  company: string;
-  role: string;
+  phone?: string;
+  company?: string;
+  role?: string;
   avatar?: string;
 }
 
@@ -50,19 +53,24 @@ interface SettingsViewProps {
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
+  const { showSuccess, showError } = useAlert();
   const [activeSection, setActiveSection] = useState<'profile' | 'payment' | 'security' | 'integrations' | 'pricing' | 'connection'>('profile');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   
   // User profile state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile>({
-    id: 'user-1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    company: 'Tech Corp',
-    role: 'QA Engineer',
+    id: '',
+    name: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    role: '',
+    avatar: '',
   });
   const [editedProfile, setEditedProfile] = useState<UserProfile>(userProfile);
 
@@ -113,17 +121,94 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
   ]);
   const [editingIntegration, setEditingIntegration] = useState<string | null>(null);
 
+  // Fetch user profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoadingProfile(true);
+        setProfileError(null);
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setProfileError('Not authenticated. Please log in.');
+          setIsLoadingProfile(false);
+          return;
+        }
+
+        const response = await settingsApi.getProfile();
+        
+        if (response.success && response.data) {
+          const userData = response.data as any;
+          const profile: UserProfile = {
+            id: userData.id || '',
+            name: userData.name || '',
+            firstName: userData.firstName || '',
+            lastName: userData.lastName || '',
+            email: userData.email || '',
+            phone: userData.phone || '',
+            company: userData.company || '',
+            role: userData.role || '',
+            avatar: userData.avatar || '',
+          };
+          setUserProfile(profile);
+          setEditedProfile(profile);
+        } else {
+          setProfileError(response.error || 'Failed to load profile');
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setProfileError('Failed to load profile data');
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   // Profile handlers
   const handleEditProfile = () => {
     setEditedProfile(userProfile);
     setIsEditingProfile(true);
   };
 
-  const handleSaveProfile = () => {
-    setUserProfile(editedProfile);
-    setIsEditingProfile(false);
-    onSave?.({ type: 'profile', data: editedProfile });
-    showNotification('Profile updated successfully!');
+  const handleSaveProfile = async () => {
+    try {
+      const updateData = {
+        name: editedProfile.name || '',
+        phone: editedProfile.phone || '',
+        company: editedProfile.company || '',
+        role: editedProfile.role || '',
+        avatar: editedProfile.avatar || '',
+      };
+
+      const response = await settingsApi.updateProfile(updateData);
+      
+      if (response.success && response.data) {
+        const userData = response.data as any;
+        const profile: UserProfile = {
+          id: userData.id || '',
+          name: userData.name || '',
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          company: userData.company || '',
+          role: userData.role || '',
+          avatar: userData.avatar || '',
+        };
+        setUserProfile(profile);
+        setEditedProfile(profile);
+        setIsEditingProfile(false);
+        onSave?.({ type: 'profile', data: profile });
+        showNotification('Profile updated successfully!');
+      } else {
+        showNotification(response.error || 'Failed to update profile', 'error');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showNotification('Failed to update profile', 'error');
+    }
   };
 
   const handleCancelProfileEdit = () => {
@@ -150,7 +235,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
   };
 
   // Password handlers
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
       showNotification('Please fill in all password fields', 'error');
       return;
@@ -164,9 +249,23 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
       return;
     }
 
-    onSave?.({ type: 'password', data: passwordData });
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    showNotification('Password reset successfully!');
+    try {
+      const response = await settingsApi.updatePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
+      if (response.success) {
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        onSave?.({ type: 'password', data: passwordData });
+        showNotification('Password updated successfully!');
+      } else {
+        showNotification(response.error || 'Failed to update password', 'error');
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      showNotification('Failed to update password', 'error');
+    }
   };
 
   // Integration handlers
@@ -235,11 +334,14 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
     );
   };
 
-  // Notification helper
+  // Notification helper - now using custom alert
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
-    // In a real app, this would trigger a toast notification
     console.log(`${type.toUpperCase()}: ${message}`);
-    alert(message);
+    if (type === 'success') {
+      showSuccess(message);
+    } else {
+      showError(message);
+    }
   };
 
   return (
@@ -332,7 +434,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                   <h2 className="text-2xl font-bold text-slate-800">User Profile</h2>
                   <p className="text-slate-600 mt-1">Manage your personal information</p>
                 </div>
-                {!isEditingProfile && (
+                {!isEditingProfile && !isLoadingProfile && (
                   <button
                     onClick={handleEditProfile}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -343,115 +445,126 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 )}
               </div>
 
-              <div className="space-y-6">
-                {/* Avatar */}
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                    {userProfile.firstName[0]}{userProfile.lastName[0]}
+              {/* Loading State */}
+              {isLoadingProfile && (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="mt-4 text-slate-600">Loading profile...</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {profileError && !isLoadingProfile && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-800">{profileError}</p>
+                </div>
+              )}
+
+              {/* Profile Content */}
+              {!isLoadingProfile && !profileError && (
+                <div className="space-y-6">
+                  {/* Avatar */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                      {userProfile.firstName?.[0] || userProfile.name?.[0] || 'U'}{userProfile.lastName?.[0] || userProfile.name?.[1] || ''}
+                    </div>
+                    {isEditingProfile && (
+                      <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        Change Avatar
+                      </button>
+                    )}
                   </div>
+
+                  {/* Profile Fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={isEditingProfile ? (editedProfile.name || '') : (userProfile.name || '')}
+                        onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
+                        disabled={!isEditingProfile}
+                        placeholder="Enter your full name"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={userProfile.email || ''}
+                        disabled={true}
+                        placeholder="email@example.com"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 text-slate-600 cursor-not-allowed"
+                        title="Email cannot be changed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={isEditingProfile ? (editedProfile.phone || '') : (userProfile.phone || '')}
+                        onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })}
+                        disabled={!isEditingProfile}
+                        placeholder="Enter phone number"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Company
+                      </label>
+                      <input
+                        type="text"
+                        value={isEditingProfile ? (editedProfile.company || '') : (userProfile.company || '')}
+                        onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
+                        disabled={!isEditingProfile}
+                        placeholder="Enter company name"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Role
+                      </label>
+                      <input
+                        type="text"
+                        value={isEditingProfile ? (editedProfile.role || '') : (userProfile.role || '')}
+                        onChange={(e) => setEditedProfile({ ...editedProfile, role: e.target.value })}
+                        disabled={!isEditingProfile}
+                        placeholder="Enter your role"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
                   {isEditingProfile && (
-                    <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                      Change Avatar
-                    </button>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={handleSaveProfile}
+                        className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Check size={16} />
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={handleCancelProfileEdit}
+                        className="flex items-center gap-2 px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                      >
+                        <X size={16} />
+                        Cancel
+                      </button>
+                    </div>
                   )}
                 </div>
-
-                {/* Profile Fields */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      value={isEditingProfile ? editedProfile.firstName : userProfile.firstName}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, firstName: e.target.value })}
-                      disabled={!isEditingProfile}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      value={isEditingProfile ? editedProfile.lastName : userProfile.lastName}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, lastName: e.target.value })}
-                      disabled={!isEditingProfile}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={isEditingProfile ? editedProfile.email : userProfile.email}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, email: e.target.value })}
-                      disabled={!isEditingProfile}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      value={isEditingProfile ? editedProfile.phone : userProfile.phone}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })}
-                      disabled={!isEditingProfile}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Company
-                    </label>
-                    <input
-                      type="text"
-                      value={isEditingProfile ? editedProfile.company : userProfile.company}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
-                      disabled={!isEditingProfile}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Role
-                    </label>
-                    <input
-                      type="text"
-                      value={isEditingProfile ? editedProfile.role : userProfile.role}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, role: e.target.value })}
-                      disabled={!isEditingProfile}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
-                    />
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                {isEditingProfile && (
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      onClick={handleSaveProfile}
-                      className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <Check size={16} />
-                      Save Changes
-                    </button>
-                    <button
-                      onClick={handleCancelProfileEdit}
-                      className="flex items-center gap-2 px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
-                    >
-                      <X size={16} />
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           )}
 

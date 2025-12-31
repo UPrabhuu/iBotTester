@@ -12,7 +12,9 @@ import SettingsView from '@/components/SettingsView';
 import PricingView from '@/components/PricingView';
 import DocsView from '@/components/DocsView';
 import LoginView from '@/components/LoginView';
+import RegisterView from '@/components/RegisterView';
 import { sampleMessages, agentResponses } from '@/components/SampleChatData';
+import { authApi } from '@/services/api';
 import {
   Project,
   TestExecution,
@@ -39,6 +41,7 @@ export default function Home() {
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
 
   // Execution state (for future integration with live execution)
   const [isExecuting] = useState(false);
@@ -417,9 +420,41 @@ export default function Home() {
 
   // Load saved project and tab from localStorage
   useEffect(() => {
-    // Check if user is authenticated
+    // Check for OAuth callback with token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userParam = urlParams.get('user');
+    const error = urlParams.get('error');
+
+    if (error) {
+      console.error('OAuth error:', error);
+      alert('Authentication failed. Please try again.');
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (token && userParam) {
+      try {
+        // Store token and user data
+        localStorage.setItem('token', token);
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+        setIsAuthenticated(true);
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (error) {
+        console.error('Error processing OAuth callback:', error);
+      }
+      return;
+    }
+
+    // Check if user is authenticated from localStorage
+    const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    if (savedToken && savedUser) {
       setUser(JSON.parse(savedUser));
       setIsAuthenticated(true);
     }
@@ -736,17 +771,26 @@ export default function Home() {
   };
 
   // Authentication handlers
-  const handleLogin = (email: string, password: string) => {
-    // Simulate authentication
-    const mockUser = {
-      name: 'John Doe',
-      email: email,
-    };
-    setUser(mockUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    setActiveTab('home');
-    console.log('Login successful:', email);
+  const handleLogin = async (email: string, password: string): Promise<string | void> => {
+    try {
+      const response = await authApi.login({ email, password });
+      
+      if (response.success && response.data) {
+        const { user, token } = response.data;
+        setUser(user);
+        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+        setActiveTab('home');
+        console.log('Login successful:', email);
+        return; // Success, no error
+      } else {
+        return response.error || 'Login failed';
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return 'An error occurred during login';
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -773,6 +817,29 @@ export default function Home() {
     localStorage.setItem('user', JSON.stringify(mockUser));
     setActiveTab('home');
     console.log('GitHub login successful');
+  };
+
+  const handleRegister = async (email: string, password: string, firstName: string, lastName: string): Promise<string | void> => {
+    try {
+      const response = await authApi.register({ email, password, firstName, lastName });
+      
+      if (response.success && response.data) {
+        const { user, token } = response.data;
+        setUser(user);
+        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+        setShowRegister(false);
+        setActiveTab('home');
+        console.log('Registration successful:', email);
+        return; // Success, no error
+      } else {
+        return response.error || 'Registration failed';
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return 'An error occurred during registration';
+    }
   };
 
   const handleLogout = () => {
@@ -923,6 +990,17 @@ export default function Home() {
             onGoogleLogin={handleGoogleLogin}
             onGithubLogin={handleGithubLogin}
             onForgotPassword={handleForgotPassword}
+            onNavigateToRegister={() => setShowRegister(true)}
+          />
+        );
+      
+      case 'register':
+        return (
+          <RegisterView
+            onRegister={handleRegister}
+            onGoogleRegister={handleGoogleLogin}
+            onGithubRegister={handleGithubLogin}
+            onNavigateToLogin={() => setShowRegister(false)}
           />
         );
       
@@ -938,6 +1016,18 @@ export default function Home() {
     }
   };
 
+  // Show register page if requested
+  if (showRegister && !isAuthenticated) {
+    return (
+      <RegisterView
+        onRegister={handleRegister}
+        onGoogleRegister={handleGoogleLogin}
+        onGithubRegister={handleGithubLogin}
+        onNavigateToLogin={() => setShowRegister(false)}
+      />
+    );
+  }
+
   // Show login page if not authenticated (unless already on login or docs)
   if (!isAuthenticated && !['login', 'docs'].includes(activeTab)) {
     return (
@@ -946,6 +1036,7 @@ export default function Home() {
         onGoogleLogin={handleGoogleLogin}
         onGithubLogin={handleGithubLogin}
         onForgotPassword={handleForgotPassword}
+        onNavigateToRegister={() => setShowRegister(true)}
       />
     );
   }
