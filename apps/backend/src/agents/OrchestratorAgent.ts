@@ -126,8 +126,16 @@ export class OrchestratorAgent {
     } catch (error: any) {
       console.error('❌ Test flow error:', error);
       
-      // Generate unique error ID using timestamp and random string
-      const errorId = `error-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      // Generate unique error ID using crypto for better collision prevention
+      // Falls back to timestamp + random if crypto is unavailable
+      let errorId: string;
+      try {
+        // Use crypto.randomUUID if available (Node 14.17+)
+        errorId = `error-${Date.now()}-${require('crypto').randomUUID().split('-')[0]}`;
+      } catch {
+        // Fallback to Math.random with more entropy
+        errorId = `error-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      }
       
       // Return error result
       const errorOutput: OrchestratedTestOutput = {

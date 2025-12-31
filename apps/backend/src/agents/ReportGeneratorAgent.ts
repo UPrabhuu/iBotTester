@@ -177,7 +177,6 @@ Never hallucinate - if uncertain, state it clearly.
 Analyze ALL test results, not just failures:
 - Successful tests with self-healing
 - Flow differences detected
-- Performance insights
 - Potential improvements
 
 Provide your response in JSON format:

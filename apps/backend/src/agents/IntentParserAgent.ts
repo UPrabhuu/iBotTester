@@ -13,6 +13,9 @@ export interface ParsedIntent {
 
 export class IntentParserAgent {
   private openai: OpenAI | null = null;
+  
+  // Comprehensive URL pattern to match domains with subdomains, ports, and paths
+  private static readonly URL_PATTERN = /(?:on|at|from|visit)\s+((?:https?:\/\/)?(?:[\w-]+\.)+[\w-]+(?::\d+)?(?:\/[^\s]*)?)/i;
 
   constructor(apiKey?: string) {
     if (apiKey) {
@@ -87,8 +90,8 @@ Return ONLY valid JSON with these fields. Be precise and deterministic.`,
   private parseIntentBasic(prompt: string): ParsedIntent {
     const lowerPrompt = prompt.toLowerCase();
     
-    // Extract URL - more comprehensive pattern
-    const urlMatch = prompt.match(/(?:on|at|from|visit)\s+((?:https?:\/\/)?(?:[\w-]+\.)+[\w-]+(?::\d+)?(?:\/[^\s]*)?)/i);
+    // Extract URL using comprehensive pattern
+    const urlMatch = prompt.match(IntentParserAgent.URL_PATTERN);
     const url = urlMatch ? (urlMatch[1].startsWith('http') ? urlMatch[1] : `https://${urlMatch[1]}`) : undefined;
 
     // Determine action
