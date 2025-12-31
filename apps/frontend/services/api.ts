@@ -276,10 +276,15 @@ export const dashboardApi = {
 
 // Chat API
 export const chatApi = {
-  async sendMessage(message: string, conversationId?: string): Promise<ApiResponse<any>> {
-    return fetchApi('/api/chat', {
+  async sendMessage(
+    content: string, 
+    conversationId?: string, 
+    projectId?: string, 
+    branchId?: string
+  ): Promise<ApiResponse<any>> {
+    return fetchApi('/api/chat/message', {
       method: 'POST',
-      body: JSON.stringify({ message, conversationId }),
+      body: JSON.stringify({ content, conversationId, projectId, branchId }),
     });
   },
 
@@ -287,8 +292,21 @@ export const chatApi = {
     return fetchApi(`/api/chat/${id}`);
   },
 
-  async getConversations(): Promise<ApiResponse<any[]>> {
-    return fetchApi('/api/chat/conversations');
+  async getHistory(): Promise<ApiResponse<any[]>> {
+    return fetchApi('/api/chat/history');
+  },
+
+  async createChat(title: string): Promise<ApiResponse<any>> {
+    return fetchApi('/api/chat/new', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    });
+  },
+
+  async deleteChat(id: string): Promise<ApiResponse<void>> {
+    return fetchApi(`/api/chat/${id}`, {
+      method: 'DELETE',
+    });
   },
 };
 

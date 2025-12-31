@@ -132,6 +132,8 @@ model ChatConversation {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
   title     String
+  projectId String?  @map("project_id")
+  branchId  String?  @map("branch_id")
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
@@ -148,6 +150,7 @@ model ChatMessage {
   conversationId String   @map("conversation_id")
   role           String
   content        String   @db.Text
+  metadata       String?  @db.Text
   timestamp      DateTime @default(now())
 
   // Relations

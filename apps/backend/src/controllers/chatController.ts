@@ -87,32 +87,158 @@ export const createChat = async (req: Request, res: Response) => {
 // POST /api/chat/message
 export const sendMessage = async (req: Request, res: Response) => {
   try {
-    const { conversationId, content, role = 'user' } = req.body;
+    const { conversationId, content, role = 'user', projectId, branchId } = req.body;
     const userId = req.user?.id;
 
-    if (!conversationId || !content) {
-      return res.status(400).json(errorResponse('conversationId and content are required'));
+    if (!content) {
+      return res.status(400).json(errorResponse('content is required'));
     }
 
-    // Verify user owns conversation
-    const conversation = await prisma.chatConversation.findFirst({
-      where: { id: conversationId, userId },
-    });
+    let currentConversationId = conversationId;
 
-    if (!conversation) {
-      return res.status(404).json(errorResponse('Conversation not found'));
+    // If no conversationId, create a new conversation
+    if (!currentConversationId) {
+      const newConversation = await prisma.chatConversation.create({
+        data: {
+          userId: userId!,
+          title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
+          projectId,
+          branchId,
+        },
+      });
+      currentConversationId = newConversation.id;
+    } else {
+      // Verify user owns conversation
+      const conversation = await prisma.chatConversation.findFirst({
+        where: { id: currentConversationId, userId },
+      });
+
+      if (!conversation) {
+        return res.status(404).json(errorResponse('Conversation not found'));
+      }
     }
 
-    // Create message
-    const message = await prisma.chatMessage.create({
+    // Create user message
+    const userMessage = await prisma.chatMessage.create({
       data: {
-        conversationId,
-        role,
+        conversationId: currentConversationId,
+        role: 'user',
         content,
       },
     });
 
-    res.status(201).json(createdResponse(message));
+    // Process with Planner LLM if user message
+    if (role === 'user') {
+      // Import orchestrator dynamically to avoid circular dependencies
+      const { OrchestratorAgent } = await import('../agents/OrchestratorAgent');
+      const { IntentParserAgent } = await import('../agents/IntentParserAgent');
+      
+      const intentParser = new IntentParserAgent(process.env.OPENAI_API_KEY);
+      
+      try {
+        // Parse intent
+        const intent = await intentParser.parseIntent(content);
+        
+        // Create thinking/planning message
+        const thinkingMessage = await prisma.chatMessage.create({
+          data: {
+            conversationId: currentConversationId,
+            role: 'assistant',
+            content: `🤔 Analyzing your request...`,
+            metadata: JSON.stringify({ type: 'thinking', intent }),
+          },
+        });
+
+        // Generate response based on intent
+        let responseContent = '';
+        let metadata: any = { intent };
+
+        if (intent.action === 'purchase' || intent.action === 'test' || intent.action === 'create') {
+          // Generate test plan
+          responseContent = `I understand you want to ${intent.action} "${intent.target}"`;
+          if (intent.url) {
+            responseContent += ` on ${intent.url}`;
+          }
+          if (intent.constraints && intent.constraints.length > 0) {
+            responseContent += `\n\nConstraints: ${intent.constraints.join(', ')}`;
+          }
+          
+          responseContent += `\n\n📋 I'll create a test plan for this. Here's what I'll do:\n\n`;
+          responseContent += `1. Navigate to ${intent.url || 'the target website'}\n`;
+          responseContent += `2. Search for "${intent.target}"\n`;
+          responseContent += `3. Apply filters and constraints\n`;
+          responseContent += `4. Complete the ${intent.action} action\n`;
+          responseContent += `5. Verify the outcome\n\n`;
+          responseContent += `Would you like me to execute this test plan?`;
+          
+          metadata.testPlan = {
+            action: intent.action,
+            target: intent.target,
+            url: intent.url,
+            constraints: intent.constraints,
+          };
+        } else {
+          // Generic response
+          responseContent = `I can help you with ${intent.action} "${intent.target}". `;
+          responseContent += `\n\nWhat would you like me to do specifically?`;
+        }
+
+        // Create assistant response message
+        const assistantMessage = await prisma.chatMessage.create({
+          data: {
+            conversationId: currentConversationId,
+            role: 'assistant',
+            content: responseContent,
+            metadata: JSON.stringify(metadata),
+          },
+        });
+
+        // Return conversation with all messages
+        const fullConversation = await prisma.chatConversation.findFirst({
+          where: { id: currentConversationId },
+          include: {
+            messages: {
+              orderBy: { timestamp: 'asc' },
+            },
+          },
+        });
+
+        res.status(201).json(createdResponse({
+          conversation: fullConversation,
+          userMessage,
+          assistantMessage,
+        }));
+      } catch (llmError) {
+        console.error('LLM processing error:', llmError);
+        
+        // Create fallback response
+        const fallbackMessage = await prisma.chatMessage.create({
+          data: {
+            conversationId: currentConversationId,
+            role: 'assistant',
+            content: 'I received your message. However, I encountered an issue processing it with AI. Please try again or rephrase your request.',
+          },
+        });
+
+        const fullConversation = await prisma.chatConversation.findFirst({
+          where: { id: currentConversationId },
+          include: {
+            messages: {
+              orderBy: { timestamp: 'asc' },
+            },
+          },
+        });
+
+        res.status(201).json(createdResponse({
+          conversation: fullConversation,
+          userMessage,
+          assistantMessage: fallbackMessage,
+        }));
+      }
+    } else {
+      // Just return the message if it's not a user message
+      res.status(201).json(createdResponse(userMessage));
+    }
   } catch (error) {
     console.error('Send message error:', error);
     res.status(500).json(errorResponse('Internal server error'));

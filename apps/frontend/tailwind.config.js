@@ -56,7 +56,43 @@ module.exports = {
         'medium': '0 4px 16px rgba(14, 165, 233, 0.12)',
         'strong': '0 8px 24px rgba(14, 165, 233, 0.16)',
       },
+      backdropBlur: {
+        xs: '2px',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.scrollbar-thin': {
+          'scrollbar-width': 'thin',
+        },
+        '.scrollbar-thumb-gray-300': {
+          '&::-webkit-scrollbar-thumb': {
+            'background-color': '#d1d5db',
+            'border-radius': '9999px',
+          },
+        },
+        '.scrollbar-thumb-gray-400': {
+          '&::-webkit-scrollbar-thumb': {
+            'background-color': '#9ca3af',
+            'border-radius': '9999px',
+          },
+        },
+        '.scrollbar-track-transparent': {
+          '&::-webkit-scrollbar-track': {
+            'background-color': 'transparent',
+          },
+        },
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+      };
+      addUtilities(newUtilities, ['hover']);
+    },
+  ],
 }
