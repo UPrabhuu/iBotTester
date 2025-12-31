@@ -3,7 +3,7 @@ import React from 'react';
 export type TextSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl';
 export type TextWeight = 'normal' | 'medium' | 'semibold' | 'bold';
 
-export interface TextProps extends React.HTMLAttributes<HTMLParagraphElement> {
+export interface TextProps {
   /**
    * HTML element to render as
    */
@@ -25,9 +25,17 @@ export interface TextProps extends React.HTMLAttributes<HTMLParagraphElement> {
    */
   truncate?: boolean;
   /**
+   * CSS class name
+   */
+  className?: string;
+  /**
    * Children elements (text content)
    */
   children: React.ReactNode;
+  /**
+   * Additional HTML attributes
+   */
+  [key: string]: any;
 }
 
 const Text: React.FC<TextProps> = ({

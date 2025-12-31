@@ -2,7 +2,7 @@ import React from 'react';
 
 export type CardVariant = 'default' | 'bordered' | 'elevated';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardProps {
   /**
    * Visual variant of the card
    */
@@ -16,9 +16,17 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
    */
   noPadding?: boolean;
   /**
+   * CSS class name
+   */
+  className?: string;
+  /**
    * Children elements (card content)
    */
   children: React.ReactNode;
+  /**
+   * Additional HTML attributes
+   */
+  [key: string]: any;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -52,8 +60,10 @@ const Card: React.FC<CardProps> = ({
   );
 };
 
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardHeaderProps {
+  className?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }
 
 export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '', ...props }) => {
@@ -64,8 +74,10 @@ export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = ''
   );
 };
 
-export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+export interface CardTitleProps {
+  className?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }
 
 export const CardTitle: React.FC<CardTitleProps> = ({ children, className = '', ...props }) => {
@@ -76,8 +88,10 @@ export const CardTitle: React.FC<CardTitleProps> = ({ children, className = '', 
   );
 };
 
-export interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
+export interface CardDescriptionProps {
+  className?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }
 
 export const CardDescription: React.FC<CardDescriptionProps> = ({ children, className = '', ...props }) => {
@@ -88,8 +102,10 @@ export const CardDescription: React.FC<CardDescriptionProps> = ({ children, clas
   );
 };
 
-export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardContentProps {
+  className?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }
 
 export const CardContent: React.FC<CardContentProps> = ({ children, className = '', ...props }) => {
@@ -100,8 +116,10 @@ export const CardContent: React.FC<CardContentProps> = ({ children, className = 
   );
 };
 
-export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardFooterProps {
+  className?: string;
   children: React.ReactNode;
+  [key: string]: any;
 }
 
 export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '', ...props }) => {

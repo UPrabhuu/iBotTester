@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 export type SpinnerSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type SpinnerVariant = 'primary' | 'secondary' | 'white';
 
-export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SpinnerProps {
   /**
    * Size of the spinner
    */
@@ -21,6 +21,14 @@ export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
    * Whether to center the spinner in its container
    */
   centered?: boolean;
+  /**
+   * CSS class name
+   */
+  className?: string;
+  /**
+   * Additional HTML attributes
+   */
+  [key: string]: any;
 }
 
 const Spinner: React.FC<SpinnerProps> = ({

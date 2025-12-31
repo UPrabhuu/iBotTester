@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 
 export type TextareaSize = 'sm' | 'md' | 'lg';
 
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
   /**
    * Size of the textarea field
    */

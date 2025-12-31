@@ -3,7 +3,7 @@ import React from 'react';
 export type DividerOrientation = 'horizontal' | 'vertical';
 export type DividerVariant = 'solid' | 'dashed' | 'dotted';
 
-export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface DividerProps {
   /**
    * Orientation of the divider
    */
@@ -20,6 +20,14 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
    * Color of the divider
    */
   color?: string;
+  /**
+   * CSS class name
+   */
+  className?: string;
+  /**
+   * Additional HTML attributes
+   */
+  [key: string]: any;
 }
 
 const Divider: React.FC<DividerProps> = ({

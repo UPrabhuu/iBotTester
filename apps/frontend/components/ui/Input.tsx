@@ -3,7 +3,7 @@ import React, { forwardRef } from 'react';
 export type InputSize = 'sm' | 'md' | 'lg';
 export type InputVariant = 'default' | 'filled';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   /**
    * Size of the input field
    */

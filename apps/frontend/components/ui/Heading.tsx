@@ -3,7 +3,7 @@ import React from 'react';
 export type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 export type HeadingWeight = 'normal' | 'medium' | 'semibold' | 'bold';
 
-export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
+export interface HeadingProps {
   /**
    * Heading level (h1-h6)
    */
@@ -21,9 +21,17 @@ export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
    */
   gradient?: boolean;
   /**
+   * CSS class name
+   */
+  className?: string;
+  /**
    * Children elements (heading text)
    */
   children: React.ReactNode;
+  /**
+   * Additional HTML attributes
+   */
+  [key: string]: any;
 }
 
 const Heading: React.FC<HeadingProps> = ({
