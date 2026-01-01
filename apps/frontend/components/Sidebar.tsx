@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Project, TabType } from '@/types/project';
 import { Button, Badge, Text } from './ui';
+import { chatApi } from '../services/api';
 
 interface ChatHistory {
   id: string;
   title: string;
   timestamp: Date;
+  createdAt?: string;
+  _count?: {
+    messages: number;
+  };
 }
 
 interface SidebarProps {
-  chatHistory: ChatHistory[];
+  chatHistory?: ChatHistory[];
   activeChat: string | null;
   onSelectChat: (id: string) => void;
   onNewChat?: () => void;
@@ -23,7 +28,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  chatHistory, 
+  chatHistory: propChatHistory, 
   activeChat, 
   onSelectChat,
   onNewChat,
@@ -36,6 +41,70 @@ const Sidebar: React.FC<SidebarProps> = ({
   user,
 }) => {
   const [isProjectExpanded, setIsProjectExpanded] = useState(true);
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>(propChatHistory || []);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+
+  // Load chat history from API
+  useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  const loadChatHistory = async () => {
+    setIsLoadingChats(true);
+    try {
+      const response = await chatApi.getHistory();
+      if (response.success && response.data) {
+        // Map API response to component format and limit to 10 recent chats
+        const chats = response.data.slice(0, 10).map((conv: any) => ({
+          id: conv.id,
+          title: conv.title,
+          timestamp: new Date(conv.createdAt),
+          createdAt: conv.createdAt,
+          _count: conv._count,
+        }));
+        setChatHistory(chats);
+      }
+    } catch (error) {
+      console.error('Failed to load chat history:', error);
+    } finally {
+      setIsLoadingChats(false);
+    }
+  };
+
+  const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this conversation?')) {
+      return;
+    }
+
+    try {
+      const response = await chatApi.deleteChat(chatId);
+      if (response.success) {
+        setChatHistory(prev => prev.filter(c => c.id !== chatId));
+        if (activeChat === chatId && onNewChat) {
+          onNewChat();
+        }
+      } else {
+        alert(response.error || 'Failed to delete conversation');
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      alert('Failed to delete conversation');
+    }
+  };
+
+  const formatDate = (dateString: Date | string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0 || diffDays === 1) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  };
   
   const navigationTabs = [
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: 'chart' },
@@ -174,26 +243,75 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Recent Chats */}
         <div className="pt-4 border-t border-neutral-200 mt-4">
-          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
-            Recent Chats
-          </h3>
+          <div className="flex items-center justify-between mb-3 px-2">
+            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+              Recent Chats
+            </h3>
+            <button
+              onClick={loadChatHistory}
+              disabled={isLoadingChats}
+              className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+              title="Refresh"
+            >
+              <svg className={`w-3.5 h-3.5 ${isLoadingChats ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
           <div className="space-y-1">
-            {chatHistory.map((chat) => (
-              <button
-                key={chat.id}
-                onClick={() => onSelectChat(chat.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg transition-smooth ${
-                  activeChat === chat.id
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'hover:bg-neutral-50 text-neutral-700'
-                }`}
-              >
-                <div className="text-sm font-medium truncate">{chat.title}</div>
-                <div className="text-xs text-neutral-500" suppressHydrationWarning>
-                  {new Date(chat.timestamp).toLocaleDateString('en-US')}
+            {isLoadingChats ? (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+              </div>
+            ) : chatHistory.length === 0 ? (
+              <div className="text-center py-4 px-3">
+                <p className="text-xs text-neutral-400">No conversations yet</p>
+              </div>
+            ) : (
+              chatHistory.map((chat) => (
+                <div
+                  key={chat.id}
+                  className={`group relative w-full text-left px-3 py-2 rounded-lg transition-smooth ${
+                    activeChat === chat.id
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'hover:bg-neutral-50 text-neutral-700'
+                  }`}
+                >
+                  <button
+                    onClick={() => {
+                      console.log('Chat clicked:', chat.id, chat.title);
+                      onSelectChat(chat.id);
+                    }}
+                    className="w-full text-left"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{chat.title}</div>
+                        <div className="text-xs text-neutral-500 flex items-center gap-1.5 mt-0.5">
+                          <span suppressHydrationWarning>{formatDate(chat.timestamp)}</span>
+                          {chat._count && (
+                            <>
+                              <span>•</span>
+                              <span>{chat._count.messages} msg</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => handleDeleteChat(chat.id, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-opacity flex-shrink-0"
+                        title="Delete"
+                      >
+                        <svg className="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </button>
                 </div>
-              </button>
-            ))}
+              ))
+            )
+          }
           </div>
         </div>
       </nav>

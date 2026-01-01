@@ -310,6 +310,36 @@ export const chatApi = {
   },
 };
 
+// Intent Parser API
+export interface ParsedIntent {
+  id: string;
+  action: string;
+  target: string;
+  url?: string;
+  constraints?: string[];
+  expectedOutcome?: string;
+  confidence: number;
+  aiUsed: boolean;
+  createdAt: string;
+}
+
+export const intentApi = {
+  async parseIntent(prompt: string, projectId?: string): Promise<ApiResponse<{ intent: ParsedIntent; message: string }>> {
+    return fetchApi('/api/intent/parse', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, projectId }),
+    });
+  },
+
+  async getHistory(projectId?: string, limit?: number): Promise<ApiResponse<{ intents: ParsedIntent[] }>> {
+    const query = new URLSearchParams();
+    if (projectId) query.append('projectId', projectId);
+    if (limit) query.append('limit', limit.toString());
+    const queryString = query.toString();
+    return fetchApi(`/api/intent/history${queryString ? `?${queryString}` : ''}`);
+  },
+};
+
 // Configuration API
 export const configApi = {
   async get(): Promise<ApiResponse<any>> {
@@ -340,6 +370,7 @@ export const api = {
   executions: executionsApi,
   dashboard: dashboardApi,
   chat: chatApi,
+  intent: intentApi,
   config: configApi,
   health: healthApi,
 };

@@ -174,3 +174,24 @@ model Configuration {
   @@unique([projectId])
   @@map("configurations")
 }
+
+// Parsed Intent model - stores results from Intent Parser Agent
+model ParsedIntent {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  projectId        String?  @map("project_id")
+  prompt           String   @db.Text
+  action           String   // e.g., "purchase", "login", "search"
+  target           String   @db.Text
+  url              String?
+  constraintsJson  Json?    @map("constraints_json") // Array of constraints
+  expectedOutcome  String?  @map("expected_outcome")
+  confidence       Float    // 0-1 confidence score
+  aiUsed           Boolean  @default(false) @map("ai_used")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("parsed_intents")
+}

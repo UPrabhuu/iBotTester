@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { chatApi } from '../services/api';
+import { chatApi, intentApi, ParsedIntent } from '../services/api';
 import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
 
 interface Branch {
@@ -51,6 +51,8 @@ const HomeView: React.FC<HomeViewProps> = ({
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
+  const [isParsingIntent, setIsParsingIntent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Update branch when project changes
@@ -68,6 +70,39 @@ const HomeView: React.FC<HomeViewProps> = ({
   const handleBranchChange = useCallback((branchId: string) => {
     setSelectedBranchId(branchId);
   }, []);
+
+  // Parse intent when user types
+  const handleParseIntent = async (prompt: string) => {
+    if (!prompt || prompt.length < 10) {
+      setParsedIntent(null);
+      return;
+    }
+
+    setIsParsingIntent(true);
+    try {
+      const response = await intentApi.parseIntent(prompt, selectedProject?.id);
+      if (response.success && response.data) {
+        setParsedIntent(response.data.intent);
+      }
+    } catch (error) {
+      console.error('Intent parsing error:', error);
+    } finally {
+      setIsParsingIntent(false);
+    }
+  };
+
+  // Debounced intent parsing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (message.length >= 10) {
+        handleParseIntent(message);
+      } else {
+        setParsedIntent(null);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [message, selectedProject?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,11 +169,53 @@ const HomeView: React.FC<HomeViewProps> = ({
     }
   };
 
-  const handleNewChat = useCallback(() => {
+  const handleResetChat = useCallback(() => {
+    console.log('Resetting chat in HomeView');
     setChatMessages([]);
     setConversationId(null);
     setShowChat(false);
+    setMessage('');
   }, []);
+
+  const handleSelectConversation = async (conversationId: string) => {
+    console.log('Loading conversation:', conversationId);
+    try {
+      const response = await chatApi.getConversation(conversationId);
+      console.log('Conversation response:', response);
+      
+      if (response.success && response.data) {
+        console.log('Setting conversation data:', {
+          id: response.data.id,
+          messagesCount: response.data.messages?.length,
+          messages: response.data.messages
+        });
+        
+        setConversationId(response.data.id);
+        setChatMessages(response.data.messages || []);
+        setShowChat(true);
+      } else {
+        console.error('Failed to load conversation:', response.error);
+        alert(response.error || 'Failed to load conversation');
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      alert('Failed to load conversation');
+    }
+  };
+
+  // Expose the handlers for parent components
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).loadConversation = handleSelectConversation;
+      (window as any).resetChat = handleResetChat;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).loadConversation;
+        delete (window as any).resetChat;
+      }
+    };
+  }, [handleSelectConversation, handleResetChat]);
 
   const examplePrompt = `I want to create a functional test to purchase Nike shoes size 9 under $150 on amazon.com...`;
 
@@ -194,6 +271,7 @@ const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Input Area - Positioned in flow for initial view */}
             <div className="mt-8 max-w-3xl mx-auto w-full">
+              
               <form onSubmit={handleSubmit} className="relative">
                 {/* Context Selection */}
                 {projects.length > 0 && selectedProject && (

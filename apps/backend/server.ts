@@ -15,6 +15,7 @@ import chatRoutes from './src/routes/chat';
 import dashboardRoutes from './src/routes/dashboard';
 import configRoutes from './src/routes/config';
 import settingsRoutes from './src/routes/settings';
+import intentRoutes from './src/routes/intent';
 
 // Import agent services
 import { AIAgentService } from './src/services/aiAgentService';
@@ -92,6 +93,7 @@ app.get('/', (req: Request, res: Response) => {
       dashboard: '/api/dashboard',
       config: '/api/config',
       settings: '/api/settings',
+      intent: '/api/intent',
       testPlan: '/api/test-plan',
       executeTest: '/api/execute-test',
       executeTestPlan: '/api/execute-test-plan',
@@ -124,6 +126,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/intent', intentRoutes);
 
 app.post('/api/test-plan', async (req: Request, res: Response) => {
   const { prompt, environment = 'staging', runType = 'single', options = {} } = req.body;

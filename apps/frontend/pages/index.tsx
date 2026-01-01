@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '@/components/Sidebar';
 import HomeView from '@/components/HomeView';
-import ChatPanel, { Message } from '@/components/ChatPanel';
 import DashboardView from '@/components/DashboardView';
 import TestExecutionTable from '@/components/TestExecutionTable';
 import TestListView from '@/components/TestListView';
@@ -13,8 +12,7 @@ import PricingView from '@/components/PricingView';
 import DocsView from '@/components/DocsView';
 import LoginView from '@/components/LoginView';
 import RegisterView from '@/components/RegisterView';
-import { sampleMessages, agentResponses } from '@/components/SampleChatData';
-import { authApi } from '@/services/api';
+import { authApi, chatApi } from '@/services/api';
 import {
   Project,
   TestExecution,
@@ -23,6 +21,13 @@ import {
   ProjectConfiguration,
   TabType,
 } from '@/types/project';
+
+interface Message {
+  id: string;
+  type: 'user' | 'agent';
+  content: string;
+  timestamp: Date;
+}
 
 interface ChatHistory {
   id: string;
@@ -555,219 +560,39 @@ export default function Home() {
 
   // Handler for new chat
   const handleNewChat = () => {
+    console.log('handleNewChat called');
     setActiveChat(null);
     setMessages([]);
     setActiveTab('home');
-  };
-
-  // Handler for chat
-  const handleSelectChat = (id: string) => {
-    setActiveChat(id);
-    setActiveTab('home'); // Switch to home tab to show chat
     
-    // Load messages based on chat selection
-    const chatTitle = chatHistory.find(c => c.id === id)?.title;
-    console.log('Loading chat:', chatTitle);
-    
-    // Load different demo chats based on ID
-    if (id === '1') {
-      // Nike Checkout Flow chat
-      setMessages(sampleMessages);
-    } else if (id === '2') {
-      // Login Flow chat
-      setMessages([
-        {
-          id: 'msg-login-1',
-          type: 'user',
-          content: 'Create a test for the login flow on our e-commerce site',
-          timestamp: new Date(Date.now() - 172800000),
-        },
-        {
-          id: 'msg-login-2',
-          type: 'agent',
-          content: 'I\'ll create a comprehensive login flow test for you. This will include testing valid credentials, invalid credentials, and error handling.',
-          timestamp: new Date(Date.now() - 172790000),
-          steps: [
-            {
-              id: 'login-step1',
-              description: 'Navigate to login page',
-              status: 'success',
-            },
-            {
-              id: 'login-step2',
-              description: 'Test valid login credentials',
-              status: 'success',
-            },
-            {
-              id: 'login-step3',
-              description: 'Test invalid credentials handling',
-              status: 'success',
-            },
-            {
-              id: 'login-step4',
-              description: 'Verify redirect after successful login',
-              status: 'done',
-            },
-          ],
-        },
-        {
-          id: 'msg-login-3',
-          type: 'user',
-          content: 'Can you add a test for the forgot password flow as well?',
-          timestamp: new Date(Date.now() - 172780000),
-        },
-        {
-          id: 'msg-login-4',
-          type: 'agent',
-          content: 'I\'ve added the forgot password flow test. It includes:\n\n1. Clicking the "Forgot Password" link\n2. Entering email address\n3. Verifying password reset email is sent\n4. Confirming success message is displayed',
-          timestamp: new Date(Date.now() - 172770000),
-          steps: [
-            {
-              id: 'forgot-step1',
-              description: 'Click forgot password link',
-              status: 'success',
-            },
-            {
-              id: 'forgot-step2',
-              description: 'Enter email and submit',
-              status: 'done',
-            },
-          ],
-        },
-      ]);
-    } else if (id === '3') {
-      // Real Estate Flow chat
-      setMessages([
-        {
-          id: 'msg-realestate-1',
-          type: 'user',
-          content: 'I need to test a real estate property search and filtering workflow',
-          timestamp: new Date(Date.now() - 259200000),
-        },
-        {
-          id: 'msg-realestate-2',
-          type: 'agent',
-          content: 'I\'ll create a real estate search test that covers property filtering, sorting, and detail viewing. This will ensure users can effectively find properties.',
-          timestamp: new Date(Date.now() - 259190000),
-          steps: [
-            {
-              id: 're-step1',
-              description: 'Navigate to property search page',
-              status: 'success',
-            },
-            {
-              id: 're-step2',
-              description: 'Apply location filter',
-              status: 'success',
-            },
-            {
-              id: 're-step3',
-              description: 'Set price range filters',
-              status: 'success',
-            },
-            {
-              id: 're-step4',
-              description: 'Apply bedroom/bathroom filters',
-              status: 'success',
-            },
-            {
-              id: 're-step5',
-              description: 'Sort results by price',
-              status: 'done',
-            },
-          ],
-        },
-        {
-          id: 'msg-realestate-3',
-          type: 'user',
-          content: 'Great! Can you also test the property details page and contact form?',
-          timestamp: new Date(Date.now() - 259180000),
-        },
-        {
-          id: 'msg-realestate-4',
-          type: 'agent',
-          content: 'I\'ve extended the test to include:\n\n**Property Details:**\n- View property photos and gallery\n- Check property specifications\n- View location on map\n\n**Contact Form:**\n- Fill out inquiry form\n- Submit form with valid data\n- Verify confirmation message',
-          timestamp: new Date(Date.now() - 259170000),
-          steps: [
-            {
-              id: 're-detail-step1',
-              description: 'Click on a property listing',
-              status: 'success',
-            },
-            {
-              id: 're-detail-step2',
-              description: 'Verify property details load',
-              status: 'success',
-            },
-            {
-              id: 're-detail-step3',
-              description: 'Fill and submit contact form',
-              status: 'done',
-            },
-          ],
-        },
-        {
-          id: 'msg-realestate-5',
-          type: 'user',
-          content: 'Perfect! Run this test now',
-          timestamp: new Date(Date.now() - 259160000),
-        },
-        {
-          id: 'msg-realestate-6',
-          type: 'agent',
-          content: 'Test execution completed successfully! ✓\n\nAll 15 test steps passed:\n- Property search and filtering: ✓\n- Property details page: ✓\n- Contact form submission: ✓\n\nExecution time: 2m 34s',
-          timestamp: new Date(Date.now() - 259150000),
-          executionId: 'exec-realestate-1',
-        },
-      ]);
+    // Reset HomeView chat state
+    if (typeof window !== 'undefined' && (window as any).resetChat) {
+      console.log('Calling window.resetChat');
+      (window as any).resetChat();
     } else {
-      // Start with an empty chat for other chats
-      setMessages([]);
+      console.warn('window.resetChat not found');
     }
   };
 
-  // Handler for sending messages
-  const handleSendMessage = (content: string) => {
-    // Add user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setIsProcessing(true);
-
-    // Simulate agent response after 1.5 seconds
-    setTimeout(() => {
-      const agentMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'agent',
-        content: `I understand you want to: "${content}"\n\n${agentResponses.testCreated}`,
-        timestamp: new Date(),
-        steps: [
-          {
-            id: 'step1',
-            description: 'Analyze test requirements',
-            status: 'success',
-          },
-          {
-            id: 'step2',
-            description: 'Generate test script',
-            status: 'success',
-          },
-          {
-            id: 'step3',
-            description: 'Validate test configuration',
-            status: 'done',
-          },
-        ],
-      };
-
-      setMessages(prev => [...prev, agentMessage]);
-      setIsProcessing(false);
-    }, 1500);
+  // Handler for chat
+  const handleSelectChat = async (id: string) => {
+    console.log('handleSelectChat called with id:', id);
+    setActiveChat(id);
+    setActiveTab('home'); // Switch to home tab to show chat
+    
+    // Trigger conversation load in HomeView via window method
+    try {
+      console.log('window.loadConversation exists?', !!(window as any).loadConversation);
+      if (typeof window !== 'undefined' && (window as any).loadConversation) {
+        console.log('Calling window.loadConversation');
+        await (window as any).loadConversation(id);
+        console.log('window.loadConversation completed');
+      } else {
+        console.error('window.loadConversation not found!');
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+    }
   };
 
   // Authentication handlers
@@ -882,17 +707,6 @@ export default function Home() {
   const renderMainContent = () => {
     switch (activeTab) {
       case 'home':
-        // Show ChatPanel if a chat is selected, otherwise show HomeView
-        if (activeChat) {
-          return (
-            <ChatPanel 
-              messages={messages}
-              onSendMessage={handleSendMessage}
-              isProcessing={isProcessing}
-              onViewExecution={handleViewExecutionFromChat}
-            />
-          );
-        }
         return (
           <HomeView 
             projects={projects}
@@ -1005,14 +819,7 @@ export default function Home() {
         );
       
       default:
-        return (
-          <ChatPanel 
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isProcessing={isProcessing}
-            onViewExecution={handleViewExecutionFromChat}
-          />
-        );
+        return null;
     }
   };
 

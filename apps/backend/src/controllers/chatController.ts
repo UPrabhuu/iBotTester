@@ -153,33 +153,35 @@ export const sendMessage = async (req: Request, res: Response) => {
         let responseContent = '';
         let metadata: any = { intent };
 
-        if (intent.action === 'purchase' || intent.action === 'test' || intent.action === 'create') {
+        if (intent.primaryAction === 'CREATE' || intent.primaryAction === 'RUN' || intent.primaryAction === 'CREATE_BULK') {
           // Generate test plan
-          responseContent = `I understand you want to ${intent.action} "${intent.target}"`;
-          if (intent.url) {
-            responseContent += ` on ${intent.url}`;
-          }
-          if (intent.constraints && intent.constraints.length > 0) {
-            responseContent += `\n\nConstraints: ${intent.constraints.join(', ')}`;
+          const testName = intent.args.testName || intent.args.testPattern || 'test';
+          responseContent = `I understand you want to ${intent.primaryAction.toLowerCase()} "${testName}"`;
+          
+          if (intent.args.environment) {
+            responseContent += ` in ${intent.args.environment} environment`;
           }
           
           responseContent += `\n\n📋 I'll create a test plan for this. Here's what I'll do:\n\n`;
-          responseContent += `1. Navigate to ${intent.url || 'the target website'}\n`;
-          responseContent += `2. Search for "${intent.target}"\n`;
-          responseContent += `3. Apply filters and constraints\n`;
-          responseContent += `4. Complete the ${intent.action} action\n`;
-          responseContent += `5. Verify the outcome\n\n`;
+          responseContent += `1. ${intent.primaryAction === 'CREATE' ? 'Create a new test' : 'Run the test'}\n`;
+          if (intent.args.testName) {
+            responseContent += `2. Test name: "${intent.args.testName}"\n`;
+          }
+          if (intent.args.environment) {
+            responseContent += `3. Environment: ${intent.args.environment}\n`;
+          }
+          responseContent += `4. Verify the outcome\n\n`;
           responseContent += `Would you like me to execute this test plan?`;
           
           metadata.testPlan = {
-            action: intent.action,
-            target: intent.target,
-            url: intent.url,
-            constraints: intent.constraints,
+            action: intent.primaryAction,
+            args: intent.args,
+            confidence: intent.confidence,
           };
         } else {
           // Generic response
-          responseContent = `I can help you with ${intent.action} "${intent.target}". `;
+          const testName = intent.args.testName || intent.args.testPattern || 'this';
+          responseContent = `I can help you with ${intent.primaryAction.toLowerCase()} "${testName}". `;
           responseContent += `\n\nWhat would you like me to do specifically?`;
         }
 

@@ -57,7 +57,8 @@ export class OrchestratorAgent {
       console.log('🔍 Step 1: Parsing user intent...');
       const intent = await this.intentParser.parseIntent(input.prompt);
       agentFlow.intentParser = { completed: true, timestamp: new Date().toISOString() };
-      console.log(`✓ Intent parsed: ${intent.action} on ${intent.target}`);
+      const targetName = intent.args.testName || intent.args.testPattern || intent.args.pageName || 'target';
+      console.log(`✓ Intent parsed: ${intent.primaryAction} on ${targetName}`);
 
       // Step 2: Test Planner Agent (JSON)
       console.log('📋 Step 2: Generating test plan...');
