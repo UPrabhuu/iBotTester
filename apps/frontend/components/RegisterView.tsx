@@ -110,7 +110,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4">
       <div className="max-w-md w-full">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -120,7 +120,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({
             </svg>
           </div>
           <Heading level="h1" className="mb-2">Create your account</Heading>
-          <Text color="text-neutral-600">Start testing smarter, not harder</Text>
+          <Text color="text-gray-600 dark:text-gray-400 dark:text-gray-400">Start testing smarter, not harder</Text>
         </div>
 
         {/* Register Card */}
@@ -186,7 +186,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({
               {/* First Name and Last Name */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     First Name
                   </label>
                   <Input
@@ -195,7 +195,8 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="John"
                     leftIcon={<User size={20} />}
-                    variant={errors.firstName ? 'error' : 'default'}
+                    error={errors.firstName ? true : false}
+                    errorMessage={errors.firstName}
                   />
                   {errors.firstName && (
                     <Text size="sm" color="text-red-600" className="mt-1">{errors.firstName}</Text>
@@ -203,7 +204,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Last Name
                   </label>
                   <Input
@@ -212,7 +213,8 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Doe"
                     leftIcon={<User size={20} />}
-                    variant={errors.lastName ? 'error' : 'default'}
+                    error={errors.lastName ? true : false}
+                    errorMessage={errors.lastName}
                   />
                   {errors.lastName && (
                     <Text size="sm" color="text-red-600" className="mt-1">{errors.lastName}</Text>
@@ -222,7 +224,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Email Address
                 </label>
                 <Input
@@ -231,16 +233,14 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   leftIcon={<Mail size={20} />}
-                  variant={errors.email ? 'error' : 'default'}
+                  error={errors.email ? true : false}
+                  errorMessage={errors.email}
                 />
-                {errors.email && (
-                  <Text size="sm" color="text-red-600" className="mt-1">{errors.email}</Text>
-                )}
               </div>
 
               {/* Password */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Password
                 </label>
                 <Input
@@ -258,16 +258,14 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   }
-                  variant={errors.password ? 'error' : 'default'}
+                  error={errors.password ? true : false}
+                  errorMessage={errors.password}
                 />
-                {errors.password && (
-                  <Text size="sm" color="text-red-600" className="mt-1">{errors.password}</Text>
-                )}
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Confirm Password
                 </label>
                 <Input
@@ -285,11 +283,9 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                       {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   }
-                  variant={errors.confirmPassword ? 'error' : 'default'}
+                  error={errors.confirmPassword ? true : false}
+                  errorMessage={errors.confirmPassword}
                 />
-                {errors.confirmPassword && (
-                  <Text size="sm" color="text-red-600" className="mt-1">{errors.confirmPassword}</Text>
-                )}
               </div>
 
               {/* Terms and Conditions */}
@@ -299,7 +295,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                   required
                   className="w-4 h-4 mt-1 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
                 />
-                <Text size="sm" className="ml-2" color="text-neutral-600">
+                <Text size="sm" className="ml-2" color="text-gray-600 dark:text-gray-400 dark:text-gray-400">
                   I agree to the{' '}
                   <a href="#" className="text-blue-600 hover:underline">
                     Terms of Service
@@ -316,14 +312,14 @@ const RegisterView: React.FC<RegisterViewProps> = ({
                 disabled={isLoading}
                 variant="primary"
                 fullWidth
-                loading={isLoading}
+                isLoading={isLoading}
               >
                 Sign up for free
               </Button>
             </form>
 
             {/* Login Link */}
-            <Text size="sm" className="mt-6 text-center" color="text-neutral-600">
+            <Text size="sm" className="mt-6 text-center" color="text-gray-600 dark:text-gray-400 dark:text-gray-400">
               Already have an account?{' '}
               <button
                 onClick={onNavigateToLogin}

@@ -12,7 +12,16 @@ html,
 body {
   height: 100%;
   overflow: hidden;
-  background-color: #1f1f1f;
+}
+
+/* Light theme (default) */
+html {
+  background-color: #f9fafb;
+}
+
+/* Dark theme */
+html.dark {
+  background-color: #111827;
 }
 
 body {
@@ -21,7 +30,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #171717;
+  color: #111827;
+}
+
+html.dark body {
+  color: #f3f4f6;
 }
 
 /* Custom scrollbar styles */
@@ -132,23 +145,36 @@ button {
   animation: slideIn 0.3s ease-out;
 }
 
-/* Custom scrollbar for dark theme */
+/* Custom scrollbar for light theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f1f1f;
+  background: #f3f4f6;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3e3e3e;
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4e4e4e;
+  background: #9ca3af;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 
 /* Kbd styling */

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Heading, Text, Badge, Button, Card, CardContent } from './ui';
 
 export interface StepResult {
   step: number;
@@ -78,104 +79,105 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
     switch (status) {
       case 'PASS':
       case 'passed':
-        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
+        return 'text-green-600 bg-green-100';
       case 'FAIL':
       case 'failed':
-        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
+        return 'text-red-600 bg-red-100';
       case 'PARTIAL':
       case 'skipped':
-        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
+        return 'text-yellow-600 bg-yellow-100';
       default:
-        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
+        return 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 bg-gray-100';
     }
   };
 
   const getDiffTypeColor = (type: string) => {
     switch (type) {
       case 'BREAKING':
-        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
+        return 'text-red-600 bg-red-100';
       case 'NON_BREAKING':
-        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
+        return 'text-yellow-600 bg-yellow-100';
       case 'COSMETIC':
-        return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
+        return 'text-blue-600 bg-blue-100';
       case 'SELF_HEALED':
-        return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30';
+        return 'text-purple-600 bg-purple-100';
       default:
-        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
+        return 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 bg-gray-100';
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Test Execution Results
-            </h2>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(result.status)}`}>
-              {result.status}
-            </span>
+    <Card>
+      <CardContent>
+        {/* Header */}
+        <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Heading level="h2">
+                Test Execution Results
+              </Heading>
+              <Badge variant={result.status === 'PASS' ? 'success' : result.status === 'FAIL' ? 'danger' : result.status === 'PARTIAL' ? 'warning' : 'default'}>
+                {result.status}
+              </Badge>
+            </div>
+            <Text size="sm" color="text-gray-600 dark:text-gray-400">
+              Test ID: {result.testId}
+            </Text>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Test ID: {result.testId}
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-4 gap-4 mt-4">
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <Text size="2xl" weight="bold" color="text-gray-900 dark:text-white">
+                {result.steps.length}
+              </Text>
+              <Text size="xs" color="text-gray-600 dark:text-gray-400">Total Steps</Text>
+            </div>
+            <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <Text size="2xl" weight="bold" color="text-green-600 dark:text-green-400">
+                {result.steps.filter(s => s.status === 'passed').length}
+              </Text>
+              <Text size="xs" color="text-gray-600 dark:text-gray-400">Passed</Text>
+            </div>
+            <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <Text size="2xl" weight="bold" color="text-red-600 dark:text-red-400">
+                {result.steps.filter(s => s.status === 'failed').length}
+              </Text>
+              <Text size="xs" color="text-gray-600 dark:text-gray-400">Failed</Text>
+            </div>
+            <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <Text size="2xl" weight="bold" color="text-blue-600 dark:text-blue-400">
+                {result.confidence ? `${Math.round(result.confidence * 100)}%` : 'N/A'}
+              </Text>
+              <Text size="xs" color="text-gray-600 dark:text-gray-400">Confidence</Text>
+            </div>
           </div>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-4 gap-4 mt-4">
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {result.steps.length}
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Total Steps</div>
-          </div>
-          <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {result.steps.filter(s => s.status === 'passed').length}
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Passed</div>
-          </div>
-          <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {result.steps.filter(s => s.status === 'failed').length}
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Failed</div>
-          </div>
-          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {result.confidence ? `${Math.round(result.confidence * 100)}%` : 'N/A'}
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Confidence</div>
-          </div>
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 dark:border-gray-700 -mx-6 px-6">
+          {['steps', 'evidence', 'report', 'diff'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setSelectedTab(tab as any)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                selectedTab === tab
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'diff' && result.diff && result.diff.length > 0 && (
+                <Badge variant="danger" size="sm" className="ml-2">
+                  {result.diff.length}
+                </Badge>
+              )}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 px-6">
-        {['steps', 'evidence', 'report', 'diff'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setSelectedTab(tab as any)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              selectedTab === tab
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            {tab === 'diff' && result.diff && result.diff.length > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full">
-                {result.diff.length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="p-6">
+        {/* Tab Content */}
+        <div className="pt-6">
         {/* Steps Tab */}
         {selectedTab === 'steps' && (
           <div className="space-y-3">
@@ -186,21 +188,21 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
               >
                 <button
                   onClick={() => setExpandedStep(expandedStep === index ? null : index)}
-                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:bg-gray-900 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
                     <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${getStatusColor(step.status)}`}>
                       {step.step}
                     </span>
                     <div className="text-left">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-gray-900">
                         {step.action}
                       </div>
                       {step.duration && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-gray-500">
                           {step.duration}ms
                           {step.retryAttempts && step.retryAttempts > 0 && (
-                            <span className="ml-2 text-yellow-600 dark:text-yellow-400">
+                            <span className="ml-2 text-yellow-600">
                               ({step.retryAttempts} retries)
                             </span>
                           )}
@@ -209,7 +211,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                     </div>
                   </div>
                   <svg
-                    className={`w-5 h-5 text-gray-400 transition-transform ${expandedStep === index ? 'transform rotate-180' : ''}`}
+                    className={`w-5 h-5 text-gray-400 dark:text-gray-500 dark:text-gray-400 transition-transform ${expandedStep === index ? 'transform rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -219,9 +221,9 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                 </button>
 
                 {expandedStep === index && (
-                  <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 border-t border-gray-200">
                     {step.error && (
-                      <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">
+                      <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
                         {step.error}
                       </div>
                     )}
@@ -229,7 +231,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                       <img
                         src={step.screenshot}
                         alt={`Step ${step.step} screenshot`}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700"
+                        className="rounded-lg border border-gray-200"
                       />
                     )}
                   </div>
@@ -249,7 +251,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                 {result.evidence.screenshots.map((screenshot, index) => (
                   <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                     <img src={screenshot.base64} alt={`Step ${screenshot.stepNumber}`} className="w-full" />
-                    <div className="p-2 bg-gray-50 dark:bg-gray-900/50 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="p-2 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 text-xs text-gray-600">
                       Step {screenshot.stepNumber}
                     </div>
                   </div>
@@ -304,9 +306,9 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
         {/* Report Tab */}
         {selectedTab === 'report' && result.report && (
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
               <h3 className="font-medium text-gray-900 dark:text-white mb-2">Summary</h3>
-              <p className="text-gray-700 dark:text-gray-300">{result.report.summary}</p>
+              <p className="text-gray-700">{result.report.summary}</p>
             </div>
 
             {result.report.suggestedFixes && result.report.suggestedFixes.length > 0 && (
@@ -316,16 +318,16 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                   {result.report.suggestedFixes.map((fix, index) => (
                     <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900 dark:text-white">{fix.issue}</span>
+                        <span className="font-medium text-gray-900">{fix.issue}</span>
                         <span className={`px-2 py-0.5 text-xs rounded-full ${
-                          fix.priority === 'high' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
-                          fix.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
-                          'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                          fix.priority === 'high' ? 'bg-red-100 text-red-600' :
+                          fix.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-blue-100 text-blue-600'
                         }`}>
                           {fix.priority}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{fix.suggestion}</p>
+                      <p className="text-sm text-gray-600">{fix.suggestion}</p>
                     </div>
                   ))}
                 </div>
@@ -337,12 +339,12 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                 <h3 className="font-medium text-gray-900 dark:text-white mb-3">Actionable Insights</h3>
                 <div className="space-y-2">
                   {result.report.actionableInsights.map((insight, index) => (
-                    <div key={index} className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex items-start space-x-2">
-                        <span className="text-blue-600 dark:text-blue-400">💡</span>
+                        <span className="text-blue-600">💡</span>
                         <div>
-                          <div className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase">{insight.category}</div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">{insight.description}</p>
+                          <div className="text-xs text-blue-600 font-medium uppercase">{insight.category}</div>
+                          <p className="text-sm text-gray-700">{insight.description}</p>
                         </div>
                       </div>
                     </div>
@@ -364,7 +366,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                       <span className={`px-2 py-1 rounded text-xs font-medium ${getDiffTypeColor(diff.type)}`}>
                         {diff.type}
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-gray-500">
                         Impact: {diff.impactScore}/100
                       </span>
                     </div>
@@ -373,16 +375,17 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center py-8">
+                <svg className="w-16 h-16 mx-auto mb-4 opacity-50 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p>No differences detected compared to previous run</p>
+                <Text color="text-gray-500 dark:text-gray-400">No differences detected compared to previous run</Text>
               </div>
             )}
           </div>
         )}
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
-}
+}}

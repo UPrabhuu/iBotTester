@@ -37,7 +37,7 @@ export interface HeadingProps {
 const Heading: React.FC<HeadingProps> = ({
   as: Component = 'h2',
   weight = 'bold',
-  color = 'text-neutral-900',
+  color = 'text-neutral-900 dark:text-neutral-50',
   gradient = false,
   className = '',
   children,

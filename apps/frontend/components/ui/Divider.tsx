@@ -34,7 +34,7 @@ const Divider: React.FC<DividerProps> = ({
   orientation = 'horizontal',
   variant = 'solid',
   label,
-  color = 'border-neutral-200',
+  color = 'border-neutral-200 dark:border-neutral-700',
   className = '',
   ...props
 }) => {
@@ -65,7 +65,7 @@ const Divider: React.FC<DividerProps> = ({
         {...props}
       >
         <div className={`flex-grow border-t ${variantStyles[variant]} ${color}`} />
-        <span className="flex-shrink mx-4 text-sm text-neutral-500">{label}</span>
+        <span className="flex-shrink mx-4 text-sm text-neutral-500 dark:text-neutral-400">{label}</span>
         <div className={`flex-grow border-t ${variantStyles[variant]} ${color}`} />
       </div>
     );

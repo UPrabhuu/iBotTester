@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button, Heading, Text } from './ui';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -23,20 +24,6 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const getConfirmButtonClasses = () => {
-    const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
-    
-    switch (confirmVariant) {
-      case 'danger':
-        return `${baseClasses} bg-red-600 hover:bg-red-700 text-white focus:ring-red-500`;
-      case 'warning':
-        return `${baseClasses} bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-500`;
-      case 'primary':
-      default:
-        return `${baseClasses} bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500`;
-    }
-  };
-
   return (
     <>
       {/* Backdrop */}
@@ -48,37 +35,37 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       {/* Dialog */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="bg-white rounded-xl shadow-2xl max-w-md w-full pointer-events-auto transform transition-all duration-200 scale-100"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full pointer-events-auto transform transition-all duration-200 scale-100"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="px-6 pt-6 pb-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <Heading level="h3">
               {title}
-            </h3>
+            </Heading>
           </div>
 
           {/* Body */}
           <div className="px-6 py-4">
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <Text size="sm" color="text-gray-600 dark:text-gray-400">
               {message}
-            </p>
+            </Text>
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
-            <button
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 rounded-b-xl flex justify-end gap-3">
+            <Button
               onClick={onCancel}
-              className="px-4 py-2 rounded-lg font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              variant="outline"
             >
               {cancelText}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onConfirm}
-              className={getConfirmButtonClasses()}
+              variant={confirmVariant === 'danger' ? 'danger' : confirmVariant === 'warning' ? 'secondary' : 'primary'}
             >
               {confirmText}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

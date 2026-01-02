@@ -155,7 +155,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             p-2 text-sm rounded-lg transition-colors
             ${isSelected ? 'bg-blue-600 text-white font-semibold' : ''}
             ${!isSelected && isToday ? 'bg-blue-100 text-blue-600 font-medium' : ''}
-            ${!isSelected && !isToday && !isDisabled ? 'hover:bg-gray-100 text-gray-700' : ''}
+            ${!isSelected && !isToday && !isDisabled ? 'hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 text-gray-700' : ''}
             ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
           `}
         >
@@ -170,14 +170,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {label}
         </label>
       )}
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+        className="w-full px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
       >
         <div className="flex items-center justify-between">
           <span className={selectedDate ? 'text-gray-900' : 'text-gray-400'}>
@@ -190,12 +190,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 min-w-[280px]">
+        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-4 min-w-[280px]">
           {/* Month/Year Header */}
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={prevMonth}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="p-1 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded transition-colors"
             >
               <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -208,7 +208,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
             <button
               onClick={nextMonth}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="p-1 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded transition-colors"
             >
               <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -219,7 +219,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           {/* Day Names */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-              <div key={day} className="text-xs font-medium text-gray-500 text-center p-2">
+              <div key={day} className="text-xs font-medium text-gray-500 dark:text-gray-400 text-center p-2">
                 {day}
               </div>
             ))}
@@ -239,7 +239,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   <select
                     value={selectedTime.hours}
                     onChange={(e) => handleTimeChange('hours', parseInt(e.target.value))}
-                    className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {Array.from({ length: 24 }, (_, i) => (
                       <option key={i} value={i}>
@@ -254,7 +254,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   <select
                     value={selectedTime.minutes}
                     onChange={(e) => handleTimeChange('minutes', parseInt(e.target.value))}
-                    className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {Array.from({ length: 60 }, (_, i) => (
                       <option key={i} value={i}>

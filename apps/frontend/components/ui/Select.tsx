@@ -130,11 +130,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       }
     };
 
-    const baseStyles = 'border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+    const baseStyles = 'border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-gray-900 dark:text-gray-100';
 
     const variantStyles: Record<SelectVariant, string> = {
-      default: 'bg-white border-neutral-300 hover:border-neutral-400 focus:border-blue-500 focus:ring-blue-500/20',
-      filled: 'bg-neutral-100 border-neutral-200 hover:bg-neutral-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500/20',
+      default: 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-blue-500/20 dark:focus:border-blue-400',
+      filled: 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:bg-white dark:focus:bg-gray-600 focus:border-blue-500 focus:ring-blue-500/20 dark:focus:border-blue-400',
     };
 
     const sizeStyles: Record<SelectSize, string> = {
@@ -163,14 +163,14 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className={fullWidth ? 'w-full' : ''}>
         {label && (
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <div className="relative" ref={dropdownRef}>
           {leftIcon && (
-            <div className={`absolute ${iconPositionLeft} top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none z-10`}>
+            <div className={`absolute ${iconPositionLeft} top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none z-10`}>
               {leftIcon}
             </div>
           )}
@@ -182,11 +182,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             className={buttonClassName}
             disabled={props.disabled}
           >
-            <span className={!selectedOption ? 'text-neutral-400' : 'text-neutral-900'}>
+            <span className={!selectedOption ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}>
               {displayText}
             </span>
             <ChevronDown 
-              className={`${iconSizeClass} text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+              className={`${iconSizeClass} text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
             />
           </button>
 
@@ -211,7 +211,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
           {/* Custom dropdown menu */}
           {isOpen && (
-            <div className={`absolute z-50 w-full mt-2 bg-white border border-neutral-200 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
+            <div className={`absolute z-50 w-full mt-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
               <div className="max-h-64 overflow-y-auto py-1">
                 {parsedOptions.map((option) => (
                   <button
@@ -222,8 +222,8 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     className={`
                       w-full px-4 py-2.5 text-left flex items-center justify-between transition-colors duration-150
                       ${option.value === selectedValue 
-                        ? 'bg-blue-50 text-blue-700 font-medium' 
-                        : 'text-neutral-700 hover:bg-neutral-50'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium' 
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                       }
                       ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                       ${size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base'}
@@ -231,7 +231,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                   >
                     <span>{option.label}</span>
                     {option.value === selectedValue && (
-                      <Check className={`${iconSizeClass} text-blue-600`} />
+                      <Check className={`${iconSizeClass} text-blue-600 dark:text-blue-400`} />
                     )}
                   </button>
                 ))}
@@ -240,7 +240,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           )}
         </div>
         {(helperText || errorMessage) && (
-          <p className={`mt-1.5 text-sm ${error ? 'text-red-600' : 'text-neutral-500'}`}>
+          <p className={`mt-1.5 text-sm ${error ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
             {error ? errorMessage : helperText}
           </p>
         )}

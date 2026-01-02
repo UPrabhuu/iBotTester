@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Heading from '@/components/ui/Heading';
-import Text from '@/components/ui/Text';
-import Badge from '@/components/ui/Badge';
+import Button from './ui/Button';
+import Input from './ui/Input';
+import Textarea from './ui/Textarea';
+import Heading from './ui/Heading';
+import Text from './ui/Text';
+import Badge from './ui/Badge';
 import Card, {
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
   CardFooter,
-} from '@/components/ui/Card';
-import Spinner from '@/components/ui/Spinner';
-import Divider from '@/components/ui/Divider';
+} from './ui/Card';
+import Spinner from './ui/Spinner';
+import Divider from './ui/Divider';
 import {
   ArrowRight,
   Download,
@@ -39,14 +39,14 @@ const UIComponentShowcase: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-8">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 p-8">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="text-center">
           <Heading as="h1" gradient>
             UI Component Library
           </Heading>
-          <Text size="lg" color="text-neutral-600" className="mt-2">
+          <Text size="lg" color="text-gray-600 dark:text-gray-400" className="mt-2">
             Reusable, accessible, and customizable components for iBotTester
           </Text>
         </div>
@@ -399,7 +399,7 @@ const UIComponentShowcase: React.FC = () => {
         <section>
           <div className="space-y-4">
             <Heading as="h2">Card Component</Heading>
-            <Text color="text-neutral-600">
+            <Text color="text-gray-600 dark:text-gray-400">
               Container component with header, content, and footer sections
             </Text>
 
@@ -514,7 +514,7 @@ const UIComponentShowcase: React.FC = () => {
                   <Text weight="semibold" className="mb-3">
                     Centered
                   </Text>
-                  <div className="h-32 border border-neutral-200 rounded-lg">
+                  <div className="h-32 border border-gray-200 dark:border-gray-700 rounded-lg">
                     <Spinner centered label="Loading content..." />
                   </div>
                 </div>

@@ -10,11 +10,14 @@ import {
   Check,
   Eye,
   EyeOff,
-  Activity
+  Activity,
+  Sun,
+  Moon
 } from 'lucide-react';
 import ConnectionStatus from './ConnectionStatus';
 import { settingsApi } from '../services/api';
 import { useAlert } from '../contexts/AlertContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Button, Input, Heading, Text, Card, CardHeader, CardTitle, CardContent, Badge } from './ui';
 
 interface UserProfile {
@@ -55,7 +58,8 @@ interface SettingsViewProps {
 
 const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
   const { showSuccess, showError } = useAlert();
-  const [activeSection, setActiveSection] = useState<'profile' | 'payment' | 'security' | 'integrations' | 'pricing' | 'connection'>('profile');
+  const { theme, setTheme } = useTheme();
+  const [activeSection, setActiveSection] = useState<'profile' | 'payment' | 'security' | 'integrations' | 'pricing' | 'connection' | 'appearance'>('appearance');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   
   // User profile state
@@ -347,19 +351,30 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-slate-800 mb-2">Settings</h1>
-      <p className="text-slate-600 mb-8">Manage your account settings and preferences</p>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-white dark:text-white mb-2">Settings</h1>
+      <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mb-8">Manage your account settings and preferences</p>
 
       <div className="flex gap-8">
         {/* Sidebar Navigation */}
         <div className="w-64 flex-shrink-0">
           <nav className="space-y-1">
             <button
+              onClick={() => setActiveSection('appearance')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                activeSection === 'appearance'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+              }`}
+            >
+              {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+              <span>Appearance</span>
+            </button>
+            <button
               onClick={() => setActiveSection('profile')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'profile'
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-slate-700 hover:bg-slate-100'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
               }`}
             >
               <User size={20} />
@@ -369,8 +384,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               onClick={() => setActiveSection('payment')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'payment'
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-slate-700 hover:bg-slate-100'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
               }`}
             >
               <CreditCard size={20} />
@@ -380,8 +395,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               onClick={() => setActiveSection('security')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'security'
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-slate-700 hover:bg-slate-100'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
               }`}
             >
               <Lock size={20} />
@@ -391,8 +406,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               onClick={() => setActiveSection('integrations')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'integrations'
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-slate-700 hover:bg-slate-100'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
               }`}
             >
               <Link2 size={20} />
@@ -402,8 +417,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               onClick={() => setActiveSection('pricing')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'pricing'
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-slate-700 hover:bg-slate-100'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
               }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -415,8 +430,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               onClick={() => setActiveSection('connection' as any)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'connection'
-                  ? 'bg-blue-50 text-blue-600 font-medium'
-                  : 'text-slate-700 hover:bg-slate-100'
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
               }`}
             >
               <Activity size={20} />
@@ -427,12 +442,131 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
         {/* Main Content */}
         <div className="flex-1">
+          {/* Appearance Section */}
+          {activeSection === 'appearance' && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white dark:text-white">Appearance</h2>
+                <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Customize how iBotTester looks for you</p>
+              </div>
+
+              <div className="space-y-6">
+                {/* Theme Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Theme
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Light Theme */}
+                    <button
+                      onClick={() => setTheme('light')}
+                      className={`relative p-6 rounded-xl border-2 transition-all ${
+                        theme === 'light'
+                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                          <Sun className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-gray-900 dark:text-white dark:text-white">Light</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Clean and bright</div>
+                        </div>
+                      </div>
+                      {theme === 'light' && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Dark Theme */}
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`relative p-6 rounded-xl border-2 transition-all ${
+                        theme === 'dark'
+                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                          <Moon className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-gray-900 dark:text-white dark:text-white">Dark</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Easy on the eyes</div>
+                        </div>
+                      </div>
+                      {theme === 'dark' && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Theme Preview */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Preview
+                  </label>
+                  <div className="bg-gray-100 dark:bg-gray-700 dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white dark:text-white">iBotTester</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">AI-Powered Testing</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                        This is how your interface will look with the {theme} theme.
+                      </p>
+                      <button className="px-4 py-2 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-blue-700 transition-all">
+                        Example Button
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Options */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200">Theme automatically saved</h4>
+                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                          Your theme preference is saved locally and will persist across sessions.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* User Profile Section */}
           {activeSection === 'profile' && (
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-800">User Profile</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white dark:text-white">User Profile</h2>
                   <p className="text-slate-600 mt-1">Manage your personal information</p>
                 </div>
                 {!isEditingProfile && !isLoadingProfile && (
@@ -479,7 +613,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                   {/* Profile Fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Full Name
                       </label>
                       <input
@@ -492,7 +626,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Email
                       </label>
                       <input
@@ -505,7 +639,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Phone
                       </label>
                       <input
@@ -518,7 +652,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Company
                       </label>
                       <input
@@ -531,7 +665,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Role
                       </label>
                       <input
@@ -557,7 +691,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       </button>
                       <button
                         onClick={handleCancelProfileEdit}
-                        className="flex items-center gap-2 px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                        className="flex items-center gap-2 px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
                       >
                         <X size={16} />
                         Cancel
@@ -571,7 +705,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
           {/* Payment Details Section */}
           {activeSection === 'payment' && (
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-800">Payment Details</h2>
@@ -617,7 +751,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 {/* Payment Fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Card Number
                     </label>
                     <input
@@ -630,7 +764,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Card Holder Name
                     </label>
                     <input
@@ -642,7 +776,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Expiry Date
                     </label>
                     <input
@@ -655,7 +789,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       ZIP Code
                     </label>
                     <input
@@ -667,7 +801,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Billing Address
                     </label>
                     <input
@@ -679,7 +813,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Country
                     </label>
                     <input
@@ -704,7 +838,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     </button>
                     <button
                       onClick={handleCancelPaymentEdit}
-                      className="flex items-center gap-2 px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                      className="flex items-center gap-2 px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
                     >
                       <X size={16} />
                       Cancel
@@ -717,7 +851,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
           {/* Security Section */}
           {activeSection === 'security' && (
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">Security Settings</h2>
                 <p className="text-slate-600 mt-1">Update your password and security preferences</p>
@@ -725,7 +859,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Current Password
                   </label>
                   <div className="relative">
@@ -739,7 +873,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     <button
                       type="button"
                       onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                     >
                       {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -747,7 +881,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     New Password
                   </label>
                   <div className="relative">
@@ -761,7 +895,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     <button
                       type="button"
                       onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                     >
                       {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -772,7 +906,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Confirm New Password
                   </label>
                   <div className="relative">
@@ -786,7 +920,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     <button
                       type="button"
                       onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                     >
                       {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -802,17 +936,17 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 </button>
 
                 {/* Additional Security Options */}
-                <div className="pt-6 border-t border-slate-200">
+                <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Additional Security</h3>
                   <div className="space-y-3">
-                    <label className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 cursor-pointer">
                       <div>
                         <div className="font-medium text-slate-800">Two-Factor Authentication</div>
                         <div className="text-sm text-slate-600">Add an extra layer of security</div>
                       </div>
                       <input type="checkbox" className="w-5 h-5 text-blue-600 rounded" />
                     </label>
-                    <label className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 cursor-pointer">
                       <div>
                         <div className="font-medium text-slate-800">Login Notifications</div>
                         <div className="text-sm text-slate-600">Get notified of new login attempts</div>
@@ -827,7 +961,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
           {/* Integrations Section */}
           {activeSection === 'integrations' && (
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">Integrations</h2>
                 <p className="text-slate-600 mt-1">Connect your favorite tools and services</p>
@@ -837,7 +971,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 {integrations.map((integration) => (
                   <div
                     key={integration.name}
-                    className="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -869,11 +1003,11 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
                     {/* Configuration Form */}
                     {editingIntegration === integration.name && (
-                      <div className="mt-4 pt-4 border-t border-slate-200 space-y-4">
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
                         {integration.name === 'Slack' ? (
                           <>
                             <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-2">
+                              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Workspace Name
                               </label>
                               <input
@@ -885,7 +1019,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-2">
+                              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 API Token
                               </label>
                               <input
@@ -900,7 +1034,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                         ) : (
                           <>
                             <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-2">
+                              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 {integration.name} URL
                               </label>
                               <input
@@ -912,7 +1046,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-2">
+                              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 API Key
                               </label>
                               <input
@@ -935,7 +1069,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                           </button>
                           <button
                             onClick={() => handleCancelIntegrationEdit(integration.name)}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
                           >
                             <X size={16} />
                             Cancel
@@ -946,7 +1080,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
                     {/* Connected Configuration Display */}
                     {integration.connected && editingIntegration !== integration.name && (
-                      <div className="mt-4 pt-4 border-t border-slate-200">
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div className="text-sm">
                           <div className="text-slate-600 mb-2">Configuration:</div>
                           {integration.name === 'Slack' ? (
@@ -980,7 +1114,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
           {/* Pricing Section */}
           {activeSection === 'pricing' && (
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">Pricing & Plans</h2>
                 <p className="text-slate-600 mt-1">Choose the perfect plan for your testing needs</p>
@@ -992,7 +1126,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                   onClick={() => setBillingPeriod('monthly')}
                   className={`px-6 py-2 rounded-full font-medium transition-all ${
                     billingPeriod === 'monthly'
-                      ? 'bg-white text-blue-600 shadow-md'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-md'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1002,7 +1136,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                   onClick={() => setBillingPeriod('annual')}
                   className={`px-6 py-2 rounded-full font-medium transition-all ${
                     billingPeriod === 'annual'
-                      ? 'bg-white text-blue-600 shadow-md'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-md'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -1038,7 +1172,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Available Plans</h3>
                 
                 {/* Starter Plan */}
-                <div className="p-6 border-2 border-slate-200 rounded-lg hover:border-blue-300 transition-colors">
+                <div className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 transition-colors">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h4 className="text-xl font-bold text-slate-900">Starter</h4>
@@ -1052,15 +1186,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     </div>
                   </div>
                   <ul className="space-y-2 mb-4">
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       Up to 100 test executions/month
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       3 team members
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       Basic test automation
                     </li>
@@ -1090,19 +1224,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     </div>
                   </div>
                   <ul className="space-y-2 mb-4">
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       Up to 1,000 test executions/month
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       10 team members
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       Advanced test automation
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       All integrations included
                     </li>
@@ -1113,7 +1247,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 </div>
 
                 {/* Enterprise Plan */}
-                <div className="p-6 border-2 border-slate-200 rounded-lg hover:border-blue-300 transition-colors">
+                <div className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 transition-colors">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h4 className="text-xl font-bold text-slate-900">Enterprise</h4>
@@ -1127,19 +1261,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     </div>
                   </div>
                   <ul className="space-y-2 mb-4">
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       Unlimited test executions
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       Unlimited team members
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       AI-powered test generation
                     </li>
-                    <li className="flex items-center text-sm text-slate-700">
+                    <li className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                       <Check className="text-green-500 mr-2" size={16} />
                       24/7 dedicated support
                     </li>
@@ -1151,7 +1285,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               </div>
 
               {/* Billing History */}
-              <div className="mt-8 pt-8 border-t border-slate-200">
+              <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Billing History</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">

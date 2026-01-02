@@ -58,7 +58,7 @@ export default function ConnectionStatus() {
   }, []);
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-neutral-900">Connection Status</h2>
         <button
@@ -69,14 +69,14 @@ export default function ConnectionStatus() {
         >
           <RefreshCw
             size={18}
-            className={`text-neutral-600 ${status.backend === 'checking' ? 'animate-spin' : ''}`}
+            className={`text-gray-600 dark:text-gray-400 ${status.backend === 'checking' ? 'animate-spin' : ''}`}
           />
         </button>
       </div>
 
       <div className="space-y-4">
         {/* Backend Status */}
-        <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
           <div className="flex items-center gap-3">
             {status.backend === 'connected' && (
               <CheckCircle2 size={24} className="text-green-500" />
@@ -89,7 +89,7 @@ export default function ConnectionStatus() {
             )}
             <div>
               <h3 className="font-medium text-neutral-900">Backend API</h3>
-              <p className="text-sm text-neutral-600">{status.backendUrl}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{status.backendUrl}</p>
             </div>
           </div>
           <div className="text-right">
@@ -125,11 +125,11 @@ export default function ConnectionStatus() {
 
         {/* Backend Features */}
         {status.backend === 'connected' && status.features && (
-          <div className="p-4 bg-neutral-50 rounded-lg">
+          <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
             <h4 className="font-medium text-neutral-900 mb-3">Backend Features</h4>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-700">Playwright</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Playwright</span>
                 {status.features.playwright ? (
                   <CheckCircle2 size={16} className="text-green-500" />
                 ) : (
@@ -137,7 +137,7 @@ export default function ConnectionStatus() {
                 )}
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-700">OpenAI</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">OpenAI</span>
                 {status.features.openai ? (
                   <CheckCircle2 size={16} className="text-green-500" />
                 ) : (

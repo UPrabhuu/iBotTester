@@ -88,16 +88,16 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       failed: 'text-red-600 bg-red-50',
       running: 'text-primary-600 bg-blue-50',
     };
-    return colors[status as keyof typeof colors] || 'text-neutral-600 bg-neutral-50';
+    return colors[status as keyof typeof colors] || 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800';
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg">
       {/* Page Header with Quick Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">
             {selectedProject?.name || 'All Projects'} • Real-time testing insights
           </p>
         </div>
@@ -226,7 +226,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               </svg>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-pulse"></div>
               <span className="text-xs font-medium">Live</span>
             </div>
           </div>
@@ -241,8 +241,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Test Distribution - Donut Chart Simulation */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Test Distribution</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Test Distribution</h3>
           <div className="flex items-center justify-center mb-6">
             <div className="relative w-48 h-48">
               {/* Donut Chart Simulation */}
@@ -298,7 +298,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 })()}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-3xl font-bold text-gray-900">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">
                   {data.testDistribution.passed + data.testDistribution.failed + data.testDistribution.skipped}
                 </div>
                 <div className="text-xs text-gray-500">Total Tests</div>
@@ -309,47 +309,47 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Passed</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Passed</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">{data.testDistribution.passed}</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">{data.testDistribution.passed}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Failed</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Failed</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">{data.testDistribution.failed}</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">{data.testDistribution.failed}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Skipped</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Skipped</span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">{data.testDistribution.skipped}</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">{data.testDistribution.skipped}</span>
             </div>
           </div>
         </div>
 
         {/* Recent Activity - Enhanced */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 lg:col-span-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Test Executions</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Test Executions</h3>
             <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All →</button>
           </div>
           <div className="space-y-3">
             {data.recentActivity.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
                 <p className="text-sm text-gray-500">No recent test executions</p>
-                <p className="text-xs text-gray-400 mt-1">Run your first test to see activity here</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Run your first test to see activity here</p>
               </div>
             ) : (
               data.recentActivity.slice(0, 6).map((activity) => (
-                <div key={activity.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div key={activity.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:bg-gray-900 rounded-lg transition-colors">
                   <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                     activity.status === 'passed' ? 'bg-green-100' :
                     activity.status === 'failed' ? 'bg-red-100' : 'bg-blue-100'
@@ -371,8 +371,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{activity.testName}</p>
-                    <p className="text-xs text-gray-500">{formatTimeAgo(activity.timestamp)} • {formatDuration(activity.duration)}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{activity.testName}</p>
+                    <p className="text-xs text-gray-500">{formatTimeAgo(activity.timestamp)} • {formatDuration(activity.duration || 0)}</p>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                     activity.status === 'passed' ? 'bg-green-100 text-green-700' :
@@ -388,62 +388,62 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Performance Insights */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">⚡ Performance Insights</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">⚡ Performance Insights</h3>
           <span className="text-xs text-gray-500">Last 30 days</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <span className="text-sm font-medium text-gray-700">Fastest Test</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Fastest Test</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {data.slowestTests.length > 0 ? formatDuration(Math.min(...data.slowestTests.map(t => t.duration))) : 'N/A'}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Execution speed champion 🏆</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Execution speed champion 🏆</p>
           </div>
           
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4">
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-4 border border-orange-200/50 dark:border-orange-800/50">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <span className="text-sm font-medium text-gray-700">Needs Attention</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Needs Attention</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{data.testDistribution.failed}</div>
-            <p className="text-xs text-gray-600 mt-1">Failed tests requiring review</p>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{data.testDistribution.failed}</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Failed tests requiring review</p>
           </div>
           
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border border-green-200/50 dark:border-green-800/50">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <span className="text-sm font-medium text-gray-700">Success Rate</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Success Rate</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{Math.round(data.passRate)}%</div>
-            <p className="text-xs text-gray-600 mt-1">Overall test reliability</p>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{Math.round(data.passRate)}%</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Overall test reliability</p>
           </div>
         </div>
       </div>
 
       {/* Slowest Tests - Redesigned */}
       {data.slowestTests.length > 0 && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">🐌 Slowest Tests</h3>
-              <p className="text-xs text-gray-500 mt-1">Optimize these tests to improve overall execution time</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">🐌 Slowest Tests</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Optimize these tests to improve overall execution time</p>
             </div>
             <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">Optimize →</button>
           </div>
@@ -452,13 +452,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               const maxDuration = Math.max(...data.slowestTests.map(t => t.duration));
               const widthPercent = (test.duration / maxDuration) * 100;
               return (
-                <div key={test.id} className="group hover:bg-gray-50 p-3 rounded-lg transition-colors">
+                <div key={test.id} className="group hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:bg-gray-900 p-3 rounded-lg transition-colors">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3 flex-1">
-                      <span className="flex-shrink-0 w-6 h-6 bg-gray-100 group-hover:bg-orange-100 rounded-full flex items-center justify-center text-xs font-semibold text-gray-600 group-hover:text-orange-600 transition-colors">
+                      <span className="flex-shrink-0 w-6 h-6 bg-gray-100 dark:bg-gray-700 group-hover:bg-orange-100 rounded-full flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 group-hover:text-orange-600 transition-colors">
                         {index + 1}
                       </span>
-                      <span className="text-sm font-medium text-gray-900 truncate">{test.name}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{test.name}</span>
                     </div>
                     <span className="text-sm font-bold text-orange-600 ml-4">{formatDuration(test.duration)}</span>
                   </div>

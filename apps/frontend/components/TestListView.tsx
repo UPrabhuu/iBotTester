@@ -120,7 +120,7 @@ const TestListView: React.FC<TestListViewProps> = ({
   const getStatusBadge = (status: TestCase['status']) => {
     const badges = {
       active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-      inactive: 'bg-slate-50 text-slate-600 border border-slate-200',
+      inactive: 'bg-slate-50 text-slate-600 border border-gray-200 dark:border-gray-700',
       draft: 'bg-amber-50 text-amber-700 border border-amber-200',
     };
 
@@ -279,9 +279,9 @@ const TestListView: React.FC<TestListViewProps> = ({
 
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Top Navigation Bar - Modern Design */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 px-8 py-5 flex-shrink-0 shadow-sm">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60 px-8 py-5 flex-shrink-0 shadow-sm">
         <div className="flex items-center justify-between">
           {/* Left Section: Breadcrumb & Title */}
           <div className="flex items-center gap-5">
@@ -292,8 +292,8 @@ const TestListView: React.FC<TestListViewProps> = ({
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Test List</h1>
-                <p className="text-sm text-gray-500 mt-0.5">Organize and manage your test</p>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Test List</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Organize and manage your test</p>
               </div>
             </div>
 
@@ -302,7 +302,7 @@ const TestListView: React.FC<TestListViewProps> = ({
               <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-300">
                 <button
                   onClick={() => setCurrentFolderId(null)}
-                  className="text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all"
+                  className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all"
                 >
                   All Tests
                 </button>
@@ -312,13 +312,13 @@ const TestListView: React.FC<TestListViewProps> = ({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                     {index === breadcrumbs.length - 1 ? (
-                      <span className="text-sm text-gray-900 font-semibold px-2.5 py-1 bg-blue-50 rounded-lg">
+                      <span className="text-sm text-gray-900 dark:text-white font-semibold px-2.5 py-1 bg-blue-50 rounded-lg">
                         {folder.name}
                       </span>
                     ) : (
                       <button
                         onClick={() => setCurrentFolderId(folder.id)}
-                        className="text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all"
+                        className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all"
                       >
                         {folder.name}
                       </button>
@@ -371,12 +371,12 @@ const TestListView: React.FC<TestListViewProps> = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search test cases..."
-              className="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm bg-white shadow-sm placeholder:text-gray-400"
+              className="w-full pl-12 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm bg-white dark:bg-gray-800 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 p-1.5 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -386,7 +386,7 @@ const TestListView: React.FC<TestListViewProps> = ({
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-1 border border-gray-300 rounded-xl p-1 bg-white shadow-sm">
+          <div className="flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded-xl p-1 bg-white dark:bg-gray-800 shadow-sm">
             {(['all', 'active', 'inactive', 'draft'] as const).map((status) => (
               <button
                 key={status}
@@ -394,7 +394,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                 className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                   filterStatus === status
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:bg-gray-100'
                 }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -403,11 +403,11 @@ const TestListView: React.FC<TestListViewProps> = ({
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+          <div className="flex border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden shadow-sm">
             <button
               onClick={() => setViewMode('list')}
               className={`px-4 py-3 text-sm transition-all ${
-                viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-900'
               }`}
               title="List view"
             >
@@ -417,8 +417,8 @@ const TestListView: React.FC<TestListViewProps> = ({
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`px-4 py-3 text-sm transition-all border-l border-gray-300 ${
-                viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+              className={`px-4 py-3 text-sm transition-all border-l border-gray-300 dark:border-gray-600 ${
+                viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-900'
               }`}
               title="Grid view"
             >
@@ -431,10 +431,10 @@ const TestListView: React.FC<TestListViewProps> = ({
           {/* New Folder Button */}
           <button
             onClick={() => setShowCreateFolder(true)}
-            className="px-4 py-3 text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 group"
+            className="px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 group"
             title="Create new folder"
           >
-            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
             <span className="hidden sm:inline">New Folder</span>
@@ -445,7 +445,7 @@ const TestListView: React.FC<TestListViewProps> = ({
       {/* Create Folder Modal */}
       {showCreateFolder && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[480px]">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-[480px]">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -454,7 +454,7 @@ const TestListView: React.FC<TestListViewProps> = ({
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900">Create New Folder</h3>
-                <p className="text-sm text-gray-500 mt-0.5">Organize your test cases</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Organize your test cases</p>
               </div>
             </div>
             <input
@@ -462,7 +462,7 @@ const TestListView: React.FC<TestListViewProps> = ({
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Enter folder name..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 mb-6 text-sm shadow-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 mb-6 text-sm shadow-sm"
               autoFocus
               onKeyPress={(e) => e.key === 'Enter' && createFolder()}
             />
@@ -472,7 +472,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                   setShowCreateFolder(false);
                   setNewFolderName('');
                 }}
-                className="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-xl transition-all border border-gray-300"
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-xl transition-all border border-gray-300"
               >
                 Cancel
               </button>
@@ -492,13 +492,13 @@ const TestListView: React.FC<TestListViewProps> = ({
       <div className="flex-1 overflow-auto p-8">
         {/* Tab Selector */}
         {(currentFolderItems.folders.length > 0 || filteredAndSortedTestCases.length > 0) && (
-          <div className="flex items-center gap-2 mb-6 bg-white rounded-xl p-1.5 shadow-sm border border-gray-200 w-fit">
+          <div className="flex items-center gap-2 mb-6 bg-white dark:bg-gray-800 rounded-xl p-1.5 shadow-sm border border-gray-200 dark:border-gray-700 w-fit">
             <button
               onClick={() => setActiveContentTab('tests')}
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeContentTab === 'tests'
                   ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-900'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -509,7 +509,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                 <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                   activeContentTab === 'tests'
                     ? 'bg-white/20 text-white'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600'
                 }`}>
                   {filteredAndSortedTestCases.length}
                 </span>
@@ -520,7 +520,7 @@ const TestListView: React.FC<TestListViewProps> = ({
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeContentTab === 'folders'
                   ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-900'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -531,7 +531,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                 <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                   activeContentTab === 'folders'
                     ? 'bg-white/20 text-white'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600'
                 }`}>
                   {currentFolderItems.folders.length}
                 </span>
@@ -550,7 +550,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                   <div
                     key={folder.id}
                     onClick={() => setCurrentFolderId(folder.id)}
-                    className="group bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden"
+                    className="group bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-5 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-4">
@@ -562,7 +562,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-blue-600 text-base mb-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 text-base mb-1">
                           {folder.name}
                         </h3>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -587,7 +587,7 @@ const TestListView: React.FC<TestListViewProps> = ({
 
         {/* Tests Section */}
         {activeContentTab === 'tests' && filteredAndSortedTestCases.length === 0 ? (
-          <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-16 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-16 shadow-sm">
             <div className="flex flex-col items-center justify-center space-y-5">
               <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center shadow-lg">
                 <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -595,10 +595,10 @@ const TestListView: React.FC<TestListViewProps> = ({
                 </svg>
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   {searchTerm ? 'No test cases found' : currentFolderId ? 'No tests in this folder' : 'No test cases yet'}
                 </h3>
-                <p className="text-sm text-gray-500 mb-6 max-w-md">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md">
                   {searchTerm ? 'Try adjusting your search or filters to find what you are looking for' : 'Get started by creating your first test case or organizing tests into folders'}
                 </p>
                 {!searchTerm && onCreateNewTest && (
@@ -659,7 +659,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                     {filteredAndSortedTestCases.map((testCase) => (
                       <div
                         key={testCase.id}
-                        className="bg-white border-2 border-gray-200 rounded-2xl px-6 py-5 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
+                        className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-5 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
                         onClick={(e) => {
                           if ((e.target as HTMLElement).tagName !== 'INPUT') {
                             onOpenTestCase(testCase.id);
@@ -674,7 +674,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                             checked={selectedTests.has(testCase.id)}
                             onChange={() => toggleTestSelection(testCase.id)}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 cursor-pointer"
+                            className="w-5 h-5 text-blue-600 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 cursor-pointer"
                           />
 
                           {/* Test Icon */}
@@ -689,13 +689,13 @@ const TestListView: React.FC<TestListViewProps> = ({
                           {/* Test Details */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-semibold text-gray-900 truncate text-base group-hover:text-blue-600">
+                              <h3 className="font-semibold text-gray-900 dark:text-white truncate text-base group-hover:text-blue-600">
                                 {testCase.name}
                               </h3>
                               {getStatusBadge(testCase.status)}
                             </div>
                             {testCase.description && (
-                              <p className="text-sm text-gray-600 truncate mb-2">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 truncate mb-2">
                                 {testCase.description}
                               </p>
                             )}
@@ -749,7 +749,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                     {filteredAndSortedTestCases.map((testCase) => (
                       <div
                         key={testCase.id}
-                        className="bg-white border-2 border-gray-200 rounded-2xl p-6 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
+                        className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:border-blue-400 hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden"
                         onClick={(e) => {
                           if ((e.target as HTMLElement).tagName !== 'INPUT') {
                             onOpenTestCase(testCase.id);
@@ -764,7 +764,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                               checked={selectedTests.has(testCase.id)}
                               onChange={() => toggleTestSelection(testCase.id)}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 cursor-pointer"
+                              className="w-5 h-5 text-blue-600 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 cursor-pointer"
                             />
                             <div className="flex items-center gap-2">
                               {getStatusBadge(testCase.status)}
@@ -789,24 +789,24 @@ const TestListView: React.FC<TestListViewProps> = ({
                             </svg>
                           </div>
                           
-                          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 text-base">
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 text-base">
                             {testCase.name}
                           </h3>
                           
                           {testCase.description && (
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
                               {testCase.description}
                             </p>
                           )}
                           
                           <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                               </svg>
                               {testCase.steps.length} steps
                             </span>
-                            <span className="text-xs text-gray-500 font-medium">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                               {formatDate(testCase.lastModified)}
                             </span>
                           </div>
@@ -823,11 +823,11 @@ const TestListView: React.FC<TestListViewProps> = ({
         {/* Results Summary */}
         {(filteredAndSortedTestCases.length > 0 || currentFolderItems.folders.length > 0) && (
           <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 font-medium">
                 {activeContentTab === 'folders' ? (
                   <span>
                     {currentFolderItems.folders.length} folder{currentFolderItems.folders.length !== 1 ? 's' : ''}

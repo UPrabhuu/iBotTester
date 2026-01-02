@@ -42,7 +42,7 @@ const Text: React.FC<TextProps> = ({
   as: Component = 'p',
   size = 'base',
   weight = 'normal',
-  color = 'text-neutral-700',
+  color = 'text-neutral-700 dark:text-neutral-300',
   truncate = false,
   className = '',
   children,

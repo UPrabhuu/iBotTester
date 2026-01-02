@@ -126,7 +126,7 @@ const PricingView: React.FC = () => {
           </p>
 
           {/* Billing Toggle */}
-          <div className="mt-8 inline-flex items-center bg-white rounded-full p-1 shadow-md">
+          <div className="mt-8 inline-flex items-center bg-white dark:bg-gray-800 rounded-full p-1 shadow-md">
             <button
               onClick={() => setBillingPeriod('monthly')}
               className={`px-6 py-2 rounded-full font-medium transition-all ${
@@ -158,10 +158,10 @@ const PricingView: React.FC = () => {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`bg-white rounded-2xl shadow-xl border-2 ${
+              className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 ${
                 plan.popular
                   ? 'border-blue-500 ring-4 ring-blue-100 transform scale-105'
-                  : 'border-slate-200'
+                  : 'border-gray-200 dark:border-gray-700'
               } p-8 relative`}
             >
               {plan.popular && (
@@ -211,7 +211,7 @@ const PricingView: React.FC = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="bg-white rounded-2xl shadow-xl p-12 mb-20">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-12 mb-20">
           <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
             Everything You Need to Test Faster
           </h2>
@@ -229,7 +229,7 @@ const PricingView: React.FC = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-12">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-12">
           <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
             Frequently Asked Questions
           </h2>
@@ -294,11 +294,11 @@ const PricingView: React.FC = () => {
           <div className="flex justify-center gap-4">
             <button
               onClick={() => handleSubscribe('Professional')}
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-slate-100 transition-colors shadow-lg"
+              className="bg-white dark:bg-gray-800 text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-slate-100 transition-colors shadow-lg"
             >
               Start Free Trial
             </button>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+            <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white dark:bg-gray-800 hover:text-blue-600 transition-colors">
               Talk to Sales
             </button>
           </div>

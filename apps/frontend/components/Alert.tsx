@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Text } from './ui';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info';
 
@@ -78,14 +79,14 @@ const Alert: React.FC<AlertProps> = ({
           {getIcon()}
         </div>
         <div className="ml-3 flex-1">
-          <p className="text-sm font-medium">
+          <Text size="sm" weight="medium">
             {message}
-          </p>
+          </Text>
         </div>
         <div className="ml-4 flex-shrink-0 flex">
           <button
             onClick={onClose}
-            className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-md"
+            className="inline-flex text-gray-400 dark:text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-md"
           >
             <span className="sr-only">Close</span>
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

@@ -612,7 +612,7 @@ ibottester config set <key> <value>
         return <h2 key={i} className="text-2xl font-bold text-slate-800 mb-3 mt-6">{line.slice(3)}</h2>;
       }
       if (line.startsWith('### ')) {
-        return <h3 key={i} className="text-xl font-semibold text-slate-700 mb-2 mt-4">{line.slice(4)}</h3>;
+        return <h3 key={i} className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2 mt-4">{line.slice(4)}</h3>;
       }
       
       // Code blocks
@@ -623,7 +623,7 @@ ibottester config set <key> <value>
       // Lists
       if (line.startsWith('- ')) {
         return (
-          <li key={i} className="ml-6 text-slate-700 mb-1">
+          <li key={i} className="ml-6 text-slate-700 dark:text-slate-300 mb-1">
             {line.slice(2)}
           </li>
         );
@@ -638,7 +638,7 @@ ibottester config set <key> <value>
       if (line.includes('`') && !line.startsWith('```')) {
         const parts = line.split('`');
         return (
-          <p key={i} className="text-slate-700 mb-2">
+          <p key={i} className="text-slate-700 dark:text-slate-300 mb-2">
             {parts.map((part, j) => 
               j % 2 === 0 ? part : <code key={j} className="bg-slate-100 px-2 py-0.5 rounded text-sm font-mono text-blue-600">{part}</code>
             )}
@@ -648,7 +648,7 @@ ibottester config set <key> <value>
       
       // Regular paragraph
       if (line.trim()) {
-        return <p key={i} className="text-slate-700 mb-3">{line}</p>;
+        return <p key={i} className="text-slate-700 dark:text-slate-300 mb-3">{line}</p>;
       }
       
       return <br key={i} />;
@@ -659,7 +659,7 @@ ibottester config set <key> <value>
     <div className="min-h-screen bg-slate-50">
       <div className="flex h-screen">
         {/* Sidebar Navigation */}
-        <div className="w-64 bg-white border-r border-slate-200 overflow-y-auto">
+        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center gap-2 mb-6">
               <FileText className="text-blue-600" size={24} />
@@ -690,7 +690,7 @@ ibottester config set <key> <value>
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left font-medium transition-colors ${
                       activeSection === section.id
                         ? 'bg-blue-50 text-blue-700'
-                        : 'text-slate-700 hover:bg-slate-100'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     {section.icon}
@@ -740,7 +740,7 @@ ibottester config set <key> <value>
             </div>
 
             {/* Footer Navigation */}
-            <div className="mt-16 pt-8 border-t border-slate-200 flex justify-between">
+            <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-between">
               <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
                 ← Previous
               </button>
@@ -752,7 +752,7 @@ ibottester config set <key> <value>
         </div>
 
         {/* Right Sidebar - Table of Contents */}
-        <div className="w-64 bg-white border-l border-slate-200 p-6 overflow-y-auto hidden xl:block">
+        <div className="w-64 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-6 overflow-y-auto hidden xl:block">
           <h3 className="text-sm font-semibold text-slate-900 mb-4">On This Page</h3>
           <nav className="space-y-2 text-sm">
             <a href="#" className="block text-blue-600 hover:text-blue-700">Introduction</a>

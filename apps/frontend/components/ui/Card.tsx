@@ -37,7 +37,7 @@ const Card: React.FC<CardProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'bg-white rounded-xl transition-all duration-200';
+  const baseStyles = 'bg-white dark:bg-gray-800 rounded-xl transition-all duration-200';
 
   const variantStyles: Record<CardVariant, string> = {
     default: 'border border-neutral-200',

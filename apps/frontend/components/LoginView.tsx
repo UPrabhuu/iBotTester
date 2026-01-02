@@ -66,7 +66,7 @@ const LoginView: React.FC<LoginViewProps> = ({
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4">
         <div className="max-w-md w-full">
           {/* Logo */}
           <div className="text-center mb-8">
@@ -76,7 +76,7 @@ const LoginView: React.FC<LoginViewProps> = ({
               </svg>
             </div>
             <Heading level="h1" className="mb-2">Forgot Password?</Heading>
-            <Text color="text-neutral-600">Enter your email to receive a password reset link</Text>
+            <Text color="text-gray-600 dark:text-gray-400 dark:text-gray-400">Enter your email to receive a password reset link</Text>
           </div>
 
           {/* Forgot Password Form */}
@@ -84,7 +84,7 @@ const LoginView: React.FC<LoginViewProps> = ({
             <CardContent>
               <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Email Address
                   </label>
                   <Input
@@ -118,7 +118,7 @@ const LoginView: React.FC<LoginViewProps> = ({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4">
       <div className="max-w-md w-full">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -128,7 +128,7 @@ const LoginView: React.FC<LoginViewProps> = ({
             </svg>
           </div>
           <Heading level="h1" className="mb-2">Welcome to iBotTester</Heading>
-          <Text color="text-neutral-600">Sign in to your account to continue</Text>
+          <Text color="text-gray-600 dark:text-gray-400 dark:text-gray-400">Sign in to your account to continue</Text>
         </div>
 
         {/* Login Card */}
@@ -183,7 +183,7 @@ const LoginView: React.FC<LoginViewProps> = ({
             <form onSubmit={handleSubmit} className="space-y-4 mt-6">
               {/* API Error Message */}
               {apiError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg flex items-start gap-3">
                   <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
@@ -192,7 +192,7 @@ const LoginView: React.FC<LoginViewProps> = ({
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Email Address
                 </label>
                 <Input
@@ -206,7 +206,7 @@ const LoginView: React.FC<LoginViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Password
                 </label>
                 <Input
@@ -232,9 +232,9 @@ const LoginView: React.FC<LoginViewProps> = ({
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500"
                   />
-                  <Text size="sm" className="ml-2" color="text-neutral-600">Remember me</Text>
+                  <Text size="sm" className="ml-2" color="text-gray-600 dark:text-gray-400">Remember me</Text>
                 </label>
                 <Button
                   type="button"
@@ -251,18 +251,18 @@ const LoginView: React.FC<LoginViewProps> = ({
                 disabled={isLoading}
                 variant="primary"
                 fullWidth
-                loading={isLoading}
+                isLoading={isLoading}
               >
                 Sign In
               </Button>
             </form>
 
             {/* Sign Up Link */}
-            <Text size="sm" className="mt-6 text-center" color="text-neutral-600">
+            <Text size="sm" className="mt-6 text-center" color="text-gray-600 dark:text-gray-400">
               Don't have an account?{' '}
               <button
                 onClick={onNavigateToRegister}
-                className="text-blue-600 hover:text-blue-700 font-semibold"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
               >
                 Sign up for free
               </button>
@@ -271,13 +271,13 @@ const LoginView: React.FC<LoginViewProps> = ({
         </Card>
 
         {/* Footer */}
-        <Text size="xs" className="mt-8 text-center" color="text-neutral-500">
+        <Text size="xs" className="mt-8 text-center" color="text-neutral-500 dark:text-neutral-400">
           By signing in, you agree to our{' '}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
             Terms of Service
           </a>{' '}
           and{' '}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
             Privacy Policy
           </a>
         </Text>

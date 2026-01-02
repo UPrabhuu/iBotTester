@@ -17,7 +17,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 }) => {
 
   return (
-    <div className="bg-white border-b border-neutral-200 px-6 py-4 shadow-sm">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Project Selector */}
         <div className="flex items-center space-x-4">
@@ -76,7 +76,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 
         {/* Project Description */}
         {selectedProject.description && (
-          <div className="text-sm text-neutral-600 max-w-md">
+          <div className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
             {selectedProject.description}
           </div>
         )}

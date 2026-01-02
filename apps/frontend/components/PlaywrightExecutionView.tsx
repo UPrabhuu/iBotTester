@@ -129,7 +129,7 @@ const PlaywrightExecutionView: React.FC<PlaywrightExecutionViewProps> = ({
     return (
       <div className="flex items-center justify-center h-64">
         <Spinner />
-        <span className="ml-3 text-neutral-600">Loading executions...</span>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">Loading executions...</span>
       </div>
     );
   }
@@ -139,7 +139,7 @@ const PlaywrightExecutionView: React.FC<PlaywrightExecutionViewProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <Heading level={2}>Playwright Test Executions</Heading>
-          <p className="text-sm text-neutral-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             View and manage your Playwright test executions with evidence, validation, and reports
           </p>
         </div>
@@ -220,7 +220,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between">
           <div>
@@ -231,7 +231,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2"
+            className="text-white hover:bg-white dark:bg-gray-800 hover:bg-opacity-20 rounded-lg p-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -240,7 +240,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-neutral-200 bg-neutral-50">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
           {(['overview', 'evidence', 'validation', 'report'] as const).map((tab) => (
             <button
               key={tab}
@@ -248,7 +248,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
               className={`flex-1 px-6 py-3 text-sm font-semibold capitalize transition-colors ${
                 activeTab === tab
                   ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                  : 'text-neutral-600 hover:text-neutral-800'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-neutral-800'
               }`}
             >
               {tab}
@@ -261,21 +261,21 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-4">
                   <p className="text-xs text-neutral-500 mb-1">Status</p>
                   <p className="text-lg font-semibold capitalize">{execution.status}</p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-4">
                   <p className="text-xs text-neutral-500 mb-1">Duration</p>
                   <p className="text-lg font-semibold">
                     {execution.duration ? `${(execution.duration / 1000).toFixed(2)}s` : 'N/A'}
                   </p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-4">
                   <p className="text-xs text-neutral-500 mb-1">Browser</p>
                   <p className="text-lg font-semibold capitalize">{execution.browserType}</p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-4">
                   <p className="text-xs text-neutral-500 mb-1">Evidence Collected</p>
                   <p className="text-lg font-semibold">{evidence.length} items</p>
                 </div>
@@ -301,7 +301,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
                         alt={screenshot.label}
                         className="w-full h-48 object-cover"
                       />
-                      <div className="p-3 bg-neutral-50">
+                      <div className="p-3 bg-neutral-50 dark:bg-neutral-900">
                         <p className="text-sm font-medium">{screenshot.label}</p>
                         <p className="text-xs text-neutral-500">
                           {screenshot.timestamp.toLocaleTimeString()}
@@ -328,7 +328,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
                     }`}>
                       {validation.overallStatus.toUpperCase()}
                     </div>
-                    <p className="text-neutral-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       {validation.issuesFound} issue(s) found
                     </p>
                   </div>
@@ -374,7 +374,7 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
                       <p className="text-2xl font-bold text-red-700">{report.failedSteps}</p>
                       <p className="text-xs text-red-600">Failed</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4 text-center">
+                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg p-4 text-center">
                       <p className="text-2xl font-bold text-gray-700">{report.skippedSteps}</p>
                       <p className="text-xs text-gray-600">Skipped</p>
                     </div>
