@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Project, TabType } from '@/types/project';
 import { Button, Badge, Text } from './ui';
 import { chatApi } from '../services/api';
+import { useAlert } from '../contexts/AlertContext';
 
 interface ChatHistory {
   id: string;
@@ -71,9 +72,21 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
+  const { showConfirm, showError } = useAlert();
+
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this conversation?')) {
+    const confirmed = await showConfirm(
+      'Are you sure you want to delete this conversation?',
+      {
+        title: 'Delete Conversation',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        confirmVariant: 'danger',
+      }
+    );
+
+    if (!confirmed) {
       return;
     }
 
@@ -85,11 +98,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           onNewChat();
         }
       } else {
-        alert(response.error || 'Failed to delete conversation');
+        showError(response.error || 'Failed to delete conversation');
       }
     } catch (error) {
       console.error('Error deleting chat:', error);
-      alert('Failed to delete conversation');
+      showError('Failed to delete conversation');
     }
   };
 

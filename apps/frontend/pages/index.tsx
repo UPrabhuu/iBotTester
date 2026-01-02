@@ -12,7 +12,8 @@ import PricingView from '@/components/PricingView';
 import DocsView from '@/components/DocsView';
 import LoginView from '@/components/LoginView';
 import RegisterView from '@/components/RegisterView';
-import { authApi, chatApi } from '@/services/api';
+import { authApi, chatApi, projectsApi, testCasesApi, executionsApi } from '@/services/api';
+import { useAlert } from '@/contexts/AlertContext';
 import {
   Project,
   TestExecution,
@@ -43,9 +44,16 @@ interface Screenshot {
 }
 
 export default function Home() {
+  const { showError } = useAlert();
+  
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  
+  // Debug authentication state changes
+  useEffect(() => {
+    console.log('🔐 Authentication state changed:', { isAuthenticated, user });
+  }, [isAuthenticated, user]);
   const [showRegister, setShowRegister] = useState(false);
 
   // Execution state (for future integration with live execution)
@@ -61,342 +69,37 @@ export default function Home() {
   // Active tab state
   const [activeTab, setActiveTab] = useState<TabType>('home');
   
-  // Mock projects data
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 'project-1',
-      name: 'E-commerce Testing',
-      description: 'E-commerce testing suite',
-      branches: [
-        { id: 'branch-1', name: 'main', isDefault: true },
-        { id: 'branch-2', name: 'develop', isDefault: false },
-        { id: 'branch-3', name: 'feature/checkout-flow', isDefault: false },
-      ],
-      currentBranch: 'branch-1',
-      createdAt: new Date(Date.now() - 30 * 86400000),
-      updatedAt: new Date(),
-    },
-    {
-      id: 'project-2',
-      name: 'Social Media Automation',
-      description: 'Social media automation tests',
-      branches: [
-        { id: 'branch-4', name: 'main', isDefault: true },
-        { id: 'branch-5', name: 'staging', isDefault: false },
-      ],
-      currentBranch: 'branch-4',
-      createdAt: new Date(Date.now() - 60 * 86400000),
-      updatedAt: new Date(),
-    },
-  ]);
+  // Data state - will be loaded from API
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('project-1');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   
   // Get selected project
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
 
-  // Mock test executions
-  const [testExecutions] = useState<TestExecution[]>([
-    {
-      id: 'exec-1',
-      executionName: 'Nike Checkout Flow',
-      labels: ['checkout', 'e2e'],
-      status: 'passed',
-      timestamp: new Date(Date.now() - 3600000),
-      duration: 45000,
-      results: 'All tests passed',
-      triggeredBy: 'john@example.com',
-      executionType: 'Local',
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      createdAt: new Date(Date.now() - 3600000),
-    },
-    {
-      id: 'exec-2',
-      executionName: 'Login Flow Test',
-      labels: ['authentication', 'smoke'],
-      status: 'running',
-      timestamp: new Date(Date.now() - 300000),
-      duration: 15000,
-      triggeredBy: 'jane@example.com',
-      executionType: 'CLI',
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      createdAt: new Date(Date.now() - 300000),
-    },
-    {
-      id: 'exec-3',
-      executionName: 'Product Search',
-      labels: ['search', 'regression'],
-      status: 'failed',
-      timestamp: new Date(Date.now() - 7200000),
-      duration: 32000,
-      results: '2 of 5 tests failed',
-      triggeredBy: 'admin@example.com',
-      executionType: 'CI/CD',
-      projectId: 'project-1',
-      branchId: 'branch-2',
-      createdAt: new Date(Date.now() - 7200000),
-    },
-  ]);
+  // Test executions - will be loaded from API
+  const [testExecutions, setTestExecutions] = useState<TestExecution[]>([]);
+  const [isLoadingExecutions, setIsLoadingExecutions] = useState(true);
 
-  // Mock test cases
-  const [testCases] = useState<TestCase[]>([
-    {
-      id: 'test-1',
-      name: 'Nike Checkout Flow',
-      description: 'Purchase Nike shoes under $150',
-      status: 'active',
-      createdAt: new Date(Date.now() - 7 * 86400000),
-      lastModified: new Date(Date.now() - 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-2',
-      name: 'Login with Valid Credentials',
-      description: 'Test user login functionality',
-      status: 'active',
-      createdAt: new Date(Date.now() - 5 * 86400000),
-      lastModified: new Date(Date.now() - 2 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-3',
-      name: 'Product Search and Filter',
-      description: 'Search for products and apply filters',
-      status: 'draft',
-      createdAt: new Date(Date.now() - 3 * 86400000),
-      lastModified: new Date(Date.now() - 3600000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-4',
-      name: 'User Registration Flow',
-      description: 'Complete user registration with email verification',
-      status: 'active',
-      createdAt: new Date(Date.now() - 10 * 86400000),
-      lastModified: new Date(Date.now() - 4 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-5',
-      name: 'Password Reset Workflow',
-      description: 'Test forgot password and reset password functionality',
-      status: 'active',
-      createdAt: new Date(Date.now() - 12 * 86400000),
-      lastModified: new Date(Date.now() - 5 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-6',
-      name: 'Add to Cart Functionality',
-      description: 'Test adding multiple products to shopping cart',
-      status: 'active',
-      createdAt: new Date(Date.now() - 8 * 86400000),
-      lastModified: new Date(Date.now() - 3 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-7',
-      name: 'Wishlist Management',
-      description: 'Add, remove, and manage items in wishlist',
-      status: 'inactive',
-      createdAt: new Date(Date.now() - 15 * 86400000),
-      lastModified: new Date(Date.now() - 10 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-8',
-      name: 'Apply Discount Coupon',
-      description: 'Test discount coupon validation and application',
-      status: 'active',
-      createdAt: new Date(Date.now() - 6 * 86400000),
-      lastModified: new Date(Date.now() - 2 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-9',
-      name: 'Product Review Submission',
-      description: 'Submit and edit product reviews with ratings',
-      status: 'draft',
-      createdAt: new Date(Date.now() - 4 * 86400000),
-      lastModified: new Date(Date.now() - 1 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-10',
-      name: 'Order History Verification',
-      description: 'Verify order history displays correctly with all details',
-      status: 'active',
-      createdAt: new Date(Date.now() - 20 * 86400000),
-      lastModified: new Date(Date.now() - 8 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-11',
-      name: 'Payment Gateway Integration',
-      description: 'Test payment processing with different payment methods',
-      status: 'active',
-      createdAt: new Date(Date.now() - 9 * 86400000),
-      lastModified: new Date(Date.now() - 3 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-12',
-      name: 'Profile Update Workflow',
-      description: 'Update user profile information and avatar',
-      status: 'active',
-      createdAt: new Date(Date.now() - 11 * 86400000),
-      lastModified: new Date(Date.now() - 6 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-13',
-      name: 'Multi-Language Support',
-      description: 'Test language switching and content translation',
-      status: 'inactive',
-      createdAt: new Date(Date.now() - 25 * 86400000),
-      lastModified: new Date(Date.now() - 15 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-14',
-      name: 'Newsletter Subscription',
-      description: 'Subscribe and unsubscribe from newsletter',
-      status: 'draft',
-      createdAt: new Date(Date.now() - 2 * 86400000),
-      lastModified: new Date(Date.now() - 1 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-15',
-      name: 'Advanced Search Filters',
-      description: 'Test all search filters and sorting options',
-      status: 'active',
-      createdAt: new Date(Date.now() - 14 * 86400000),
-      lastModified: new Date(Date.now() - 7 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-    {
-      id: 'test-16',
-      name: 'Mobile Responsive Testing',
-      description: 'Verify mobile responsive design across different screen sizes',
-      status: 'active',
-      createdAt: new Date(Date.now() - 13 * 86400000),
-      lastModified: new Date(Date.now() - 5 * 86400000),
-      projectId: 'project-1',
-      branchId: 'branch-1',
-      steps: [{} as TestStep, {} as TestStep, {} as TestStep, {} as TestStep],
-    },
-  ]);
+  // Test cases - will be loaded from API
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [isLoadingTestCases, setIsLoadingTestCases] = useState(true);
 
-  // Mock test steps
-  const [testSteps] = useState<TestStep[]>([
-    {
-      id: 'step-1',
-      stepNumber: 1,
-      action: 'Navigate to login URL',
-      expectedResult: 'Login page should load successfully',
-      elementLocator: 'https://example.com/login',
-      uiSection: 'Login Page',
-      testCaseId: 'test-2',
-    },
-    {
-      id: 'step-2',
-      stepNumber: 2,
-      action: 'Enter username in username field',
-      expectedResult: 'Username should be entered',
-      elementLocator: '#username',
-      uiSection: 'Login Page',
-      testCaseId: 'test-2',
-    },
-    {
-      id: 'step-3',
-      stepNumber: 3,
-      action: 'Enter password in password field',
-      expectedResult: 'Password should be entered',
-      elementLocator: '#password',
-      uiSection: 'Login Page',
-      testCaseId: 'test-2',
-    },
-    {
-      id: 'step-4',
-      stepNumber: 4,
-      action: 'Click login button',
-      expectedResult: 'User should be logged in and redirected to dashboard',
-      elementLocator: 'button[type="submit"]',
-      uiSection: 'Login Page',
-      testCaseId: 'test-2',
-    },
-    {
-      id: 'step-5',
-      stepNumber: 1,
-      action: 'Add item to cart',
-      expectedResult: 'Item should be added to cart',
-      elementLocator: '.add-to-cart-btn',
-      uiSection: 'Checkout Flow',
-      testCaseId: 'test-1',
-    },
-    {
-      id: 'step-6',
-      stepNumber: 2,
-      action: 'Proceed to checkout',
-      expectedResult: 'Checkout page should load',
-      elementLocator: '.checkout-btn',
-      uiSection: 'Checkout Flow',
-      testCaseId: 'test-1',
-    },
-    {
-      id: 'step-7',
-      stepNumber: 3,
-      action: 'Complete payment',
-      expectedResult: 'Payment should be processed',
-      elementLocator: '#complete-payment',
-      uiSection: 'Checkout Flow',
-      testCaseId: 'test-1',
-    },
-  ]);
+  // Test steps - will be loaded from API when test case is selected
+  const [testSteps, setTestSteps] = useState<TestStep[]>([]);
+  const [isLoadingTestSteps, setIsLoadingTestSteps] = useState(false);
+  const [selectedTestCaseId, setSelectedTestCaseId] = useState<string | null>(null);
+  const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
+  const [testCaseData, setTestCaseData] = useState<Record<string, string>>({});
 
-  // Mock configuration
-  const [configuration] = useState<ProjectConfiguration>({
+  // Configuration - will be loaded from API
+  const [configuration, setConfiguration] = useState<ProjectConfiguration>({
     id: 'config-1',
-    projectId: 'project-1',
+    projectId: selectedProjectId || '',
     environment: {
-      baseUrl: 'https://example.com',
-      credentials: {
-        username: 'test@example.com',
-        password: '********',
-      },
+      baseUrl: '',
+      credentials: {},
     },
     browser: {
       type: 'chromium',
@@ -410,18 +113,175 @@ export default function Home() {
       timeout: 30000,
       retries: 2,
       screenshots: true,
-      video: true,
+      video: false,
     },
     integrations: {},
     variables: {},
   });
+  const [isLoadingConfiguration, setIsLoadingConfiguration] = useState(true);
 
-  // Mock chat history
-  const [chatHistory] = useState<ChatHistory[]>([
-    { id: '1', title: 'Nike Checkout Flow', timestamp: new Date(Date.now() - 86400000) },
-    { id: '2', title: 'Login Flow', timestamp: new Date(Date.now() - 172800000) },
-    { id: '3', title: 'Real Estate Flow', timestamp: new Date(Date.now() - 259200000) },
-  ]);
+  // Chat history - will be loaded from API
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+
+  // Fetch projects on mount and when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsLoadingProjects(false);
+      return;
+    }
+
+    const fetchProjects = async () => {
+      setIsLoadingProjects(true);
+      try {
+        // Run migration to add default steps to existing test cases
+        const migrationResult = await testCasesApi.migrateDefaultSteps();
+        if (migrationResult.success) {
+          console.log('✅ Migration completed:', migrationResult.data);
+        }
+
+        const response = await projectsApi.getAll();
+        if (response.success && response.data) {
+          // Transform API data to match frontend format
+          const transformedProjects = response.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            description: p.description || '',
+            branches: [
+              { id: 'main', name: 'main', isDefault: true },
+            ],
+            currentBranch: 'main',
+            createdAt: new Date(p.createdAt),
+            updatedAt: new Date(p.updatedAt),
+          }));
+          setProjects(transformedProjects);
+          
+          // Set first project as selected if none selected
+          if (transformedProjects.length > 0) {
+            const savedProjectId = localStorage.getItem('selectedProjectId');
+            const validProject = transformedProjects.find(p => p.id === savedProjectId);
+            
+            if (validProject) {
+              console.log('✅ Using saved project:', validProject.name);
+              setSelectedProjectId(validProject.id);
+            } else {
+              console.log('✅ Auto-selecting first project:', transformedProjects[0].name);
+              setSelectedProjectId(transformedProjects[0].id);
+              localStorage.setItem('selectedProjectId', transformedProjects[0].id);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setIsLoadingProjects(false);
+      }
+    };
+
+    fetchProjects();
+  }, [isAuthenticated]);
+
+  // Function to fetch test cases (can be called anytime to refresh)
+  const fetchTestCases = async () => {
+    if (!isAuthenticated || !selectedProjectId) {
+      setIsLoadingTestCases(false);
+      return;
+    }
+
+    console.log('📋 Fetching test cases for project:', selectedProjectId);
+    setIsLoadingTestCases(true);
+    try {
+      const response = await testCasesApi.getAll(selectedProjectId);
+      if (response.success && response.data) {
+        // Transform API data to match frontend format
+        const transformedTestCases = response.data.map((tc: any) => ({
+          id: tc.id,
+          name: tc.name,
+          description: tc.description || '',
+          status: tc.status,
+          createdAt: new Date(tc.createdAt),
+          lastModified: new Date(tc.updatedAt),
+          projectId: tc.projectId,
+          branchId: 'main',
+          steps: [],
+        }));
+        console.log(`✅ Loaded ${transformedTestCases.length} test cases`);
+        setTestCases(transformedTestCases);
+      }
+    } catch (error) {
+      console.error('Error fetching test cases:', error);
+    } finally {
+      setIsLoadingTestCases(false);
+    }
+  };
+
+  // Fetch test cases when project changes
+  useEffect(() => {
+    fetchTestCases();
+  }, [isAuthenticated, selectedProjectId]);
+
+  // Fetch test executions when project changes
+  useEffect(() => {
+    if (!isAuthenticated || !selectedProjectId) {
+      setIsLoadingExecutions(false);
+      return;
+    }
+
+    const fetchExecutions = async () => {
+      setIsLoadingExecutions(true);
+      try {
+        const response = await executionsApi.getAll();
+        if (response.success && response.data) {
+          // Transform API data to match frontend format
+          const transformedExecutions = response.data
+            .filter((e: any) => e.testCase?.projectId === selectedProjectId)
+            .map((e: any) => ({
+              id: e.id,
+              executionName: e.testCase?.name || 'Test Execution',
+              labels: [],
+              status: e.status,
+              timestamp: new Date(e.startedAt || e.createdAt),
+              duration: e.duration || 0,
+              results: e.resultsJson?.summary || '',
+              triggeredBy: 'user',
+              executionType: 'manual',
+              projectId: selectedProjectId,
+              branchId: 'main',
+              createdAt: new Date(e.startedAt || e.createdAt),
+            }));
+          setTestExecutions(transformedExecutions);
+        }
+      } catch (error) {
+        console.error('Error fetching executions:', error);
+      } finally {
+        setIsLoadingExecutions(false);
+      }
+    };
+
+    fetchExecutions();
+  }, [isAuthenticated, selectedProjectId]);
+
+  // Fetch chat history when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchChatHistory = async () => {
+      try {
+        const response = await chatApi.getHistory();
+        if (response.success && response.data) {
+          const transformedHistory = response.data.map((ch: any) => ({
+            id: ch.id,
+            title: ch.title,
+            timestamp: new Date(ch.createdAt),
+          }));
+          setChatHistory(transformedHistory);
+        }
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    };
+
+    fetchChatHistory();
+  }, [isAuthenticated]);
 
   // Load saved project and tab from localStorage
   useEffect(() => {
@@ -433,7 +293,7 @@ export default function Home() {
 
     if (error) {
       console.error('OAuth error:', error);
-      alert('Authentication failed. Please try again.');
+      showError('Authentication failed. Please try again.');
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
       return;
@@ -459,9 +319,21 @@ export default function Home() {
     // Check if user is authenticated from localStorage
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
+    console.log('🔐 Checking authentication:', { hasToken: !!savedToken, hasUser: !!savedUser });
     if (savedToken && savedUser) {
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
+      try {
+        const userData = JSON.parse(savedUser);
+        console.log('✅ User authenticated from localStorage:', userData);
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('❌ Error parsing saved user:', error);
+        // Clear invalid data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    } else {
+      console.log('⚠️ No authentication found - please login');
     }
 
     const savedProjectId = localStorage.getItem('selectedProjectId');
@@ -505,28 +377,133 @@ export default function Home() {
   // Handlers for test execution table
   const handleViewExecution = (executionId: string) => {
     console.log('View execution:', executionId);
-    // TODO: Implement view execution details
+    setActiveTab('live-execution');
   };
 
-  const handleRerunExecution = (executionId: string) => {
-    console.log('Re-run execution:', executionId);
-    // TODO: Implement re-run execution
+  const handleRerunExecution = async (executionId: string) => {
+    try {
+      const execution = testExecutions.find(e => e.id === executionId);
+      if (execution) {
+        const response = await executionsApi.execute(execution.id);
+        if (response.success) {
+          // Refresh executions list
+          const updatedExecutions = await executionsApi.getAll();
+          if (updatedExecutions.success && updatedExecutions.data) {
+            const transformedExecutions = updatedExecutions.data
+              .filter((e: any) => e.testCase?.projectId === selectedProjectId)
+              .map((e: any) => ({
+                id: e.id,
+                executionName: e.testCase?.name || 'Test Execution',
+                labels: [],
+                status: e.status,
+                timestamp: new Date(e.startedAt || e.createdAt),
+                duration: e.duration || 0,
+                results: e.resultsJson?.summary || '',
+                triggeredBy: 'user',
+                executionType: 'manual',
+                projectId: selectedProjectId,
+                branchId: 'main',
+                createdAt: new Date(e.startedAt || e.createdAt),
+              }));
+            setTestExecutions(transformedExecutions);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error rerunning execution:', error);
+    }
   };
 
-  const handleDeleteExecution = (executionId: string) => {
-    console.log('Delete execution:', executionId);
-    // TODO: Implement delete execution
+  const handleDeleteExecution = async (executionId: string) => {
+    try {
+      // TODO: Implement delete execution API
+      setTestExecutions(prev => prev.filter(e => e.id !== executionId));
+      console.log('Deleted execution:', executionId);
+    } catch (error) {
+      console.error('Error deleting execution:', error);
+    }
   };
 
   // Handlers for test list
-  const handleOpenTestCase = (testCaseId: string) => {
-    console.log('Open test case:', testCaseId);
+  const handleOpenTestCase = async (testCaseId: string) => {
     setActiveTab('editor');
+    setSelectedTestCaseId(testCaseId);
+    
+    // Load test case details with steps
+    setIsLoadingTestSteps(true);
+    try {
+      const response = await testCasesApi.getById(testCaseId);
+      if (response.success && response.data) {
+        const testCase = response.data;
+        console.log('📄 Loaded test case:', testCase.name, 'with', testCase.testSteps?.length || 0, 'steps');
+        
+        // Set selected test case
+        const transformed: TestCase = {
+          id: testCase.id,
+          name: testCase.name,
+          description: testCase.description || '',
+          status: testCase.status,
+          createdAt: new Date(testCase.createdAt),
+          lastModified: new Date(testCase.updatedAt),
+          projectId: testCase.projectId,
+          branchId: 'main',
+          steps: [],
+        };
+        setSelectedTestCase(transformed);
+        
+        // Transform test steps
+        if (testCase.testSteps && Array.isArray(testCase.testSteps)) {
+          const transformedSteps = testCase.testSteps.map((step: any) => ({
+            id: step.id,
+            stepNumber: step.stepNumber,
+            description: step.action, // Use action as description
+            action: step.action || '',
+            selector: step.selector || '',
+            value: step.value || '',
+            uiSection: step.uiSection || 'Default',
+            dataMapping: step.dataMapping || {},
+            expectedResult: step.expectedResult || '',
+            testCaseId: step.testCaseId || testCaseId,
+          }));
+          setTestSteps(transformedSteps);
+          console.log('✅ Loaded', transformedSteps.length, 'test steps');
+        } else {
+          setTestSteps([]);
+          console.log('ℹ️ No test steps found');
+        }
+        
+        // Load test data if available
+        if (testCase.stepsJson) {
+          try {
+            const parsedData = typeof testCase.stepsJson === 'string' 
+              ? JSON.parse(testCase.stepsJson) 
+              : testCase.stepsJson;
+            setTestCaseData(parsedData);
+          } catch (e) {
+            console.log('Could not parse test data');
+            setTestCaseData({});
+          }
+        }
+      } else {
+        console.error('Failed to load test case:', response.error);
+        showError('Failed to load test case');
+      }
+    } catch (error) {
+      console.error('Error loading test steps:', error);
+      showError('Error loading test case details');
+    } finally {
+      setIsLoadingTestSteps(false);
+    }
   };
 
   const handleOpenAllTestCases = () => {
     console.log('Open all test cases');
-    // TODO: Implement open all test cases
+    setActiveTab('test-list');
+  };
+
+  const handleCreateNewTest = () => {
+    setActiveTab('editor');
+    setTestSteps([]);
   };
 
   // Handlers for test editor
@@ -536,19 +513,23 @@ export default function Home() {
   };
 
   const handleDeleteStep = (stepId: string) => {
-    console.log('Delete step:', stepId);
-    // TODO: Implement delete step
+    setTestSteps(prev => prev.filter(s => s.id !== stepId));
   };
 
   const handleAddStep = (uiSection: string) => {
     console.log('Add step to section:', uiSection);
-    // TODO: Implement add step
+    // TODO: Implement add step with API
   };
 
   // Handler for configuration
-  const handleSaveConfiguration = (config: ProjectConfiguration) => {
-    console.log('Save configuration:', config);
-    // TODO: Implement save configuration
+  const handleSaveConfiguration = async (config: ProjectConfiguration) => {
+    try {
+      // TODO: Implement save configuration API
+      setConfiguration(config);
+      console.log('Configuration saved:', config);
+    } catch (error) {
+      console.error('Error saving configuration:', error);
+    }
   };
 
   // Handler for viewing execution from chat
@@ -688,11 +669,11 @@ export default function Home() {
       exec.branchId === selectedProject.currentBranch
   );
 
-  const filteredTestCases = testCases.filter(
-    (tc) =>
-      tc.projectId === selectedProjectId &&
-      tc.branchId === selectedProject.currentBranch
-  );
+  const filteredTestCases = testCases.filter((tc) => {
+    const matchesProject = tc.projectId === selectedProjectId;
+    const matchesBranch = tc.branchId === selectedProject?.currentBranch;
+    return matchesProject && matchesBranch;
+  });
 
   const filteredTestSteps = testSteps.filter((step) => {
     const testCase = testCases.find((tc) => tc.id === step.testCaseId);
@@ -712,12 +693,60 @@ export default function Home() {
             projects={projects}
             selectedProject={selectedProject}
             onProjectChange={handleProjectChange}
+            onTestCaseCreated={fetchTestCases}
           />
         );
       
       case 'dashboard':
+        if (isLoadingProjects || isLoadingExecutions) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading dashboard...</p>
+              </div>
+            </div>
+          );
+        }
+        
+        // Calculate metrics from loaded data
+        const dashboardMetrics = {
+          totalTests: testCases.length,
+          passRate: testExecutions.length > 0 
+            ? (testExecutions.filter(e => e.status === 'passed').length / testExecutions.length) * 100 
+            : 0,
+          avgDuration: testExecutions.length > 0
+            ? testExecutions.reduce((sum, e) => sum + (e.duration || 0), 0) / testExecutions.length
+            : 0,
+          activeSuites: projects.length,
+          executionTrends: [],
+          recentActivity: testExecutions.slice(0, 10).map(e => ({
+            id: e.id,
+            testName: e.executionName,
+            status: e.status,
+            timestamp: e.timestamp,
+            duration: e.duration,
+          })),
+          slowestTests: testExecutions
+            .filter(e => e.duration > 0)
+            .sort((a, b) => b.duration - a.duration)
+            .slice(0, 5)
+            .map(e => ({
+              id: e.id,
+              name: e.executionName,
+              duration: e.duration,
+            })),
+          testDistribution: {
+            passed: testExecutions.filter(e => e.status === 'passed').length,
+            failed: testExecutions.filter(e => e.status === 'failed').length,
+            skipped: 0,
+            running: testExecutions.filter(e => e.status === 'running').length,
+          },
+        };
+        
         return (
           <DashboardView 
+            metrics={dashboardMetrics as any}
             selectedProject={selectedProject} 
             onBranchChange={handleBranchChange}
             projects={projects}
@@ -726,6 +755,16 @@ export default function Home() {
         );
       
       case 'test-execution':
+        if (isLoadingExecutions) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading executions...</p>
+              </div>
+            </div>
+          );
+        }
         return (
           <div>
             <h2 className="text-2xl font-bold text-slate-800 mb-4">
@@ -741,12 +780,24 @@ export default function Home() {
         );
       
       case 'test-list':
+        if (isLoadingTestCases) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading test cases...</p>
+              </div>
+            </div>
+          );
+        }
         return (
           <div>
             <TestListView
               testCases={filteredTestCases}
               onOpenTestCase={handleOpenTestCase}
               onOpenAllTestCases={handleOpenAllTestCases}
+              onCreateNewTest={handleCreateNewTest}
+              onTestDeleted={fetchTestCases}
             />
           </div>
         );
@@ -754,15 +805,24 @@ export default function Home() {
       case 'editor':
         return (
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">
-              Test Editor
-            </h2>
-            <TestEditorView
-              testSteps={filteredTestSteps}
-              onEditStep={handleEditStep}
-              onDeleteStep={handleDeleteStep}
-              onAddStep={handleAddStep}
-            />
+            {isLoadingTestSteps ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading test case...</p>
+                </div>
+              </div>
+            ) : (
+              <TestEditorView
+                testSteps={filteredTestSteps}
+                onEditStep={handleEditStep}
+                onDeleteStep={handleDeleteStep}
+                onAddStep={handleAddStep}
+                testCaseName={selectedTestCase?.name || 'Test Case'}
+                testCaseData={testCaseData}
+                onTestDataChange={(data) => setTestCaseData(data)}
+              />
+            )}
           </div>
         );
       

@@ -16,6 +16,8 @@ import dashboardRoutes from './src/routes/dashboard';
 import configRoutes from './src/routes/config';
 import settingsRoutes from './src/routes/settings';
 import intentRoutes from './src/routes/intent';
+import workflowRoutes from './src/routes/workflow.routes';
+import playwrightRoutes from './src/routes/playwright.routes';
 
 // Import agent services
 import { AIAgentService } from './src/services/aiAgentService';
@@ -127,6 +129,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/intent', intentRoutes);
+app.use('/api/workflows', workflowRoutes);
+app.use('/api/playwright', playwrightRoutes);
 
 app.post('/api/test-plan', async (req: Request, res: Response) => {
   const { prompt, environment = 'staging', runType = 'single', options = {} } = req.body;

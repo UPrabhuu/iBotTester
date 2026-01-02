@@ -6,10 +6,12 @@ import {
   createTestCase,
   updateTestCase,
   deleteTestCase,
+  deleteBulkTestCases,
   getTestSteps,
   createTestStep,
   updateTestStep,
   deleteTestStep,
+  migrateTestSteps,
 } from '../controllers/testController';
 import { authenticate } from '../middleware/auth';
 
@@ -20,6 +22,14 @@ router.use(authenticate);
 
 // Test case routes
 router.get('/', listTestCases);
+
+// Migration route - must come BEFORE /:id to avoid being caught by it
+router.post('/migrate/add-default-steps', migrateTestSteps);
+
+// Bulk operations - must come BEFORE /:id to avoid being caught by it
+router.delete('/bulk', deleteBulkTestCases);
+
+// Individual test case routes
 router.get('/:id', getTestCase);
 router.post('/', createTestCase);
 router.put('/:id', updateTestCase);

@@ -230,6 +230,48 @@ export const deleteTestCase = async (req: Request, res: Response) => {
   }
 };
 
+// DELETE /api/test-cases/bulk
+export const deleteBulkTestCases = async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    const userId = req.user?.id;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json(errorResponse('Test case IDs array is required'));
+    }
+
+    // Get all test cases with projects to verify access
+    const testCases = await prisma.testCase.findMany({
+      where: {
+        id: { in: ids },
+      },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+      },
+    });
+
+    // Verify all test cases belong to the user
+    const unauthorizedTests = testCases.filter(tc => tc.project.userId !== userId);
+    if (unauthorizedTests.length > 0) {
+      return res.status(403).json(errorResponse('Access denied to one or more test cases'));
+    }
+
+    // Delete all test cases (cascades to steps and executions)
+    const result = await prisma.testCase.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+
+    res.json(deletedResponse(`${result.count} test case(s) deleted successfully`));
+  } catch (error) {
+    console.error('Bulk delete test cases error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
+};
+
 // GET /api/test-cases/:id/steps
 export const getTestSteps = async (req: Request, res: Response) => {
   try {
@@ -426,6 +468,66 @@ export const deleteTestStep = async (req: Request, res: Response) => {
     res.json(deletedResponse('Test step deleted successfully'));
   } catch (error) {
     console.error('Delete test step error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
+};
+
+// Migrate: Add default test steps to test cases that don't have any
+export const migrateTestSteps = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    // Get all test cases for this user
+    const testCases = await prisma.testCase.findMany({
+      where: {
+        project: {
+          userId,
+        },
+      },
+      include: {
+        project: {
+          select: { userId: true },
+        },
+        _count: {
+          select: { testSteps: true },
+        },
+      },
+    });
+
+    let migratedCount = 0;
+    
+    for (const testCase of testCases) {
+      // Only migrate test cases without steps
+      if (testCase._count.testSteps === 0) {
+        // Create default test steps
+        const defaultSteps = [
+          { stepNumber: 1, action: 'Navigate to URL', expectedResult: 'Page loaded successfully', uiSection: 'Navigation' },
+          { stepNumber: 2, action: 'Validate Content', expectedResult: 'Content is visible', uiSection: 'Validation' },
+        ];
+        
+        for (const step of defaultSteps) {
+          await prisma.testStep.create({
+            data: {
+              testCaseId: testCase.id,
+              stepNumber: step.stepNumber,
+              action: step.action,
+              expectedResult: step.expectedResult,
+              uiSection: step.uiSection,
+            },
+          });
+        }
+        migratedCount++;
+      }
+    }
+
+    res.json(successResponse({
+      message: `Migration complete`,
+      migratedCount,
+      totalTestCases: testCases.length,
+      details: `Added default steps to ${migratedCount} test cases`,
+    }));
+  } catch (error) {
+    console.error('Migrate test steps error:', error);
     res.status(500).json(errorResponse('Internal server error'));
   }
 };

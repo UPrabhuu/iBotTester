@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import Alert, { AlertType } from '../components/Alert';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface AlertConfig {
   id: number;
@@ -8,12 +9,33 @@ interface AlertConfig {
   duration?: number;
 }
 
+interface ConfirmConfig {
+  isOpen: boolean;
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  confirmVariant?: 'danger' | 'primary' | 'warning';
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
 interface AlertContextType {
   showAlert: (message: string, type?: AlertType, duration?: number) => void;
   showSuccess: (message: string, duration?: number) => void;
   showError: (message: string, duration?: number) => void;
   showWarning: (message: string, duration?: number) => void;
   showInfo: (message: string, duration?: number) => void;
+  showConfirm: (
+    message: string,
+    options?: {
+      title?: string;
+      confirmText?: string;
+      cancelText?: string;
+      confirmVariant?: 'danger' | 'primary' | 'warning';
+    }
+  ) => Promise<boolean>;
+  showToast: (message: string, type?: AlertType, duration?: number) => void;
 }
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
@@ -33,6 +55,12 @@ interface AlertProviderProps {
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alerts, setAlerts] = useState<AlertConfig[]>([]);
   const [nextId, setNextId] = useState(0);
+  const [confirmConfig, setConfirmConfig] = useState<ConfirmConfig>({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+    onCancel: () => {},
+  });
 
   const showAlert = useCallback(
     (message: string, type: AlertType = 'info', duration: number = 5000) => {
@@ -71,6 +99,45 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     [showAlert]
   );
 
+  const showConfirm = useCallback(
+    (
+      message: string,
+      options?: {
+        title?: string;
+        confirmText?: string;
+        cancelText?: string;
+        confirmVariant?: 'danger' | 'primary' | 'warning';
+      }
+    ): Promise<boolean> => {
+      return new Promise((resolve) => {
+        setConfirmConfig({
+          isOpen: true,
+          message,
+          title: options?.title || 'Confirm Action',
+          confirmText: options?.confirmText || 'OK',
+          cancelText: options?.cancelText || 'Cancel',
+          confirmVariant: options?.confirmVariant || 'primary',
+          onConfirm: () => {
+            setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+            resolve(true);
+          },
+          onCancel: () => {
+            setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+            resolve(false);
+          },
+        });
+      });
+    },
+    []
+  );
+
+  const showToast = useCallback(
+    (message: string, type: AlertType = 'info', duration: number = 3000) => {
+      showAlert(message, type, duration);
+    },
+    [showAlert]
+  );
+
   const removeAlert = useCallback((id: number) => {
     setAlerts(prev => prev.filter(alert => alert.id !== id));
   }, []);
@@ -83,6 +150,8 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
         showError,
         showWarning,
         showInfo,
+        showConfirm,
+        showToast,
       }}
     >
       {children}
@@ -105,6 +174,16 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
           </div>
         ))}
       </div>
+      <ConfirmDialog
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText={confirmConfig.confirmText}
+        cancelText={confirmConfig.cancelText}
+        confirmVariant={confirmConfig.confirmVariant}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={confirmConfig.onCancel}
+      />
     </AlertContext.Provider>
   );
 };

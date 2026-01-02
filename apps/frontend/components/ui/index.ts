@@ -45,3 +45,7 @@ export type { DividerProps, DividerOrientation, DividerVariant } from './Divider
 
 export { default as Select } from './Select';
 export type { SelectProps, SelectSize, SelectVariant, SelectOption } from './Select';
+
+export { default as FileUpload } from './FileUpload';
+
+export { default as DatePicker } from './DatePicker';

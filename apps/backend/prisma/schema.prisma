@@ -84,6 +84,7 @@ model TestCase {
   project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   testSteps  TestStep[]
   executions Execution[]
+  executionSnapshots ExecutionSnapshot[]
 
   @@index([projectId])
   @@index([status])
@@ -190,8 +191,283 @@ model ParsedIntent {
   aiUsed           Boolean  @default(false) @map("ai_used")
   createdAt        DateTime @default(now()) @map("created_at")
 
+  // Relations
+  workflowExecutions WorkflowExecution[]
+
   @@index([userId])
   @@index([projectId])
   @@index([createdAt])
   @@map("parsed_intents")
+}
+
+// Workflow Execution model - tracks complete workflow runs
+model WorkflowExecution {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  projectId       String?   @map("project_id")
+  parsedIntentId  String?   @map("parsed_intent_id")
+  userPrompt      String    @db.Text @map("user_prompt")
+  url             String?
+  status          String    @default("pending") // pending, running, completed, failed
+  startedAt       DateTime  @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  totalTime       Int?      @map("total_time") // milliseconds
+  errorMessage    String?   @db.Text @map("error_message")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  parsedIntent ParsedIntent?       @relation(fields: [parsedIntentId], references: [id], onDelete: SetNull)
+  activities   WorkflowActivity[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("workflow_executions")
+}
+
+// Workflow Activity model - tracks individual workflow steps
+model WorkflowActivity {
+  id                  String    @id @default(uuid())
+  workflowExecutionId String    @map("workflow_execution_id")
+  activityType        String    @map("activity_type") // 'intent', 'discovery', 'generation'
+  status              String    @default("pending") // pending, running, completed, failed
+  dataJson            Json?     @map("data_json") // Stores the activity output
+  duration            Int?      // milliseconds
+  errorMessage        String?   @db.Text @map("error_message")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  completedAt         DateTime? @map("completed_at")
+
+  // Relations
+  workflowExecution      WorkflowExecution        @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+  discoveredPageSnapshot DiscoveredPageSnapshot?
+  generatedTestModel     GeneratedTestModel?
+
+  @@index([workflowExecutionId])
+  @@index([activityType])
+  @@index([status])
+  @@map("workflow_activities")
+}
+
+// Discovered Page Snapshot model - stores Playwright discovery results
+model DiscoveredPageSnapshot {
+  id                 String   @id @default(uuid())
+  workflowActivityId String   @unique @map("workflow_activity_id")
+  projectId          String?  @map("project_id")
+  url                String
+  title              String?
+  viewportJson       Json?    @map("viewport_json") // { width, height }
+  elementsJson       Json     @map("elements_json") // All discovered elements
+  metadataJson       Json?    @map("metadata_json") // Discovery metadata
+  screenshotsJson    Json?    @map("screenshots_json") // Base64 screenshots
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  // Relations
+  workflowActivity WorkflowActivity @relation(fields: [workflowActivityId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([url])
+  @@index([createdAt])
+  @@map("discovered_page_snapshots")
+}
+
+// Generated Test Model - stores TestModelGenerator output
+model GeneratedTestModel {
+  id                 String   @id @default(uuid())
+  workflowActivityId String   @unique @map("workflow_activity_id")
+  projectId          String?  @map("project_id")
+  modelVersion       String   @default("1.0.0") @map("model_version")
+  modelJson          Json     @map("model_json") // Complete test model
+  testCaseCount      Int      @default(0) @map("test_case_count")
+  totalSteps         Int      @default(0) @map("total_steps")
+  configurationJson  Json?    @map("configuration_json") // Test configuration
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  // Relations
+  workflowActivity WorkflowActivity @relation(fields: [workflowActivityId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("generated_test_models")
+}
+
+// Playwright Test Execution - tracks Playwright runner executions
+model PlaywrightExecution {
+  id              String    @id @default(uuid())
+  testCaseId      String?   @map("test_case_id")
+  projectId       String?   @map("project_id")
+  userId          String    @map("user_id")
+  executionName   String    @map("execution_name")
+  status          String    @default("pending") // pending, running, completed, failed
+  startedAt       DateTime  @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  duration        Int?      // milliseconds
+  browserType     String    @default("chromium") @map("browser_type")
+  viewportJson    Json?     @map("viewport_json")
+  configJson      Json?     @map("config_json")
+  errorMessage    String?   @db.Text @map("error_message")
+  triggeredBy     String?   @map("triggered_by")
+  executionType   String    @default("manual") @map("execution_type") // manual, scheduled, ci-cd
+  
+  // Relations
+  evidenceData     EvidenceData[]
+  validationResult ValidationResult?
+  executionReport  ExecutionReport?
+
+  @@index([testCaseId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("playwright_executions")
+}
+
+// Evidence Data - stores screenshots, videos, traces from Evidence Collector
+model EvidenceData {
+  id                    String    @id @default(uuid())
+  playwrightExecutionId String    @map("playwright_execution_id")
+  evidenceType          String    @map("evidence_type") // screenshot, video, trace, network, console
+  stepNumber            Int?      @map("step_number")
+  stepDescription       String?   @map("step_description")
+  timestamp             DateTime  @default(now())
+  dataUrl               String?   @db.Text @map("data_url") // Base64 or file path
+  metadataJson          Json?     @map("metadata_json")
+  fileSize              Int?      @map("file_size") // in bytes
+  mimeType              String?   @map("mime_type")
+  
+  // Relations
+  playwrightExecution PlaywrightExecution @relation(fields: [playwrightExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([playwrightExecutionId])
+  @@index([evidenceType])
+  @@index([stepNumber])
+  @@map("evidence_data")
+}
+
+// Validation Result - stores Diff & Validation Agent results
+model ValidationResult {
+  id                    String    @id @default(uuid())
+  playwrightExecutionId String    @unique @map("playwright_execution_id")
+  overallStatus         String    @map("overall_status") // passed, failed, warning
+  validationType        String    @default("automated") @map("validation_type") // automated, manual, ai-powered
+  issuesFound           Int       @default(0) @map("issues_found")
+  issuesJson            Json?     @map("issues_json") // Array of validation issues
+  visualDiffScore       Float?    @map("visual_diff_score") // 0-100 similarity score
+  visualDiffUrl         String?   @db.Text @map("visual_diff_url") // Diff image URL
+  expectedDataJson      Json?     @map("expected_data_json")
+  actualDataJson        Json?     @map("actual_data_json")
+  diffDataJson          Json?     @map("diff_data_json")
+  aiAnalysis            String?   @db.Text @map("ai_analysis")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  playwrightExecution PlaywrightExecution @relation(fields: [playwrightExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([overallStatus])
+  @@index([createdAt])
+  @@map("validation_results")
+}
+
+// Execution Report - comprehensive test execution report
+model ExecutionReport {
+  id                    String    @id @default(uuid())
+  playwrightExecutionId String    @unique @map("playwright_execution_id")
+  reportType            String    @default("standard") @map("report_type") // standard, detailed, summary
+  summary               String    @db.Text
+  totalSteps            Int       @map("total_steps")
+  passedSteps           Int       @map("passed_steps")
+  failedSteps           Int       @map("failed_steps")
+  skippedSteps          Int       @map("skipped_steps")
+  performanceMetrics    Json?     @map("performance_metrics_json")
+  coverageData          Json?     @map("coverage_data_json")
+  recommendationsJson   Json?     @map("recommendations_json")
+  reportDataJson        Json      @map("report_data_json") // Full report data
+  createdAt             DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  playwrightExecution PlaywrightExecution @relation(fields: [playwrightExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([reportType])
+  @@index([createdAt])
+  @@map("execution_reports")
+}
+// NEW: Execution Snapshots (for Diff Validation)
+model ExecutionSnapshot {
+  id                    String    @id @default(uuid())
+  executionId           String    @map("execution_id")
+  testCaseId            String    @map("test_case_id")
+  snapshotData          Json      @map("snapshot_data") // { steps, selectors, dom, timing }
+  selfHealingEvents     Json[]    @map("self_healing_events") // Array of self-healing event objects
+  performanceMetrics    Json?     @map("performance_metrics") // { duration, memory, network }
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  testCase              TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  flowDifferencesCurrent FlowDifference[] @relation("CurrentSnapshot")
+  flowDifferencesPrevious FlowDifference[] @relation("PreviousSnapshot")
+
+  @@index([testCaseId])
+  @@index([executionId])
+  @@index([createdAt])
+  @@map("execution_snapshots")
+}
+
+// NEW: Flow Differences (Diff Validation Results)
+model FlowDifference {
+  id                    String    @id @default(uuid())
+  currentSnapshotId     String    @map("current_snapshot_id")
+  previousSnapshotId    String?   @map("previous_snapshot_id")
+  differenceType        String    @map("difference_type") // BREAKING, NON_BREAKING, COSMETIC, SELF_HEALED
+  impactScore           Int       @default(0) @map("impact_score") // 0-100
+  description           String    @db.Text
+  diffData              Json?     @map("diff_data") // Detailed comparison data
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  currentSnapshot       ExecutionSnapshot @relation("CurrentSnapshot", fields: [currentSnapshotId], references: [id], onDelete: Cascade)
+  previousSnapshot      ExecutionSnapshot? @relation("PreviousSnapshot", fields: [previousSnapshotId], references: [id], onDelete: SetNull)
+
+  @@index([currentSnapshotId])
+  @@index([differenceType])
+  @@index([createdAt])
+  @@map("flow_differences")
+}
+
+// NEW: Test Reports (Report Generator Output)
+model TestReport {
+  id                    String    @id @default(uuid())
+  executionId           String    @map("execution_id")
+  reportType            String    @default("standard") @map("report_type") // standard, detailed, executive
+  overallStatus         String    @map("overall_status") // PASS, FAIL, PARTIAL, ERROR
+  confidenceScore       Float?    @map("confidence_score") // 0.00 - 1.00
+  summary               String    @db.Text
+  detailedAnalysis      String?   @db.Text @map("detailed_analysis")
+  suggestedFixes        Json[]    @map("suggested_fixes") // Array of fix suggestions
+  rootCauseAnalysis     String?   @db.Text @map("root_cause_analysis")
+  actionableInsights    Json[]    @map("actionable_insights") // Array of insight objects
+  generatedBy           String    @default("ai") @map("generated_by") // ai, template
+  aiModel               String?   @map("ai_model") // gpt-4, gpt-3.5-turbo, etc.
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  @@index([executionId])
+  @@index([overallStatus])
+  @@index([createdAt])
+  @@map("test_reports")
+}
+
+// NEW: Execution Evidence (Evidence Collector Output)
+model ExecutionEvidence {
+  id                    String    @id @default(uuid())
+  executionId           String    @map("execution_id")
+  stepNumber            Int?      @map("step_number")
+  evidenceType          String    @map("evidence_type") // screenshot, video, log, console, network
+  filePath              String?   @db.Text @map("file_path") // For screenshots/videos
+  content               String?   @db.Text // For logs/console
+  metadata              Json?     // Additional data (size, format, timestamp)
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  @@index([executionId])
+  @@index([evidenceType])
+  @@index([createdAt])
+  @@map("execution_evidence")
 }

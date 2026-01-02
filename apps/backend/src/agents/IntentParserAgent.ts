@@ -57,6 +57,7 @@ export interface OrchestratorArgs {
   parallelExecution?: boolean;
   maxConcurrency?: number;
   batchSize?: number;
+  url?: string;
 }
 
 export interface ParsedIntent {
@@ -222,7 +223,7 @@ export class IntentParserAgent {
           },
         ],
         temperature: this.options.temperature!,
-        max_tokens: this.options.maxTokens!,
+        max_completion_tokens: this.options.maxTokens!,
         response_format: { type: 'json_object' }
       });
 

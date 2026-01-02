@@ -1,6 +1,18 @@
 import React from 'react';
-import { TestExecution } from '@/types/project';
 import { Button, Heading, Text, Badge } from './ui';
+
+export interface TestExecution {
+  id: string;
+  executionName: string;
+  labels?: string[];
+  status: 'running' | 'passed' | 'failed' | 'pending' | 'completed';
+  timestamp: Date;
+  duration: number;
+  executionType: string;
+  triggeredBy: string;
+  passedSteps?: number;
+  totalSteps?: number;
+}
 
 interface TestExecutionTableProps {
   executions: TestExecution[];
@@ -16,14 +28,24 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
   onDelete,
 }) => {
   const getStatusBadge = (status: TestExecution['status']) => {
-    const badges = {
+    const statusMap: Record<string, string> = {
+      running: 'running',
+      completed: 'passed',
+      passed: 'passed',
+      failed: 'failed',
+      pending: 'pending',
+    };
+    
+    const mappedStatus = statusMap[status] || 'pending';
+    
+    const badges: Record<string, string> = {
       running: 'bg-blue-100 text-blue-700 border border-blue-300 animate-pulse',
       passed: 'bg-green-100 text-green-700 border border-green-300',
       failed: 'bg-red-100 text-red-700 border border-red-300',
       pending: 'bg-gray-100 text-gray-600 border border-gray-300',
     };
 
-    const icons = {
+    const icons: Record<string, string> = {
       running: '⏳',
       passed: '✓',
       failed: '✗',
@@ -31,8 +53,8 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
     };
 
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${badges[status]}`}>
-        <span>{icons[status]}</span>
+      <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${badges[mappedStatus]}`}>
+        <span>{icons[mappedStatus]}</span>
         <span className="capitalize">{status}</span>
       </span>
     );
@@ -109,14 +131,18 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      {execution.labels.map((label, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 text-xs font-medium bg-primary-50 text-primary-700 rounded"
-                        >
-                          {label}
-                        </span>
-                      ))}
+                      {execution.labels && execution.labels.length > 0 ? (
+                        execution.labels.map((label, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 text-xs font-medium bg-primary-50 text-primary-700 rounded"
+                          >
+                            {label}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-neutral-400">No labels</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">

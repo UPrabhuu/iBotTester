@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { TestCase } from '@/types/project';
 import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
+import ConfirmDialog from './ConfirmDialog';
+import { testCasesApi } from '@/services/api';
+import { useAlert } from '@/contexts/AlertContext';
 
 interface Folder {
   id: string;
@@ -15,6 +18,7 @@ interface TestListViewProps {
   onOpenTestCase: (testCaseId: string) => void;
   onOpenAllTestCases: () => void;
   onCreateNewTest?: () => void;
+  onTestDeleted?: () => void;
 }
 
 const TestListView: React.FC<TestListViewProps> = ({
@@ -22,7 +26,9 @@ const TestListView: React.FC<TestListViewProps> = ({
   onOpenTestCase,
   onOpenAllTestCases,
   onCreateNewTest,
+  onTestDeleted,
 }) => {
+  const { showAlert } = useAlert();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'modified' | 'status'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -40,6 +46,13 @@ const TestListView: React.FC<TestListViewProps> = ({
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'draft'>('all');
   const [activeContentTab, setActiveContentTab] = useState<'folders' | 'tests'>('tests');
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{
+    isOpen: boolean;
+    testId: string | null;
+    testName: string;
+  }>({ isOpen: false, testId: null, testName: '' });
+  const [deleteBulkConfirmDialog, setDeleteBulkConfirmDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Get current folder breadcrumbs
   const breadcrumbs = useMemo(() => {
@@ -191,6 +204,62 @@ const TestListView: React.FC<TestListViewProps> = ({
       newSelection.add(testId);
     }
     setSelectedTests(newSelection);
+  };
+
+  const handleDeleteSingleTest = (testId: string, testName: string) => {
+    setDeleteConfirmDialog({
+      isOpen: true,
+      testId,
+      testName,
+    });
+  };
+
+  const handleDeleteBulkTests = () => {
+    if (selectedTests.size === 0) return;
+    setDeleteBulkConfirmDialog(true);
+  };
+
+  const confirmDeleteSingleTest = async () => {
+    if (!deleteConfirmDialog.testId) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await testCasesApi.delete(deleteConfirmDialog.testId);
+      if (response.success) {
+        showAlert('Test case deleted successfully', 'success');
+        setDeleteConfirmDialog({ isOpen: false, testId: null, testName: '' });
+        onTestDeleted?.();
+      } else {
+        showAlert(response.error || 'Failed to delete test case', 'error');
+      }
+    } catch (error) {
+      showAlert('Error deleting test case', 'error');
+      console.error('Delete test error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const confirmDeleteBulkTests = async () => {
+    if (selectedTests.size === 0) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await testCasesApi.deleteBulk(Array.from(selectedTests));
+      if (response.success) {
+        showAlert(`${selectedTests.size} test case(s) deleted successfully`, 'success');
+        setSelectedTests(new Set());
+        setDeleteBulkConfirmDialog(false);
+        onTestDeleted?.();
+      } else {
+        showAlert(response.error || 'Failed to delete test cases', 'error');
+      }
+    } catch (error) {
+      showAlert('Error deleting test cases', 'error');
+      console.error('Bulk delete test error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getTestCountInFolder = (folderId: string): number => {
@@ -569,6 +638,16 @@ const TestListView: React.FC<TestListViewProps> = ({
                             <option key={f.id} value={f.id}>📁 {f.name}</option>
                           ))}
                         </Select>
+                        <button
+                          onClick={handleDeleteBulkTests}
+                          disabled={isDeleting}
+                          className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-all shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          {isDeleting ? 'Deleting...' : `Delete ${selectedTests.size}`}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -636,16 +715,30 @@ const TestListView: React.FC<TestListViewProps> = ({
                             </div>
                           </div>
 
-                          {/* Action Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onOpenTestCase(testCase.id);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 px-5 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-xl transition-all border-2 border-blue-200"
-                          >
-                            Open →
-                          </button>
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenTestCase(testCase.id);
+                              }}
+                              className="px-5 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-xl transition-all border-2 border-blue-200"
+                            >
+                              Open →
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSingleTest(testCase.id, testCase.name);
+                              }}
+                              className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all border-2 border-red-200"
+                              title="Delete test"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -673,7 +766,21 @@ const TestListView: React.FC<TestListViewProps> = ({
                               onClick={(e) => e.stopPropagation()}
                               className="w-5 h-5 text-blue-600 border-gray-300 rounded-lg focus:ring-blue-500 cursor-pointer"
                             />
-                            {getStatusBadge(testCase.status)}
+                            <div className="flex items-center gap-2">
+                              {getStatusBadge(testCase.status)}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSingleTest(testCase.id, testCase.name);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                title="Delete test"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
                           
                           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-xl shadow-blue-500/20">
@@ -735,6 +842,30 @@ const TestListView: React.FC<TestListViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Delete Single Test Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmDialog.isOpen}
+        title="Delete Test Case"
+        message={`Are you sure you want to delete "${deleteConfirmDialog.testName}"? This action cannot be undone.`}
+        confirmText={isDeleting ? 'Deleting...' : 'Delete'}
+        cancelText="Cancel"
+        confirmVariant="danger"
+        onConfirm={confirmDeleteSingleTest}
+        onCancel={() => setDeleteConfirmDialog({ isOpen: false, testId: null, testName: '' })}
+      />
+
+      {/* Delete Multiple Tests Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteBulkConfirmDialog}
+        title="Delete Multiple Tests"
+        message={`Are you sure you want to delete ${selectedTests.size} test case(s)? This action cannot be undone.`}
+        confirmText={isDeleting ? 'Deleting...' : 'Delete All'}
+        cancelText="Cancel"
+        confirmVariant="danger"
+        onConfirm={confirmDeleteBulkTests}
+        onCancel={() => setDeleteBulkConfirmDialog(false)}
+      />
     </div>
   );
 };

@@ -35,7 +35,7 @@ export class AIAgentService {
           },
         ],
         temperature: 0.3, // Lower temperature for more deterministic output
-        max_tokens: 1500,
+        max_completion_tokens: 1500,
       });
 
       const content = completion.choices[0]?.message?.content;
@@ -164,7 +164,7 @@ export class AIAgentService {
           },
         ],
         temperature: 0.5,
-        max_tokens: 500,
+        max_completion_tokens: 500,
       });
 
       return completion.choices[0]?.message?.content || this.generateBasicSummary(testPlan, results);

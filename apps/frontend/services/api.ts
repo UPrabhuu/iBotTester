@@ -242,6 +242,19 @@ export const testCasesApi = {
       method: 'DELETE',
     });
   },
+
+  async deleteBulk(ids: string[]): Promise<ApiResponse<void>> {
+    return fetchApi('/api/test-cases/bulk', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    });
+  },
+
+  async migrateDefaultSteps(): Promise<ApiResponse<any>> {
+    return fetchApi('/api/test-cases/migrate/add-default-steps', {
+      method: 'POST',
+    });
+  },
 };
 
 // Executions API

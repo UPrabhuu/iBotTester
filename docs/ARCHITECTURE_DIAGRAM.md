@@ -1,4 +1,33 @@
-# iBotTester Agent Architecture Diagram
+# iBotTester System Architecture
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Next.js)                            │
+│  • React Components • Dashboard • Test Editor • Live Execution       │
+│  • Chat Interface • Project Management • Execution Results           │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │ REST API
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    BACKEND API (Express + TypeScript)                │
+├─────────────────────────────────────────────────────────────────────┤
+│  Endpoints: /api/auth, /api/projects, /api/test-cases,              │
+│             /api/executions, /api/workflows, /api/chat,              │
+│             /api/playwright, /api/orchestrated-test                  │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │
+        ┌──────────────────┼──────────────────┬──────────────────┐
+        │                  │                  │                  │
+        ▼                  ▼                  ▼                  ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│  AGENT       │  │  WORKFLOW    │  │  EXECUTION   │  │  DATABASE    │
+│  SYSTEM      │  │  ENGINE      │  │  ENGINE      │  │  (Postgres)  │
+└──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘
+```
+
+## Core Concept Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -8,239 +37,269 @@
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                  INTENT PARSER AGENT                                 │
+│                   AGENT (INTENT + PLAN)                              │
+│  Files: IntentParserAgent.ts + TestModelGenerator.ts                │
 ├─────────────────────────────────────────────────────────────────────┤
-│  • Parses natural language                                           │
-│  • Extracts: action, target, URL, constraints                        │
-│  • AI-powered (GPT-4) with rule-based fallback                       │
-│  • Returns confidence score                                          │
-├─────────────────────────────────────────────────────────────────────┤
-│  Output: {                                                           │
-│    action: "purchase",                                               │
-│    target: "Nike shoes",                                             │
-│    url: "https://amazon.com",                                        │
-│    constraints: ["under $150", "size 9"],                            │
-│    confidence: 0.9                                                   │
-│  }                                                                   │
-└──────────────────────────┬──────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│              TEST PLANNER AGENT (JSON)                               │
-├─────────────────────────────────────────────────────────────────────┤
-│  • Converts intent to structured steps                               │
-│  • Machine-readable JSON format                                      │
-│  • Deterministic (temperature: 0.3)                                  │
-│  • Includes retry policies                                           │
-├─────────────────────────────────────────────────────────────────────┤
-│  Output: {                                                           │
-│    testId: "test-123...",                                            │
-│    name: "Amazon Nike Purchase Flow",                                │
-│    steps: [                                                          │
-│      { step: 1, action: "navigate", url: "..." },                    │
-│      { step: 2, action: "search", query: "Nike shoes size 9" },      │
-│      { step: 3, action: "validate", rule: "price <= 150" },          │
-│      ...                                                             │
-│    ]                                                                 │
-│  }                                                                   │
-└──────────────────────────┬──────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│            EXECUTION AGENT (Playwright)                              │
-├─────────────────────────────────────────────────────────────────────┤
-│  FEATURES:                                                           │
-│  • Playwright browser automation                                     │
-│  • Self-healing selectors                                            │
-│  • Retry logic (max 2 retries)                                       │
-│  • Screenshot after each step                                        │
-│  • Video recording                                                   │
-│  • Console/network logging                                           │
+│  STEP 1: Intent Parsing                                              │
+│  • Parse natural language prompt                                     │
+│  • Extract: action, target, URL, constraints                         │
+│  • AI-powered (OpenAI GPT)                                           │
+│  • Store in ParsedIntent DB                                          │
 │                                                                      │
-│  SELF-HEALING STRATEGIES:                                            │
-│  1. Alternative semantic selectors (aria-label, role, data-testid)   │
-│  2. Visible text similarity matching                                 │
-│  3. Partial text and fuzzy matching                                  │
-│  4. AI-based DOM understanding                                       │
-│  5. Fallback logging and tracking                                    │
+│  STEP 2: Test Planning (AI)                                         │
+│  • Generate test strategy                                            │
+│  • Define test scenarios                                             │
+│  • Plan execution steps                                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  Output: ParsedIntent + Test Plan                                   │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              PLAYWRIGHT DISCOVER TOOL                                │
+│  File: PlaywrightDiscoveryAgent.ts                                   │
+├─────────────────────────────────────────────────────────────────────┤
+│  • Launch Playwright browser                                         │
+│  • Navigate to target URL                                            │
+│  • Discover page elements (buttons, inputs, links, etc.)             │
+│  • Capture element properties (selector, text, role, etc.)           │
+│  • Screenshot page states                                            │
+│  • Store in DiscoveredPageSnapshot DB                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  Output: Discovered Page Elements (JSON)                            │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    TEST MODEL (JSON)                                 │
+│  File: TestModelGenerator.ts                                         │
+├─────────────────────────────────────────────────────────────────────┤
+│  • Combine Intent + Discovered Elements                              │
+│  • AI generates structured test model                                │
+│  • Create test cases with steps                                      │
+│  • Define assertions and validations                                 │
+│  • Store in GeneratedTestModel DB                                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Output: {                                                           │
-│    testId: "test-123...",                                            │
-│    status: "PASS" | "FAIL" | "PARTIAL",                              │
-│    steps: [                                                          │
-│      {                                                               │
-│        step: 1,                                                      │
-│        status: "PASS",                                               │
-│        action: "navigate",                                           │
-│        screenshot: "data:image/png;base64,...",                      │
-│        fallbackUsed: false                                           │
-│      },                                                              │
-│      ...                                                             │
-│    ]                                                                 │
+│    testCases: [{                                                     │
+│      name: "Purchase Nike shoes",                                    │
+│      steps: [                                                        │
+│        { action: "navigate", url: "..." },                           │
+│        { action: "search", selector: "...", value: "..." },          │
+│        { action: "click", selector: "..." },                         │
+│        { action: "assert", condition: "price <= 150" }               │
+│      ]                                                               │
+│    }]                                                                │
 │  }                                                                   │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                EVIDENCE COLLECTOR AGENT                              │
+│        [OPTIONAL] CODE GENERATOR + STORE PLAYWRIGHT CODE             │
+│  File: (Future enhancement)                                          │
 ├─────────────────────────────────────────────────────────────────────┤
-│  COLLECTS:                                                           │
-│  • Screenshots (base64 encoded)                                      │
-│  • Execution logs (timestamped)                                      │
-│  • Video recordings                                                  │
-│  • Browser console logs                                              │
-│  • Network request logs                                              │
-│  • Metadata for each evidence item                                   │
+│  • Convert Test Model to Playwright TypeScript code                  │
+│  • Generate .spec.ts files                                           │
+│  • Store in repository                                               │
+│  • Enable version control                                            │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Output: {                                                           │
-│    screenshots: ["data:image/png;base64,...", ...],                  │
-│    video: "path/to/video.webm",                                      │
-│    logs: [                                                           │
-│      "[2025-12-31T...] Executing step 1: navigate",                  │
-│      "[2025-12-31T...] Step 1 completed successfully",               │
-│      ...                                                             │
-│    ]                                                                 │
-│  }                                                                   │
+│  Output: test.spec.ts (Playwright Test File)                        │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│           DIFF & VALIDATION AGENT                                    │
+│                    PLAYWRIGHT RUNNER                                 │
+│  File: PlaywrightExecutionEngine.ts                                  │
 ├─────────────────────────────────────────────────────────────────────┤
-│  • Stores execution history (last 10 runs, configurable)             │
-│  • Compares with last successful run                                 │
-│  • Detects changes:                                                  │
-│    - Page structure changes                                          │
-│    - Element selector changes                                        │
-│    - Flow order differences                                          │
-│    - Self-healing events                                             │
-│  • Classifies differences:                                           │
-│    - BREAKING: Test fails, manual intervention needed                │
-│    - NON-BREAKING: Test passes with self-healing                     │
-│    - COSMETIC: Visual changes only                                   │
+│  • Execute test model steps                                          │
+│  • Self-healing selectors (automatic fallback)                       │
+│  • Capture screenshots at each step                                  │
+│  • Record video of execution                                         │
+│  • Log console & network activity                                    │
+│  • Retry failed steps                                                │
+│  • Store in PlaywrightExecution DB                                   │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Output: [                                                           │
-│    {                                                                 │
-│      type: "non-breaking",                                           │
-│      description: "Button label changed from 'Sign In' to 'Login'",  │
-│      element: "login button",                                        │
-│      oldValue: "Sign In",                                            │
-│      newValue: "Login"                                               │
-│    },                                                                │
-│    ...                                                               │
-│  ]                                                                   │
+│  Output: Execution Results + Evidence                               │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│              REPORT GENERATOR AGENT                                  │
+│                    RESULT + REPORT                                   │
+│  Files: ReportGeneratorAgent.ts + DiffValidationAgent.ts            │
 ├─────────────────────────────────────────────────────────────────────┤
-│  PERSONALITY: Senior QA Engineer                                     │
-│  • Calm and methodical                                               │
-│  • Clear and precise                                                 │
-│  • Never hallucinates                                                │
-│  • States uncertainties explicitly                                   │
+│  STEP 1: Diff & Validation                                          │
+│  • Compare with previous runs                                        │
+│  • Detect UI changes                                                 │
+│  • Classify: BREAKING / NON-BREAKING / COSMETIC                      │
 │                                                                      │
-│  GENERATES:                                                          │
+│  STEP 2: AI Report Generation                                       │
 │  • Human-readable summary                                            │
 │  • Root cause analysis                                               │
-│  • Suggested fixes (actionable)                                      │
-│  • Confidence score (0-1)                                            │
-│  • Change impact assessment                                          │
+│  • Suggested fixes                                                   │
+│  • Confidence score                                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Output: {                                                           │
-│    summary: "Test completed successfully. Button label changed       │
-│             but test adapted using self-healing...",                 │
-│    status: "PASS",                                                   │
-│    confidence: 0.92,                                                 │
-│    suggestedFixes: [                                                 │
-│      "Update test plan to reflect new button label"                  │
-│    ],                                                                │
-│    executionDetails: {                                               │
-│      totalSteps: 7,                                                  │
-│      passedSteps: 7,                                                 │
-│      failedSteps: 0                                                  │
-│    },                                                                │
-│    changes: {                                                        │
-│      breaking: 0,                                                    │
-│      nonBreaking: 1,                                                 │
-│      cosmetic: 0                                                     │
-│    }                                                                 │
+│    status: "PASS" | "FAIL" | "PARTIAL",                              │
+│    summary: "Test completed successfully...",                        │
+│    evidence: { screenshots: [...], video: "...", logs: [...] },     │
+│    changes: { breaking: 0, nonBreaking: 1, cosmetic: 0 },           │
+│    report: "AI-generated explanation...",                            │
+│    suggestedFixes: [...]                                             │
 │  }                                                                   │
-└──────────────────────────┬──────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    FINAL OUTPUT                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│  Complete test execution result including:                           │
-│  • Parsed intent                                                     │
-│  • Generated test plan                                               │
-│  • Execution results                                                 │
-│  • All evidence (screenshots, logs, videos)                          │
-│  • Difference analysis                                               │
-│  • Comprehensive report                                              │
-│  • Confidence score                                                  │
-│  • Suggested fixes                                                   │
-│  • Agent flow timestamps                                             │
 └─────────────────────────────────────────────────────────────────────┘
-
-
-═══════════════════════════════════════════════════════════════════════
-                    ORCHESTRATOR AGENT
-═══════════════════════════════════════════════════════════════════════
-
-Coordinates the entire flow:
-  1. Intent Parser
-  2. Test Planner
-  3. Execution
-  4. Evidence Collection
-  5. Diff & Validation
-  6. Report Generation
-
-Tracks completion status and timestamps for each agent.
-Handles errors gracefully with detailed error reporting.
-
-═══════════════════════════════════════════════════════════════════════
 ```
 
-## API Endpoint
+## Database Schema
+
+### Core Tables
+
+**User & Auth**
+
+- `users` - User accounts with OAuth support (Google, GitHub)
+- `user_settings` - User preferences and configurations
+
+**Project Management**
+
+- `projects` - Test projects
+- `test_cases` - Test case definitions
+- `test_steps` - Individual test steps
+- `executions` - Test execution results
+- `configurations` - Project configurations
+
+**Agent System**
+
+- `parsed_intents` - Intent parser output
+- `workflow_executions` - Complete workflow runs
+- `workflow_activities` - Individual workflow steps
+- `discovered_page_snapshots` - Page discovery results
+- `generated_test_models` - Generated test models
+- `execution_snapshots` - Historical execution data
+- `playwright_executions` - Playwright test runs
+
+**Chat & Communication**
+
+- `chat_conversations` - Chat sessions
+- `chat_messages` - Chat message history
+
+## API Endpoints
+
+### Core APIs
 
 ```
-POST /api/orchestrated-test
+POST   /api/auth/register              - User registration
+POST   /api/auth/login                 - User login
+GET    /api/auth/profile               - Get user profile
+
+GET    /api/projects                   - List projects
+POST   /api/projects                   - Create project
+
+GET    /api/test-cases                 - List test cases
+POST   /api/test-cases                 - Create test case
+
+GET    /api/executions                 - List executions
+POST   /api/executions                 - Create execution
 ```
 
-**Request:**
-```json
-{
-  "prompt": "Test login on example.com",
-  "options": {
-    "headless": true,
-    "screenshots": true,
-    "recordVideo": true
-  }
-}
+### Agent & Workflow APIs
+
+```
+POST   /api/orchestrated-test          - Run full agent workflow
+POST   /api/intent/parse               - Parse user intent
+
+POST   /api/workflows/execute          - Execute workflow
+GET    /api/workflows                  - List workflows
+GET    /api/workflows/:id/activities   - Get workflow activities
+GET    /api/workflows/:id/test-model   - Get generated test model
+
+POST   /api/playwright/discover        - Playwright page discovery
+POST   /api/playwright/execute         - Execute Playwright test
 ```
 
-**Response:**
-Complete output from all 6 agents with timestamps and status.
+### Chat & Dashboard
 
-## Key Benefits
+```
+GET    /api/chat/conversations         - List conversations
+POST   /api/chat/message               - Send message
+GET    /api/dashboard/stats            - Dashboard statistics
+```
 
-✅ **Deterministic** - Same input always produces same test plan  
-✅ **Self-Healing** - Adapts to UI changes automatically  
-✅ **Observable** - Complete evidence trail  
-✅ **Intelligent** - AI-powered where beneficial  
-✅ **Reliable** - Retry logic and fallback strategies  
-✅ **Actionable** - Clear explanations and suggestions  
+## Technology Stack
 
-## Agent Characteristics
+**Frontend:** Next.js 13+, TypeScript, Tailwind CSS  
+**Backend:** Node.js, Express, TypeScript, Prisma ORM  
+**Database:** PostgreSQL  
+**AI & Automation:** OpenAI GPT, Playwright, LangGraph  
+**DevOps:** Docker, Docker Compose
 
-| Agent | AI-Powered | Fallback | Key Feature |
-|-------|-----------|----------|-------------|
-| Intent Parser | ✅ | ✅ | Extracts structured intent |
-| Test Planner | ✅ | ✅ | Generates JSON test plan |
-| Execution | ❌ | N/A | Self-healing selectors |
-| Evidence Collector | ❌ | N/A | Comprehensive logging |
-| Diff Validator | ❌ | N/A | Change classification |
-| Report Generator | ✅ | ✅ | Senior QA explanations |
+## Key Features
+
+✅ Multi-Agent System  
+✅ Workflow Orchestration  
+✅ Self-Healing Tests  
+✅ Page Discovery  
+✅ Test Generation  
+✅ Evidence Collection  
+✅ Change Detection  
+✅ Chat Interface  
+✅ OAuth Support
+
+## Agent Summary
+
+| Agent                    | File                        | AI  | Database               | Purpose                 |
+| ------------------------ | --------------------------- | --- | ---------------------- | ----------------------- |
+| IntentParserAgent        | IntentParserAgent.ts        | ✅  | ParsedIntent           | Parse prompts           |
+| PlaywrightDiscoveryAgent | PlaywrightDiscoveryAgent.ts | ❌  | DiscoveredPageSnapshot | Discover elements       |
+| TestModelGenerator       | TestModelGenerator.ts       | ✅  | GeneratedTestModel     | Generate tests          |
+| EvidenceCollectorAgent   | EvidenceCollectorAgent.ts   | ❌  | -                      | Collect artifacts       |
+| DiffValidationAgent      | DiffValidationAgent.ts      | ❌  | ExecutionSnapshot      | Validate changes        |
+| ReportGeneratorAgent     | ReportGeneratorAgent.ts     | ✅  | -                      | Generate reports        |
+| OrchestratorAgent        | OrchestratorAgent.ts        | ❌  | -                      | Coordinate flow         |
+| AgentWorkflow            | AgentWorkflow.ts            | ❌  | WorkflowExecution      | Execute workflow        |
+| IntentGraphOrchestrator  | IntentGraphOrchestrator.ts  | ❌  | -                      | LangGraph orchestration |
+
+## Orchestration Layer
+
+The core flow is coordinated by these orchestrator components:
+
+**1. OrchestratorAgent** (`OrchestratorAgent.ts`)
+
+- Coordinates the complete agent chain
+- Manages state between steps
+- Handles error recovery
+
+**2. AgentWorkflow** (`AgentWorkflow.ts`)
+
+- Simplified workflow execution
+- Database persistence at each step
+- Tracks WorkflowExecution and WorkflowActivities
+
+**3. IntentGraphOrchestrator** (`IntentGraphOrchestrator.ts`)
+
+- LangGraph-based state machine
+- Conditional branching logic
+- Advanced multi-agent coordination
+
+## Execution Flows
+
+### Primary Flow (Core Concept)
+
+```
+User Prompt → Agent (Intent + Plan) → Playwright Discover Tool
+→ Test Model (JSON) → [Optional: Code Generator] → Playwright Runner
+→ Result + Report
+```
+
+### Alternative Flows
+
+**Quick Execution** (Skip Discovery)
+
+```
+User Prompt → Intent Parser → Direct Execution → Report
+```
+
+**Chat-Based Testing**
+
+```
+Chat Message → Parse Intent → Execute Workflow → Stream Results
+→ Update Conversation
+```

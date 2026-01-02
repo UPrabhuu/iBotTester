@@ -8,6 +8,39 @@ import {
 } from '../utils/response';
 import prisma from '../utils/prisma';
 
+/**
+ * Generate Playwright script from test arguments
+ */
+function generatePlaywrightScript(testName: string, args: any): string {
+  const url = args.url || 'https://example.com';
+  const searchQuery = args.searchQuery || args.query || '';
+  
+  let script = `import { test, expect } from '@playwright/test';\n\n`;
+  script += `test('${testName}', async ({ page }) => {\n`;
+  script += `  // Navigate to the page\n`;
+  script += `  await page.goto('${url}');\n\n`;
+  
+  if (searchQuery) {
+    script += `  // Perform search\n`;
+    script += `  await page.getByRole('searchbox').fill('${searchQuery}');\n`;
+    script += `  await page.getByRole('button', { name: /search/i }).click();\n\n`;
+    script += `  // Wait for results\n`;
+    script += `  await page.waitForSelector('[data-testid="results"], .results, #results', { timeout: 10000 });\n\n`;
+    script += `  // Validate results are visible\n`;
+    script += `  await expect(page.locator('[data-testid="results"], .results, #results')).toBeVisible();\n`;
+  } else {
+    script += `  // Wait for page to load\n`;
+    script += `  await page.waitForLoadState('networkidle');\n\n`;
+    script += `  // Validate page title\n`;
+    script += `  await expect(page).toHaveTitle(/.+/);\n`;
+  }
+  
+  script += `});\n`;
+  
+  return script;
+}
+
+
 // GET /api/chat/history
 export const getChatHistory = async (req: Request, res: Response) => {
   try {
@@ -136,8 +169,398 @@ export const sendMessage = async (req: Request, res: Response) => {
       const intentParser = new IntentParserAgent(process.env.OPENAI_API_KEY);
       
       try {
-        // Parse intent
+        // Check if this is a confirmation to a previous request
+        const lowerContent = content.toLowerCase().trim();
+        const isConfirmation = ['yes', 'ok', 'okay', 'sure', 'proceed', 'go ahead', 'do it', 'execute', 'create'].some(word => lowerContent.includes(word));
+        const isExecuteRequest = ['execute', 'run', 'test it', 'try it'].some(word => lowerContent.includes(word));
+        const isCreateRequest = ['create', 'save', 'add'].some(word => lowerContent.includes(word)) && !isExecuteRequest;
+        
+        // Get previous messages to check for pending test plan
+        const previousMessages = await prisma.chatMessage.findMany({
+          where: { conversationId: currentConversationId },
+          orderBy: { timestamp: 'desc' },
+          take: 10, // Look at more messages
+        });
+        
+        // Find the most recent assistant message with a test plan
+        let pendingTestPlan = null;
+        for (const msg of previousMessages) {
+          if (msg.role === 'assistant' && msg.metadata) {
+            try {
+              const msgMetadata = JSON.parse(msg.metadata as string);
+              if (msgMetadata.testPlan && msgMetadata.executed === false) {
+                pendingTestPlan = msgMetadata.testPlan;
+                console.log('✅ Found pending test plan:', pendingTestPlan);
+                break;
+              }
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
+        }
+        
+        console.log('🔍 Confirmation check:', { isConfirmation, isExecuteRequest, isCreateRequest, hasPendingTestPlan: !!pendingTestPlan });
+        
+        // If user wants to execute with full orchestrator workflow
+        if (isExecuteRequest && pendingTestPlan) {
+          console.log('🚀 Executing full orchestrator workflow...');
+          
+          // Create progress message for execution
+          const progressMessage = await prisma.chatMessage.create({
+            data: {
+              conversationId: currentConversationId,
+              role: 'assistant',
+              content: `🚀 Executing Full Agent Workflow\n\n⏳ Starting orchestration...`,
+              metadata: JSON.stringify({ type: 'progress', stage: 'orchestrating' }),
+            },
+          });
+          
+          try {
+            // Execute full orchestrator agent workflow
+            const orchestrator = new OrchestratorAgent(process.env.OPENAI_API_KEY);
+            
+            const testInput = {
+              prompt: pendingTestPlan.args.url 
+                ? `Test ${pendingTestPlan.args.testName} on ${pendingTestPlan.args.url}`
+                : pendingTestPlan.args.testName || 'Unnamed test',
+              environment: pendingTestPlan.args.environment || 'TEST',
+              runType: 'single' as const,
+              options: {
+                headless: true,
+                recordVideo: false,
+                screenshots: true,
+              },
+            };
+            
+            // Update progress
+            await prisma.chatMessage.update({
+              where: { id: progressMessage.id },
+              data: {
+                content: `🚀 Full Agent Workflow\n\n✅ Intent parsed\n🔄 Generating test plan\n⏳ Discovering page\n⏳ Executing with Playwright\n⏳ Collecting evidence\n⏳ Generating report`,
+                metadata: JSON.stringify({ type: 'progress', stage: 'test-planning' }),
+              },
+            });
+            
+            const result = await orchestrator.executeTestFlow(testInput);
+            
+            // Update with results
+            const statusEmoji = result.status === 'PASS' ? '✅' : result.status === 'FAIL' ? '❌' : '⚠️';
+            const confidence = result.confidence || 0;
+            const successContent = `${statusEmoji} Test Execution Complete!\n\n**Status:** ${result.status}\n**Test ID:** ${result.testId}\n\n**Steps Executed:** ${result.steps.length}\n**Screenshots:** ${result.evidence.screenshots.length}\n**Logs:** ${result.evidence.logs.length} entries\n\n**Summary:**\n${result.summary}\n\n**Confidence:** ${(confidence * 100).toFixed(0)}%`;
+            
+            await prisma.chatMessage.update({
+              where: { id: progressMessage.id },
+              data: {
+                content: successContent,
+                metadata: JSON.stringify({ 
+                  type: 'execution-result',
+                  result: {
+                    testId: result.testId,
+                    status: result.status,
+                    stepCount: result.steps.length,
+                    confidence: result.confidence,
+                  },
+                  executed: true,
+                }),
+              },
+            });
+            
+            const fullConversation = await prisma.chatConversation.findFirst({
+              where: { id: currentConversationId },
+              include: {
+                messages: {
+                  orderBy: { timestamp: 'asc' },
+                },
+              },
+            });
+            
+            return res.status(201).json(createdResponse({
+              conversation: fullConversation,
+              userMessage,
+              executionResult: result,
+            }));
+            
+          } catch (execError: any) {
+            console.error('❌ Orchestrator execution failed:', execError);
+            
+            await prisma.chatMessage.update({
+              where: { id: progressMessage.id },
+              data: {
+                content: `❌ Test execution failed:\n\n${execError.message}\n\nPlease try again or create the test case to run later.`,
+                metadata: JSON.stringify({ type: 'error', error: execError.message }),
+              },
+            });
+            
+            const fullConversation = await prisma.chatConversation.findFirst({
+              where: { id: currentConversationId },
+              include: {
+                messages: {
+                  orderBy: { timestamp: 'asc' },
+                },
+              },
+            });
+            
+            return res.status(201).json(createdResponse({
+              conversation: fullConversation,
+              userMessage,
+              error: execError.message,
+            }));
+          }
+        }
+        
+        // If user confirmed and there's a pending test plan, create test case
+        if ((isConfirmation || isCreateRequest) && pendingTestPlan) {
+          console.log('✅ Executing pending test plan...');
+          
+          // Create progress message
+          let progressMessage = await prisma.chatMessage.create({
+            data: {
+              conversationId: currentConversationId,
+              role: 'assistant',
+              content: `⚙️ Initiating test creation workflow...\n\n📝 Setting up...`,
+              metadata: JSON.stringify({ type: 'progress', stage: 'initializing' }),
+            },
+          });
+          
+          // Get user's default project or create one
+          let userProject = await prisma.project.findFirst({
+            where: { userId: userId! },
+            orderBy: { createdAt: 'desc' },
+          });
+          
+          if (!userProject) {
+            userProject = await prisma.project.create({
+              data: {
+                name: 'Default Project',
+                description: 'Auto-created project',
+                userId: userId!,
+              },
+            });
+          }
+          
+          // Update progress - Step 1: Analyzing
+          await prisma.chatMessage.update({
+            where: { id: progressMessage.id },
+            data: {
+              content: `⚙️ Test Creation Workflow\n\n✅ Analyzing request\n🔄 Creating test structure\n⏳ Saving to database`,
+              metadata: JSON.stringify({ type: 'progress', stage: 'analyzing' }),
+            },
+          });
+          
+          // Create the test case
+          const testName = pendingTestPlan.args.testName || 'Untitled Test';
+          console.log('💾 Creating test case:', testName);
+          
+          // If there's a URL in the args, we can optionally integrate Playwright Discovery
+          const shouldDiscoverElements = pendingTestPlan.args.url && false; // Set to true to enable discovery
+          
+          let testStepsData = pendingTestPlan.args;
+          
+          // Optional: Use Playwright Discovery Agent if URL is provided
+          if (shouldDiscoverElements) {
+            try {
+              // Update progress - Discovery phase
+              await prisma.chatMessage.update({
+                where: { id: progressMessage.id },
+                data: {
+                  content: `⚙️ Test Creation Workflow\n\n✅ Request analyzed\n🔄 Discovering page elements\n⏳ Generating test structure\n⏳ Saving to database`,
+                  metadata: JSON.stringify({ type: 'progress', stage: 'discovering' }),
+                },
+              });
+              
+              // TODO: Integrate PlaywrightDiscoveryAgent here when needed
+              // const discovery = new PlaywrightDiscoveryAgent();
+              // const discoveredPage = await discovery.discoverPage(pendingTestPlan.args.url);
+              // testStepsData = { ...testStepsData, discoveredElements: discoveredPage };
+            } catch (discError) {
+              console.warn('⚠️ Discovery failed, continuing with basic test creation:', discError);
+            }
+          }
+          
+          // Update progress - Step 2: Creating
+          await prisma.chatMessage.update({
+            where: { id: progressMessage.id },
+            data: {
+              content: `⚙️ Test Creation Workflow\n\n✅ Request analyzed\n✅ Test structure created\n🔄 Saving to database`,
+              metadata: JSON.stringify({ type: 'progress', stage: 'saving' }),
+            },
+          });
+          
+          const testCase = await prisma.testCase.create({
+            data: {
+              name: testName,
+              description: `Test created via chat: ${testName}${pendingTestPlan.args.environment ? ` (${pendingTestPlan.args.environment} environment)` : ''}`,
+              projectId: userProject.id,
+              status: 'active',
+              stepsJson: JSON.stringify(pendingTestPlan.args),
+            },
+            include: {
+              project: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          });
+          
+          // Create default test steps if not already created
+          const defaultSteps = [
+            { stepNumber: 1, action: 'Navigate to URL', description: 'Navigate to the test URL', expectedResult: 'Page loaded successfully', uiSection: 'Navigation' },
+            { stepNumber: 2, action: 'Validate Content', description: 'Validate page content', expectedResult: 'Content is visible', uiSection: 'Validation' },
+          ];
+          
+          for (const step of defaultSteps) {
+            await prisma.testStep.create({
+              data: {
+                testCaseId: testCase.id,
+                stepNumber: step.stepNumber,
+                action: step.action,
+                expectedResult: step.expectedResult,
+                uiSection: step.uiSection,
+              },
+            });
+          }
+          
+          console.log('✅ Test case created successfully:', testCase.id);
+          
+          // AUTO-EXECUTE: Execute the test
+          await prisma.chatMessage.update({
+            where: { id: progressMessage.id },
+            data: {
+              content: `✅ Test case created successfully!\n\n📋 **Test Name:** ${testCase.name}\n🆔 **Test ID:** ${testCase.id}\n\n🚀 **Status:** WIP - Executing test...`,
+              metadata: JSON.stringify({ type: 'progress', stage: 'executing' }),
+            },
+          });
+          
+          // Execute the test
+          try {
+            const { OrchestratorAgent } = await import('../agents/OrchestratorAgent');
+            const orchestrator = new OrchestratorAgent(process.env.OPENAI_API_KEY);
+            
+            const testInput = {
+              prompt: `Execute test: ${testCase.name}`,
+              options: {
+                headless: true,
+                screenshots: true,
+                recordVideo: false,
+              },
+            };
+            
+            const startTime = Date.now();
+            const result = await orchestrator.executeTestFlow(testInput);
+            const duration = Date.now() - startTime;
+            
+            // Store execution in database
+            const execution = await prisma.execution.create({
+              data: {
+                testCaseId: testCase.id,
+                status: result.status === 'PASS' ? 'passed' : result.status === 'FAIL' ? 'failed' : 'warning',
+                startedAt: new Date(startTime),
+                completedAt: new Date(),
+                duration: duration,
+                errorMessage: result.status === 'FAIL' ? result.summary : null,
+              },
+            });
+            
+            // Update test steps based on execution results
+            if (result.steps && Array.isArray(result.steps)) {
+              // Delete existing steps
+              await prisma.testStep.deleteMany({
+                where: { testCaseId: testCase.id },
+              });
+              
+              // Create new steps from execution results
+              for (let i = 0; i < result.steps.length; i++) {
+                const step = result.steps[i];
+                await prisma.testStep.create({
+                  data: {
+                    testCaseId: testCase.id,
+                    stepNumber: step.step || i + 1,
+                    action: step.action || `Step ${i + 1}`,
+                    expectedResult: step.status === 'PASS' ? '✅ Passed' : step.status === 'FAIL' ? '❌ Failed' : '⏭️ Skipped',
+                    uiSection: 'Execution',
+                  },
+                });
+              }
+            }
+            
+            const statusEmoji = result.status === 'PASS' ? '✅' : result.status === 'FAIL' ? '❌' : '⚠️';
+            
+            // Format steps with completion markers
+            let stepsContent = '';
+            if (result.steps && result.steps.length > 0) {
+              stepsContent = '\n\n📝 **Steps Executed:**\n';
+              result.steps.forEach((step: any, index: number) => {
+                const stepStatus = step.status === 'passed' || step.status === 'success' ? '✅' : 
+                                 step.status === 'failed' || step.status === 'error' ? '❌' : '⚠️';
+                stepsContent += `${stepStatus} ${index + 1}. ${step.description || step.action}\n`;
+              });
+            }
+            
+            await prisma.chatMessage.update({
+              where: { id: progressMessage.id },
+              data: {
+                content: `${statusEmoji} **Test Execution Complete!**\n\n📋 **Test Name:** ${testCase.name}\n🆔 **Test ID:** ${testCase.id}\n📁 **Project:** ${testCase.project.name}${stepsContent}\n\n📊 **Result:**\n- **Status:** ${result.status}\n- **Screenshots:** ${result.evidence.screenshots.length}\n- **Confidence:** ${result.confidence ? (result.confidence * 100).toFixed(0) : 'N/A'}%\n\nView in Test List for full details.`,
+                metadata: JSON.stringify({ 
+                  type: 'execution-complete', 
+                  testCase: {
+                    id: testCase.id,
+                    name: testCase.name,
+                    projectId: testCase.projectId,
+                  },
+                  executionResult: {
+                    executionId: execution.id,
+                    status: result.status,
+                    stepCount: result.steps.length,
+                    confidence: result.confidence,
+                    steps: result.steps,
+                  },
+                  executed: true,
+                }),
+              },
+            });
+          } catch (execError: any) {
+            console.error('Test execution failed:', execError);
+            
+            await prisma.chatMessage.update({
+              where: { id: progressMessage.id },
+              data: {
+                content: `✅ **Test case created!**\n\n📋 **Test Name:** ${testCase.name}\n🆔 **Test ID:** ${testCase.id}\n📁 **Project:** ${testCase.project.name}\n\n⚠️ **Execution Status:** Failed to execute automatically\n\n**Error:** ${execError.message}\n\nYou can run this test manually from the Test Execution panel.`,
+                metadata: JSON.stringify({ 
+                  type: 'success-with-warning', 
+                  testCase: {
+                    id: testCase.id,
+                    name: testCase.name,
+                    projectId: testCase.projectId,
+                  },
+                  executionError: execError.message,
+                  executed: false,
+                }),
+              },
+            });
+          }
+          
+          // Return conversation with updated messages
+          const fullConversation = await prisma.chatConversation.findFirst({
+            where: { id: currentConversationId },
+            include: {
+              messages: {
+                orderBy: { timestamp: 'asc' },
+              },
+            },
+          });
+          
+          return res.status(201).json(createdResponse({
+            conversation: fullConversation,
+            userMessage,
+            testCase,
+          }));
+        }
+        
+        // Normal flow - parse intent
         const intent = await intentParser.parseIntent(content);
+        console.log('📊 Parsed intent:', JSON.stringify(intent, null, 2));
         
         // Create thinking/planning message
         const thinkingMessage = await prisma.chatMessage.create({
@@ -156,28 +579,41 @@ export const sendMessage = async (req: Request, res: Response) => {
         if (intent.primaryAction === 'CREATE' || intent.primaryAction === 'RUN' || intent.primaryAction === 'CREATE_BULK') {
           // Generate test plan
           const testName = intent.args.testName || intent.args.testPattern || 'test';
-          responseContent = `I understand you want to ${intent.primaryAction.toLowerCase()} "${testName}"`;
+          const actionType = intent.primaryAction === 'CREATE' ? 'create' : 'run';
+          
+          responseContent = `I understand you want to ${actionType} "${testName}"`;
           
           if (intent.args.environment) {
             responseContent += ` in ${intent.args.environment} environment`;
           }
           
-          responseContent += `\n\n📋 I'll create a test plan for this. Here's what I'll do:\n\n`;
-          responseContent += `1. ${intent.primaryAction === 'CREATE' ? 'Create a new test' : 'Run the test'}\n`;
+          responseContent += `\n\n📋 I'll ${actionType} a test for this. Here's what I'll do:\n\n`;
+          responseContent += `1. Create test case: "${testName}"\n`;
           if (intent.args.testName) {
             responseContent += `2. Test name: "${intent.args.testName}"\n`;
           }
           if (intent.args.environment) {
             responseContent += `3. Environment: ${intent.args.environment}\n`;
           }
-          responseContent += `4. Verify the outcome\n\n`;
-          responseContent += `Would you like me to execute this test plan?`;
+          if (intent.args.url) {
+            responseContent += `4. Target URL: ${intent.args.url}\n`;
+          }
+          
+          // Different question based on action
+          if (intent.primaryAction === 'CREATE') {
+            responseContent += `\nWould you like me to create this test case?`;
+          } else if (intent.primaryAction === 'RUN') {
+            responseContent += `\nWould you like me to:\n`;
+            responseContent += `- Type 'create' to save as a test case\n`;
+            responseContent += `- Type 'execute' to run it with Playwright (full agent workflow)`;
+          }
           
           metadata.testPlan = {
             action: intent.primaryAction,
             args: intent.args,
             confidence: intent.confidence,
           };
+          metadata.executed = false;
         } else {
           // Generic response
           const testName = intent.args.testName || intent.args.testPattern || 'this';

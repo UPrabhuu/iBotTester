@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { chatApi, intentApi, ParsedIntent } from '../services/api';
 import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
+import { useAlert } from '../contexts/AlertContext';
 
 interface Branch {
   id: string;
@@ -22,6 +23,25 @@ interface MessageMetadata {
     target: string;
     url?: string;
   };
+  type?: 'thinking' | 'progress' | 'success' | 'error' | 'execution-result';
+  stage?: string;
+  testCase?: {
+    id: string;
+    name: string;
+    projectId: string;
+  };
+  result?: {
+    testId: string;
+    status: string;
+    stepCount: number;
+    confidence: number;
+  };
+  testPlan?: {
+    action: string;
+    args: any;
+    confidence: number;
+  };
+  executed?: boolean;
 }
 
 interface ChatMessage {
@@ -29,7 +49,7 @@ interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
-  metadata?: MessageMetadata;
+  metadata?: MessageMetadata | string;
 }
 
 interface HomeViewProps {
@@ -37,6 +57,7 @@ interface HomeViewProps {
   projects?: Project[];
   selectedProject?: Project;
   onProjectChange?: (projectId: string) => void;
+  onTestCaseCreated?: () => void;
 }
 
 const HomeView: React.FC<HomeViewProps> = ({ 
@@ -44,7 +65,9 @@ const HomeView: React.FC<HomeViewProps> = ({
   projects = [],
   selectedProject,
   onProjectChange,
+  onTestCaseCreated,
 }) => {
+  const { showError } = useAlert();
   const [message, setMessage] = useState('');
   const [selectedBranchId, setSelectedBranchId] = useState<string>(selectedProject?.currentBranch || '');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -141,6 +164,40 @@ const HomeView: React.FC<HomeViewProps> = ({
           // Replace temp message with actual messages from server
           const newMessages = conversation?.messages || [];
           setChatMessages(newMessages);
+          
+          // Check if a test case was created and trigger refresh
+          if (assistantMessage?.metadata) {
+            const metadata = typeof assistantMessage.metadata === 'string' 
+              ? JSON.parse(assistantMessage.metadata) 
+              : assistantMessage.metadata;
+            
+            if (metadata?.testCase?.id && onTestCaseCreated) {
+              console.log('Test case created, refreshing test list...', metadata.testCase);
+              // Give the database a moment to commit the transaction before refreshing
+              setTimeout(() => {
+                onTestCaseCreated();
+              }, 500);
+            }
+          }
+          
+          // Also check all messages for test case creation
+          if (conversation?.messages) {
+            for (const msg of conversation.messages) {
+              if (msg.metadata) {
+                const metadata = typeof msg.metadata === 'string' 
+                  ? JSON.parse(msg.metadata) 
+                  : msg.metadata;
+                
+                if (metadata?.testCase?.id && onTestCaseCreated) {
+                  console.log('Test case found in messages, refreshing test list...', metadata.testCase);
+                  setTimeout(() => {
+                    onTestCaseCreated();
+                  }, 500);
+                  break;
+                }
+              }
+            }
+          }
         } else {
           // Show error message
           setChatMessages(prev => [...prev, {
@@ -195,11 +252,11 @@ const HomeView: React.FC<HomeViewProps> = ({
         setShowChat(true);
       } else {
         console.error('Failed to load conversation:', response.error);
-        alert(response.error || 'Failed to load conversation');
+        showError(response.error || 'Failed to load conversation');
       }
     } catch (error) {
       console.error('Error loading conversation:', error);
-      alert('Failed to load conversation');
+      showError('Failed to load conversation');
     }
   };
 
@@ -412,19 +469,183 @@ const HomeView: React.FC<HomeViewProps> = ({
                           ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-md'
                           : 'bg-gray-100 border border-gray-200'
                       }`}>
-                        <div className={`text-sm leading-relaxed ${
-                          msg.role === 'user' ? 'text-white' : 'text-gray-800'
-                        }`}>
-                          <div className="whitespace-pre-wrap">{msg.content}</div>
-                        </div>
-                        {msg.metadata?.intent && (
-                          <div className="mt-3 pt-3 border-t border-gray-300 text-xs">
-                            <p className="font-semibold mb-1">Detected Intent:</p>
-                            <p>Action: {msg.metadata.intent.action}</p>
-                            <p>Target: {msg.metadata.intent.target}</p>
-                            {msg.metadata.intent.url && <p>URL: {msg.metadata.intent.url}</p>}
-                          </div>
-                        )}
+                        {(() => {
+                          // Parse metadata if it's a string
+                          let metadata: MessageMetadata | undefined = undefined;
+                          if (typeof msg.metadata === 'string') {
+                            try {
+                              metadata = JSON.parse(msg.metadata) as MessageMetadata;
+                            } catch (e) {
+                              metadata = undefined;
+                            }
+                          } else {
+                            metadata = msg.metadata;
+                          }
+
+                          // Show progress indicator for progress type messages
+                          if (metadata?.type === 'progress') {
+                            return (
+                              <div className="space-y-3 py-2">
+                                {/* GitHub Copilot style progress indicator */}
+                                <div className="space-y-2.5">
+                                  {/* Step 1 - Analyzing */}
+                                  <div className="flex items-start space-x-3 group">
+                                    <div className="flex-shrink-0 mt-0.5">
+                                      <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center animate-fadeIn">
+                                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-sm text-gray-700 font-medium">Analyzing request</div>
+                                      <div className="text-xs text-gray-500 mt-0.5">Understanding test requirements</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Step 2 - Creating test case */}
+                                  <div className="flex items-start space-x-3 group">
+                                    <div className="flex-shrink-0 mt-0.5">
+                                      <div className="w-5 h-5 rounded-full border-2 border-purple-600 flex items-center justify-center relative">
+                                        <div className="absolute inset-0 rounded-full border-2 border-purple-600 animate-ping opacity-75"></div>
+                                        <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-sm text-gray-700 font-medium flex items-center space-x-2">
+                                        <span>Creating test case</span>
+                                        <span className="inline-flex space-x-0.5">
+                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-gray-500 mt-0.5">Generating test structure</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Step 3 - Saving (pending) */}
+                                  <div className="flex items-start space-x-3 group opacity-50">
+                                    <div className="flex-shrink-0 mt-0.5">
+                                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-sm text-gray-500 font-medium">Saving to database</div>
+                                      <div className="text-xs text-gray-400 mt-0.5">Pending</div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Progress bar */}
+                                <div className="pt-2">
+                                  <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-progress" style={{ width: '66%' }}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Show success indicator with test case details
+                          if (metadata?.type === 'success' && metadata?.testCase) {
+                            return (
+                              <div className="space-y-3">
+                                <div className="flex items-start space-x-2">
+                                  <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                  <div className="text-sm text-gray-800 whitespace-pre-wrap flex-1">{msg.content}</div>
+                                </div>
+                                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-semibold text-green-700">TEST CASE CREATED</span>
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                      Active
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-gray-600 space-y-1">
+                                    <div className="flex items-center space-x-2">
+                                      <span className="font-medium text-gray-700">ID:</span>
+                                      <code className="bg-white px-2 py-0.5 rounded border border-gray-200 text-purple-600">{metadata.testCase.id}</code>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Show execution result for orchestrator workflow
+                          if (metadata?.type === 'execution-result' && metadata?.result) {
+                            const statusColor = metadata.result.status === 'PASS' ? 'green' : metadata.result.status === 'FAIL' ? 'red' : 'yellow';
+                            const statusBg = metadata.result.status === 'PASS' ? 'bg-green-50 border-green-200' : metadata.result.status === 'FAIL' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200';
+                            
+                            return (
+                              <div className="space-y-3">
+                                <div className="whitespace-pre-wrap text-sm text-gray-800">{msg.content}</div>
+                                <div className={`mt-3 p-3 ${statusBg} border rounded-lg`}>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-xs font-semibold text-${statusColor}-700`}>EXECUTION COMPLETE</span>
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
+                                      {metadata.result.status}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-gray-600 space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium text-gray-700">Confidence:</span>
+                                      <span className="font-semibold">{(metadata.result.confidence * 100).toFixed(0)}%</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium text-gray-700">Steps:</span>
+                                      <span>{metadata.result.stepCount}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Show execution-complete with Playwright script
+                          if (metadata?.type === 'execution-complete' && metadata?.testCase) {
+                            const statusColor = metadata.executionResult?.status === 'PASS' ? 'green' : metadata.executionResult?.status === 'FAIL' ? 'red' : 'yellow';
+                            
+                            return (
+                              <div className="space-y-3">
+                                {/* Main Message Content */}
+                                <div className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed">{msg.content}</div>
+                              </div>
+                            );
+                          }
+
+                          // Show success-with-warning (test created but execution failed)
+                          if (metadata?.type === 'success-with-warning' && metadata?.testCase) {
+                            return (
+                              <div className="space-y-3">
+                                <div className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed">{msg.content}</div>
+                              </div>
+                            );
+                          }
+
+                          // Regular message content
+                          return (
+                            <>
+                              <div className={`text-sm leading-relaxed ${
+                                msg.role === 'user' ? 'text-white' : 'text-gray-800'
+                              }`}>
+                                <div className="whitespace-pre-wrap">{msg.content}</div>
+                              </div>
+                              {metadata?.intent && metadata.intent.action && metadata.intent.target && (
+                                <div className="mt-3 pt-3 border-t border-gray-300 text-xs">
+                                  <p className="font-semibold mb-1">Detected Intent:</p>
+                                  <p>Action: {metadata.intent.action}</p>
+                                  <p>Target: {metadata.intent.target}</p>
+                                  {metadata.intent.url && <p>URL: {metadata.intent.url}</p>}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>

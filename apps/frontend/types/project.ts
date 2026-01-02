@@ -48,9 +48,12 @@ export interface TestStep {
   stepNumber: number;
   action: string;
   expectedResult: string;
+  selector?: string;
+  value?: string;
   elementLocator?: string;
   uiSection: string; // folder/section name (e.g., "Login Page", "Checkout Flow")
   testCaseId: string;
+  dataMapping?: Record<string, string>;
 }
 
 export interface TestStepGroup {
