@@ -45,9 +45,10 @@ npm install
 cp .env.example .env
 # Edit .env and set:
 # DATABASE_URL="postgresql://user:password@localhost:5432/ibottester"
-# OPENAI_API_KEY="sk-..." # Optional
+# OPENAI_API_KEY="sk-..." # Optional for AI features
+# ANTHROPIC_API_KEY="sk-ant-..." # Optional for diff validation
 
-# Run migrations (creates new tables)
+# Run migrations (creates tables)
 npx prisma migrate dev --name add_agent_flow_tables
 
 # Generate Prisma client
@@ -290,6 +291,17 @@ import ExecutionResultsViewer from "./components/ExecutionResultsViewer";
   - Confidence score (0-100%)
 - **Storage**: All reports saved to database
 
+### 5. Structured Logging
+
+- **Utility**: Custom logger in `apps/backend/src/utils/logger.ts`
+- **Features**:
+  - Timestamped log entries
+  - Log levels (ERROR, WARN, INFO, DEBUG)
+  - Service-specific loggers
+  - Context-aware logging with structured data
+  - Environment-aware (DEBUG only in development)
+- **Usage**: Production services use structured logger instead of console.log
+
 ---
 
 ## 🔧 Configuration
@@ -300,9 +312,29 @@ import ExecutionResultsViewer from "./components/ExecutionResultsViewer";
 # Database
 DATABASE_URL="postgresql://user:password@localhost:5432/ibottester"
 
-# OpenAI (optional)
-OPENAI_API_KEY="sk-..."
+# Authentication
+JWT_SECRET=your-jwt-secret-at-least-32-chars
+SESSION_SECRET=your-session-secret-at-least-32-chars
 
+# OAuth (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# AI Services (Optional but recommended)
+OPENAI_API_KEY=sk-...           # For test planning and report generation
+ANTHROPIC_API_KEY=sk-ant-...    # For diff validation
+
+# Server
+PORT=3001
+FRONTEND_URL=http://localhost:3000
+NODE_ENV=development            # 'development' or 'production'
+```
+
+### Additional Configuration Options
+
+```env
 # Evidence Storage
 EVIDENCE_DIR="./evidence"
 
@@ -499,14 +531,17 @@ Already created in schema:
 6. **Real-time Progress** - Live agent flow updates in UI
 7. **Comprehensive Results Viewer** - Tabbed interface with all execution data
 8. **Extended Database Schema** - 4 new tables for complete data storage
+9. **Structured Logging** - Production-ready logger utility for all backend services
 
 ### 📊 Statistics
 
-- **Lines of Code Added**: ~3,000+
+- **Lines of Code Added**: ~3,500+
 - **New Components**: 2 (Frontend)
 - **New Tables**: 4 (Database)
 - **Agent Services**: 6 (Orchestrated)
-- **Documentation**: 3 files (Complete guides)
+- **Backend Utilities**: Structured logger (apps/backend/src/utils/logger.ts)
+- **Documentation**: Updated READMEs and setup guides
+- **Engineering Standards**: Codified in .github/copilot-instructions.md
 
 ---
 

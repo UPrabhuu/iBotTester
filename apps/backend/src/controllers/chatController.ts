@@ -215,6 +215,9 @@ export const sendMessage = async (req: Request, res: Response) => {
             },
           });
           
+          // Create execution tracking
+          const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          
           try {
             // Execute full orchestrator agent workflow
             const orchestrator = new OrchestratorAgent(process.env.OPENAI_API_KEY);
@@ -241,12 +244,141 @@ export const sendMessage = async (req: Request, res: Response) => {
               },
             });
             
+            // Emit start update
+            await prisma.chatMessage.create({
+              data: {
+                conversationId: currentConversationId,
+                role: 'assistant',
+                content: '[Execution Started]',
+                metadata: JSON.stringify({
+                  type: 'execution-update',
+                  executionId,
+                  executionUpdate: {
+                    type: 'progress',
+                    status: 'starting',
+                    progress: 0,
+                    timestamp: new Date().toISOString(),
+                  },
+                }),
+              },
+            });
+
+            // Wrap console.log to track progress
+            const originalLog = console.log;
+            const logs: string[] = [];
+            let stepCount = 0;
+            const emitUpdate = async (update: any) => {
+              try {
+                await prisma.chatMessage.create({
+                  data: {
+                    conversationId: currentConversationId,
+                    role: 'assistant',
+                    content: `[Update: ${update.type}]`,
+                    metadata: JSON.stringify({
+                      type: 'execution-update',
+                      executionId,
+                      executionUpdate: {
+                        type: update.type,
+                        status: update.status,
+                        progress: update.progress,
+                        currentUrl: update.currentUrl,
+                        step: update.step,
+                        screenshot: update.screenshot,
+                        screenshotLabel: update.screenshotLabel,
+                        log: update.log,
+                        error: update.error,
+                        timestamp: new Date().toISOString(),
+                      },
+                    }),
+                  },
+                });
+              } catch (error) {
+                console.error('Failed to emit update:', error);
+              }
+            };
+
+            console.log = (...args: any[]) => {
+              const message = args.map(arg => 
+                typeof arg === 'string' ? arg : JSON.stringify(arg)
+              ).join(' ');
+              
+              logs.push(message);
+              originalLog(...args);
+
+              // Emit log updates every 5 logs
+              if (logs.length % 5 === 0) {
+                emitUpdate({
+                  type: 'log',
+                  log: message,
+                }).catch(console.error);
+              }
+
+              // Track step execution
+              if (message.includes('Step') && message.includes(':')) {
+                stepCount++;
+                const match = message.match(/Step (\d+):\s*(.+?)(\s*-\s*(.+))?$/);
+                if (match) {
+                  emitUpdate({
+                    type: 'step',
+                    status: 'running',
+                    progress: Math.min(90, 10 + (stepCount * 5)),
+                    step: {
+                      number: parseInt(match[1]),
+                      action: match[2],
+                      description: match[4],
+                      timestamp: new Date().toISOString(),
+                      status: 'running',
+                    },
+                  }).catch(console.error);
+                }
+              }
+            };
+            
             const result = await orchestrator.executeTestFlow(testInput);
+            console.log = originalLog;
+
+            // Emit screenshot updates
+            if (result.evidence?.screenshots?.length > 0) {
+              for (let i = 0; i < result.evidence.screenshots.length; i++) {
+                const screenshot = result.evidence.screenshots[i];
+                await emitUpdate({
+                  type: 'screenshot',
+                  screenshot: screenshot,
+                  screenshotLabel: `Screenshot ${i + 1}`,
+                  progress: 60 + (i * 5),
+                });
+              }
+            }
+
+            // Mark steps as completed
+            if (result.steps?.length > 0) {
+              for (let i = 0; i < result.steps.length; i++) {
+                const step = result.steps[i];
+                await emitUpdate({
+                  type: 'step',
+                  status: step.status === 'PASS' ? 'completed' : 'failed',
+                  progress: 70 + (i * 3),
+                  step: {
+                    number: i + 1,
+                    action: step.action || `Step ${i + 1}`,
+                    timestamp: new Date().toISOString(),
+                    status: step.status === 'PASS' ? 'completed' : 'failed',
+                  },
+                });
+              }
+            }
             
             // Update with results
             const statusEmoji = result.status === 'PASS' ? '✅' : result.status === 'FAIL' ? '❌' : '⚠️';
             const confidence = result.confidence || 0;
             const successContent = `${statusEmoji} Test Execution Complete!\n\n**Status:** ${result.status}\n**Test ID:** ${result.testId}\n\n**Steps Executed:** ${result.steps.length}\n**Screenshots:** ${result.evidence.screenshots.length}\n**Logs:** ${result.evidence.logs.length} entries\n\n**Summary:**\n${result.summary}\n\n**Confidence:** ${(confidence * 100).toFixed(0)}%`;
+            
+            // Emit completion
+            await emitUpdate({
+              type: 'complete',
+              status: 'completed',
+              progress: 100,
+            });
             
             await prisma.chatMessage.update({
               where: { id: progressMessage.id },
@@ -254,6 +386,7 @@ export const sendMessage = async (req: Request, res: Response) => {
                 content: successContent,
                 metadata: JSON.stringify({ 
                   type: 'execution-result',
+                  executionId: executionId,
                   result: {
                     testId: result.testId,
                     status: result.status,
@@ -282,6 +415,25 @@ export const sendMessage = async (req: Request, res: Response) => {
             
           } catch (execError: any) {
             console.error('❌ Orchestrator execution failed:', execError);
+            
+            // Emit error update
+            await prisma.chatMessage.create({
+              data: {
+                conversationId: currentConversationId,
+                role: 'assistant',
+                content: '[Execution Error]',
+                metadata: JSON.stringify({
+                  type: 'execution-update',
+                  executionId: executionId,
+                  executionUpdate: {
+                    type: 'error',
+                    status: 'failed',
+                    error: execError.message,
+                    timestamp: new Date().toISOString(),
+                  },
+                }),
+              },
+            });
             
             await prisma.chatMessage.update({
               where: { id: progressMessage.id },
@@ -706,6 +858,131 @@ export const deleteChat = async (req: Request, res: Response) => {
     res.json(deletedResponse('Conversation deleted successfully'));
   } catch (error) {
     console.error('Delete chat error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
+};
+
+// GET /api/chat/:conversationId/execution-stream - Stream execution updates (SSE)
+export const streamExecutionUpdates = async (req: Request, res: Response) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user?.id;
+
+    // Verify user has access to this conversation
+    const conversation = await prisma.chatConversation.findFirst({
+      where: { id: conversationId, userId },
+    });
+
+    if (!conversation) {
+      return res.status(404).json(errorResponse('Conversation not found'));
+    }
+
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    let lastMessageId = '';
+    let isComplete = false;
+    const processedUpdates = new Set<string>();
+
+    // Send initial connection message
+    res.write(`data: ${JSON.stringify({
+      type: 'connected',
+      conversationId,
+      timestamp: new Date().toISOString(),
+    })}\n\n`);
+
+    // Poll for execution updates every 500ms
+    const interval = setInterval(async () => {
+      if (isComplete) {
+        clearInterval(interval);
+        res.end();
+        return;
+      }
+
+      try {
+        // Get recent assistant messages with execution metadata
+        const messages = await prisma.chatMessage.findMany({
+          where: {
+            conversationId,
+            role: 'assistant',
+          },
+          orderBy: { timestamp: 'desc' },
+          take: 50,
+        });
+
+        for (const message of messages) {
+          if (message.id === lastMessageId) break;
+
+          if (message.metadata) {
+            try {
+              const metadata = JSON.parse(message.metadata);
+
+              // Process execution updates
+              if (metadata.executionId && metadata.executionUpdate) {
+                const updateKey = `${metadata.executionId}-${message.id}`;
+                
+                if (!processedUpdates.has(updateKey)) {
+                  processedUpdates.add(updateKey);
+                  
+                  const update = metadata.executionUpdate;
+                  const eventData = {
+                    type: update.type || 'progress',
+                    executionId: metadata.executionId,
+                    conversationId,
+                    currentUrl: update.currentUrl,
+                    status: update.status,
+                    progress: update.progress,
+                    screenshot: update.screenshot,
+                    screenshotLabel: update.screenshotLabel,
+                    step: update.step,
+                    error: update.error,
+                    log: update.log,
+                    logs: update.logs,
+                    totalSteps: update.totalSteps,
+                    completedSteps: update.completedSteps,
+                    timestamp: message.timestamp.toISOString(),
+                  };
+
+                  res.write(`data: ${JSON.stringify(eventData)}\n\n`);
+
+                  // Mark as complete
+                  if (update.type === 'complete' || update.type === 'error') {
+                    isComplete = true;
+                  }
+                }
+              }
+
+              lastMessageId = message.id;
+            } catch (e) {
+              // Skip messages with invalid JSON metadata
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Stream update error:', error);
+        clearInterval(interval);
+        res.end();
+      }
+    }, 500);
+
+    // Handle client disconnect
+    req.on('close', () => {
+      clearInterval(interval);
+      res.end();
+    });
+
+    // Safety timeout - close connection after 5 minutes
+    setTimeout(() => {
+      clearInterval(interval);
+      res.end();
+    }, 5 * 60 * 1000);
+
+  } catch (error) {
+    console.error('Stream execution updates error:', error);
     res.status(500).json(errorResponse('Internal server error'));
   }
 };

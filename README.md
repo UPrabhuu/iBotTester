@@ -63,6 +63,7 @@ User Prompt
 → **Report Generator** (Creates detailed, human-readable report)
 
 **Agent Personality:**
+
 - Calm and methodical (like a senior QA engineer)
 - Deterministic and repeatable
 - Clear explanations of failures
@@ -97,6 +98,7 @@ User Prompt
 
 - Node.js (TypeScript)
 - Express / Fastify
+- Structured Logging (custom logger utility)
 
 ### Execution
 
@@ -122,17 +124,38 @@ ibottester/
 │   │   ├── pages/         # Next.js pages
 │   │   ├── styles/        # Tailwind CSS styles
 │   │   ├── components/    # React components
+│   │   │   ├── ui/        # Reusable UI primitives
+│   │   │   └── *View.tsx  # Page-level views
+│   │   ├── services/      # API helpers (api.ts, playwrightApi.ts)
 │   │   └── package.json
 │   └── backend/           # Node.js Express API
 │       ├── server.ts      # Main server file
+│       ├── src/
+│       │   ├── engine/    # Playwright execution engine
+│       │   ├── services/  # Business logic services
+│       │   ├── utils/     # Utilities (logger.ts, prisma.ts)
+│       │   └── agents/    # AI agent implementations
 │       ├── Dockerfile
 │       └── package.json
 ├── docs/
-│   └── SETUP.md          # Detailed setup guide
+│   ├── SETUP_GUIDE.md    # Detailed setup guide
+│   └── API.md            # API documentation
+├── .github/
+│   └── copilot-instructions.md  # AI coding guidelines
 ├── README.md
 ├── docker-compose.yml    # Docker orchestration
 └── .env.example          # Environment variables template
 ```
+
+---
+
+## 🧭 Engineering Standards
+
+- Frontend: reuse primitives from apps/frontend/components/ui (Button, Input, Select, Modal, Alert, Toast, etc.) before adding new UI atoms; compose existing components in components/ and views in components/\*View.tsx.
+- Styling: follow Tailwind utility patterns already used in apps/frontend/styles/globals.css and tokens from apps/frontend/tailwind.config.js; avoid ad-hoc inline styles or new design systems.
+- API usage: prefer the typed helpers in apps/frontend/services/api.ts and apps/frontend/services/playwrightApi.ts instead of new fetch wrappers.
+- Testing and automation: align new flows with Playwright patterns under apps/backend/test-playwright-flow.ts and related engine utilities in apps/backend/src/engine.
+- Docs: update relevant README/docs entries whenever behavior or contracts change.
 
 ---
 
@@ -141,10 +164,12 @@ ibottester/
 ### Option 1: Local Development
 
 **Prerequisites:**
+
 - Node.js 18+
 - npm or yarn
 
 **1. Clone and install:**
+
 ```bash
 git clone https://github.com/UPrabhuu/iBotTester.git
 cd iBotTester
@@ -160,6 +185,7 @@ npm install
 ```
 
 **2. Configure environment variables:**
+
 ```bash
 # Backend - Create apps/backend/.env
 cp apps/backend/.env.example apps/backend/.env
@@ -172,27 +198,32 @@ cp apps/frontend/.env.example apps/frontend/.env.local
 **3. Run the application:**
 
 Terminal 1 - Backend:
+
 ```bash
 cd apps/backend
 npm run dev
 ```
 
 Terminal 2 - Frontend:
+
 ```bash
 cd apps/frontend
 npm run dev
 ```
 
 **4. Access the application:**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 
 ### Option 2: Docker Compose
 
 **Prerequisites:**
+
 - Docker & Docker Compose
 
 **1. Clone and configure:**
+
 ```bash
 git clone https://github.com/UPrabhuu/iBotTester.git
 cd iBotTester
@@ -201,11 +232,13 @@ cp .env.example .env
 ```
 
 **2. Start services:**
+
 ```bash
 docker-compose up -d
 ```
 
 **3. Access the application:**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - PostgreSQL: localhost:5432
@@ -226,47 +259,56 @@ The backend provides a comprehensive REST API. See [API Documentation](./docs/AP
 ### Quick Reference
 
 **Authentication:**
+
 - `POST /api/auth/login` - Email/password login
 - `POST /api/auth/google` - Google OAuth
 - `POST /api/auth/github` - GitHub OAuth
 - `GET /api/auth/me` - Get current user
 
 **Projects:**
+
 - `GET /api/projects` - List projects
 - `POST /api/projects` - Create project
 - `GET /api/projects/:id/branches` - List branches
 
 **Test Management:**
+
 - `GET /api/test-cases` - List test cases
 - `POST /api/test-cases` - Create test case
 - `GET /api/test-cases/:id/steps` - Get test steps
 - `POST /api/test-cases/:id/steps` - Add test step
 
 **Execution:**
+
 - `GET /api/executions` - List executions
 - `POST /api/executions` - Run test execution
 - `POST /api/executions/:id/rerun` - Re-run test
 
 **Chat & AI:**
+
 - `POST /api/chat/message` - Send message to AI
 - `GET /api/chat/history` - Get chat history
 - `POST /api/orchestrated-test` - **NEW: Complete agent flow** (Intent → Plan → Execute → Evidence → Diff → Report)
 
 **Dashboard:**
+
 - `GET /api/dashboard/metrics` - Get metrics
 - `GET /api/dashboard/activity` - Recent activity
 
 **Configuration & Settings:**
+
 - `GET /api/config/:projectId` - Get project config
 - `PUT /api/settings/profile` - Update user profile
 
 ### Health Check
+
 ```bash
 GET /
 GET /api/health
 ```
 
 ### Create Test Plan
+
 ```bash
 POST /api/test-plan
 Content-Type: application/json
@@ -277,6 +319,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -295,6 +338,7 @@ Content-Type: application/json
 ```
 
 ### Execute Test (Browser Automation)
+
 ```bash
 POST /api/execute-test
 Content-Type: application/json
@@ -306,6 +350,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -326,6 +371,7 @@ Content-Type: application/json
 ## 🔧 Development Status
 
 ### ✅ Implemented Features
+
 - ✅ Complete 6-agent orchestration flow
 - ✅ Intent parsing from natural language
 - ✅ Structured JSON test plan generation
@@ -337,13 +383,16 @@ Content-Type: application/json
 - ✅ REST API for all agent operations
 - ✅ Docker support
 - ✅ OpenAI integration (optional)
+- ✅ Database integration (PostgreSQL with Prisma)
+- ✅ Structured logging utility
 
 ### 🚧 Roadmap
+
 - [x] Complete agent orchestration flow
 - [x] Self-healing selector system
 - [x] Confidence scoring and suggested fixes
 - [x] Flow difference detection and classification
-- [ ] Database integration (PostgreSQL/SQLite)
+- [x] Database integration (PostgreSQL with Prisma)
 - [ ] Advanced AI test planning with vision
 - [ ] Multi-browser support
 - [ ] CI/CD integration

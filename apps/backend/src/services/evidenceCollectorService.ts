@@ -2,6 +2,9 @@ import { Page, BrowserContext } from 'playwright';
 import { prisma } from '../utils/prisma';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('EvidenceCollector');
 
 export interface EvidenceMetadata {
   url?: string;
@@ -186,7 +189,7 @@ export class EvidenceCollectorService {
 
       return evidence.id;
     } catch (error) {
-      console.error('Error capturing network log:', error);
+      logger.error('Error capturing network log', { error, executionId });
       throw error;
     }
   }
@@ -226,7 +229,7 @@ export class EvidenceCollectorService {
 
       return evidence.id;
     } catch (error) {
-      console.error('Error capturing console logs:', error);
+      logger.error('Error capturing console logs', { error, executionId });
       throw error;
     }
   }

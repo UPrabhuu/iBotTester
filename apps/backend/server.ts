@@ -5,12 +5,15 @@ import session from 'express-session';
 import { chromium } from 'playwright';
 import OpenAI from 'openai';
 import passport from './src/config/passport';
+import { createServer } from 'http';
+import { setupWebSocketRoutes } from './src/routes/websocket';
 
 // Import routes
 import authRoutes from './src/routes/auth';
 import projectRoutes from './src/routes/projects';
 import testRoutes, { testStepRouter } from './src/routes/tests';
 import executionRoutes from './src/routes/executions';
+import batchExecutionRoutes from './src/routes/batch-executions';
 import chatRoutes from './src/routes/chat';
 import dashboardRoutes from './src/routes/dashboard';
 import configRoutes from './src/routes/config';
@@ -124,6 +127,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/test-cases', testRoutes);
 app.use('/api/test-steps', testStepRouter);
 app.use('/api/executions', executionRoutes);
+app.use('/api/batch-executions', batchExecutionRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/config', configRoutes);
@@ -358,11 +362,18 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
+// Create HTTP server with WebSocket support
+const server = createServer(app);
+
+// Setup WebSocket routes
+setupWebSocketRoutes(server);
+
+server.listen(PORT, () => {
   console.log(`✅ iBotTester API Server running on port ${PORT}`);
   console.log(`📊 Playwright: Available`);
   console.log(`🤖 OpenAI: ${openai ? 'Configured' : 'Not configured (set OPENAI_API_KEY)'}`);
   console.log(`🧠 AI Agent: ${aiAgentService.isAIAvailable() ? 'Active' : 'Fallback mode'}`);
+  console.log(`🔌 WebSocket: Ready at ws://localhost:${PORT}/ws/executions/:executionId`);
   console.log(`\n🚀 Agent Endpoints:`);
   console.log(`   POST /api/test-plan - Generate test plan from prompt`);
   console.log(`   POST /api/execute-test-plan - Execute existing test plan`);

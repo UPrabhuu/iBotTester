@@ -6,6 +6,7 @@ import {
   createChat,
   sendMessage,
   deleteChat,
+  streamExecutionUpdates,
 } from '../controllers/chatController';
 import { authenticate } from '../middleware/auth';
 
@@ -18,6 +19,7 @@ router.get('/history', getChatHistory);
 router.get('/:id', getChat);
 router.post('/new', createChat);
 router.post('/message', sendMessage);
+router.get('/:conversationId/execution-stream', streamExecutionUpdates);
 router.delete('/:id', deleteChat);
 
 export default router;

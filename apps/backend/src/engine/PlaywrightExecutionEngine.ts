@@ -13,6 +13,7 @@
 import { chromium, Browser, Page, BrowserContext, ConsoleMessage } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
+import { createLogger } from '../utils/logger';
 import {
   ExecutionEngineOptions,
   TestPlan,
@@ -26,6 +27,8 @@ import {
   ExecutionProgress,
   ExecutionEvent,
 } from './types';
+
+const logger = createLogger('ExecutionEngine');
 
 /**
  * Main Playwright Execution Engine
@@ -663,7 +666,7 @@ export class PlaywrightExecutionEngine {
   private log(message: string): void {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}`;
-    console.log(logMessage);
+    logger.info(logMessage);
     this.logs.push(logMessage);
   }
 

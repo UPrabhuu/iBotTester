@@ -464,6 +464,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                   <div className="ml-9">
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                      {/* Dynamic width based on runtime duration - inline style required */}
                       <div 
                         className="h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full transition-all duration-500"
                         style={{ width: `${widthPercent}%` }}

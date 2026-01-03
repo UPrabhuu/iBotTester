@@ -555,8 +555,8 @@ const TestListView: React.FC<TestListViewProps> = ({
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-4">
                       <div className="flex-shrink-0">
-                        <div className="w-14 h-14 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: folder.color + '20' }}>
-                          <svg className="w-8 h-8" style={{ color: folder.color }} fill="currentColor" viewBox="0 0 24 24">
+                        <div className="w-14 h-14 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: folder.color + '20', ['--folder-color' as string]: folder.color } as React.CSSProperties}>
+                          <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" style={{ color: folder.color }}>
                             <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
                           </svg>
                         </div>

@@ -108,21 +108,54 @@ model TestStep {
   @@map("test_steps")
 }
 
+// Execution Batch model - for parallel test execution tracking
+model ExecutionBatch {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  projectId       String    @map("project_id")
+  branchId        String?   @map("branch_id")
+  conversationId  String?   @map("conversation_id")
+  batchName       String    @map("batch_name")
+  status          String    @default("pending") // pending, running, completed, failed
+  totalTests      Int       @default(0) @map("total_tests")
+  completedTests  Int       @default(0) @map("completed_tests")
+  passedTests     Int       @default(0) @map("passed_tests")
+  failedTests     Int       @default(0) @map("failed_tests")
+  startedAt       DateTime  @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  duration        Int?
+  batchMetadataJson Json?   @map("batch_metadata_json")
+
+  // Relations
+  executions Execution[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("execution_batches")
+}
+
 // Execution model
 model Execution {
   id              String    @id @default(uuid())
+  batchId         String?   @map("batch_id")
   testCaseId      String    @map("test_case_id")
   status          String    @default("pending")
+  order           Int       @default(0) // For sequential ordering within batch
   startedAt       DateTime? @map("started_at")
   completedAt     DateTime? @map("completed_at")
   duration        Int?
   resultsJson     Json?     @map("results_json")
   screenshotsJson Json?     @map("screenshots_json")
   errorMessage    String?   @map("error_message")
+  executionMetadataJson Json? @map("execution_metadata_json") // Contains branch, project info
 
   // Relations
   testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  batch ExecutionBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
+  @@index([batchId])
   @@index([testCaseId])
   @@index([status])
   @@map("executions")

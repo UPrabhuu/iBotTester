@@ -63,6 +63,7 @@ export default function AgentFlowProgressComponent({ agentFlow, currentStep }: A
 
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-6">
+          {/* Dynamic width based on runtime progress - inline style required */}
           <div
             className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${calculateProgress()}%` }}

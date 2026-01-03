@@ -1,5 +1,10 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import { EvidenceCollectorService } from './evidenceCollectorService';
+import { ExecutionEvent, ExecutionEventListener } from '../types/execution-events';
+import { executionWebSocketHub } from './executionWebSocketHub';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('PlaywrightRunner');
 
 export interface TestStep {
   stepNumber: number;
@@ -18,6 +23,7 @@ export interface PlaywrightRunnerConfig {
   screenshotsEnabled?: boolean;
   videoEnabled?: boolean;
   traceEnabled?: boolean;
+  frameInterval?: number; // milliseconds between frame captures (default: 300)
 }
 
 export interface PlaywrightExecutionResult {
@@ -42,9 +48,21 @@ export class PlaywrightRunnerService {
   private context: BrowserContext | null = null;
   private page: Page | null = null;
   private evidenceCollector: EvidenceCollectorService;
+  private frameInterval: number = 300; // ms
+  private frameCounter: number = 0;
+  private frameIntervalId: NodeJS.Timeout | null = null;
+  private isRunning: boolean = false;
 
   constructor() {
     this.evidenceCollector = new EvidenceCollectorService();
+  }
+
+  /**
+   * Emit execution event to WebSocket clients
+   */
+  private emitEvent(event: ExecutionEvent): void {
+    logger.debug(`Event: ${event.type}`, { executionId: event.executionId });
+    executionWebSocketHub.broadcastEvent(event);
   }
 
   async executeTest(
@@ -56,17 +74,37 @@ export class PlaywrightRunnerService {
     const startTime = Date.now();
     const stepResults: StepResult[] = [];
     const evidenceIds: string[] = [];
+    this.frameInterval = config.frameInterval || 300;
+    this.isRunning = true;
+    this.frameCounter = 0;
 
     try {
+      // Emit run started
+      this.emitEvent({
+        type: 'run_started',
+        executionId,
+        timestamp: Date.now(),
+        testName: 'Playwright Test Execution',
+        totalSteps: testSteps.length,
+        startUrl,
+      });
+
       // Initialize browser
       await this.initializeBrowser(config);
 
       // Navigate to start URL
       if (this.page) {
         await this.page.goto(startUrl, { waitUntil: 'networkidle' });
-        
+
+        // Setup page event listeners
+        this.setupPageListeners(executionId);
+
+        // Start interval-based frame capture
+        this.startFrameCapture(executionId);
+
         // Capture initial screenshot
         if (config.screenshotsEnabled !== false) {
+          await this.captureAndEmitFrame(executionId);
           const evidenceId = await this.evidenceCollector.captureScreenshot(
             executionId,
             this.page,
@@ -79,15 +117,38 @@ export class PlaywrightRunnerService {
 
       // Execute each test step
       for (const step of testSteps) {
+        // Emit step started
+        this.emitEvent({
+          type: 'step_started',
+          executionId,
+          timestamp: Date.now(),
+          stepNumber: step.stepNumber,
+          action: step.action,
+          description: step.description,
+          selector: step.selector,
+        });
+
         const stepResult = await this.executeStep(executionId, step, config);
         stepResults.push(stepResult);
+
+        // Emit step finished
+        this.emitEvent({
+          type: 'step_finished',
+          executionId,
+          timestamp: Date.now(),
+          stepNumber: step.stepNumber,
+          status: stepResult.status,
+          duration: stepResult.duration,
+          error: stepResult.error,
+        });
 
         if (stepResult.status === 'failed') {
           break; // Stop execution on first failure
         }
 
-        // Collect evidence for this step
+        // Capture frame after step
         if (config.screenshotsEnabled !== false && this.page) {
+          await this.captureAndEmitFrame(executionId);
           const evidenceId = await this.evidenceCollector.captureScreenshot(
             executionId,
             this.page,
@@ -97,6 +158,9 @@ export class PlaywrightRunnerService {
           evidenceIds.push(evidenceId);
         }
       }
+
+      // Stop frame capture
+      this.stopFrameCapture();
 
       // Capture trace if enabled
       if (config.traceEnabled && this.context) {
@@ -110,6 +174,15 @@ export class PlaywrightRunnerService {
       const duration = Date.now() - startTime;
       const allPassed = stepResults.every(r => r.status === 'passed');
 
+      // Emit run finished
+      this.emitEvent({
+        type: 'run_finished',
+        executionId,
+        timestamp: Date.now(),
+        status: allPassed ? 'passed' : 'failed',
+        totalDuration: duration,
+      });
+
       return {
         executionId,
         status: allPassed ? 'completed' : 'failed',
@@ -119,6 +192,16 @@ export class PlaywrightRunnerService {
       };
     } catch (error) {
       const duration = Date.now() - startTime;
+
+      // Emit run finished with error
+      this.emitEvent({
+        type: 'run_finished',
+        executionId,
+        timestamp: Date.now(),
+        status: 'failed',
+        totalDuration: duration,
+      });
+
       return {
         executionId,
         status: 'failed',
@@ -128,7 +211,101 @@ export class PlaywrightRunnerService {
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     } finally {
+      this.isRunning = false;
+      this.stopFrameCapture();
       await this.cleanup();
+    }
+  }
+
+  /**
+   * Setup page event listeners for console and errors
+   */
+  private setupPageListeners(executionId: string): void {
+    if (!this.page) return;
+
+    // Listen to console messages
+    this.page.on('console', (msg) => {
+      this.emitEvent({
+        type: 'console',
+        executionId,
+        timestamp: Date.now(),
+        level: msg.type() as any,
+        text: msg.text(),
+      });
+    });
+
+    // Listen to page errors
+    this.page.on('pageerror', (error) => {
+      this.emitEvent({
+        type: 'log',
+        executionId,
+        timestamp: Date.now(),
+        level: 'error',
+        message: `Page Error: ${error.message}`,
+      });
+    });
+
+    // Listen to request failures
+    this.page.on('requestfailed', (request) => {
+      this.emitEvent({
+        type: 'log',
+        executionId,
+        timestamp: Date.now(),
+        level: 'warning',
+        message: `Request Failed: ${request.url()} - ${request.failure()?.errorText}`,
+      });
+    });
+  }
+
+  /**
+   * Start interval-based frame capture
+   */
+  private startFrameCapture(executionId: string): void {
+    if (this.frameIntervalId) {
+      clearInterval(this.frameIntervalId);
+    }
+
+    this.frameIntervalId = setInterval(async () => {
+      if (this.isRunning && this.page) {
+        try {
+          await this.captureAndEmitFrame(executionId);
+        } catch (error) {
+          logger.error('Frame capture error', { error, executionId });
+        }
+      }
+    }, this.frameInterval);
+  }
+
+  /**
+   * Stop interval-based frame capture
+   */
+  private stopFrameCapture(): void {
+    if (this.frameIntervalId) {
+      clearInterval(this.frameIntervalId);
+      this.frameIntervalId = null;
+    }
+  }
+
+  /**
+   * Capture and emit a single frame
+   */
+  private async captureAndEmitFrame(executionId: string): Promise<void> {
+    if (!this.page) return;
+
+    try {
+      const screenshot = await this.page.screenshot({ type: 'png' });
+      const base64 = screenshot.toString('base64');
+
+      this.emitEvent({
+        type: 'frame',
+        executionId,
+        timestamp: Date.now(),
+        mime: 'image/png',
+        base64,
+        seq: this.frameCounter++,
+      });
+    } catch (error) {
+      logger.error('Screenshot error', { error, executionId });
     }
   }
 
@@ -219,7 +396,7 @@ export class PlaywrightRunnerService {
           break;
 
         default:
-          console.warn(`Unknown action: ${step.action}`);
+          logger.warn(`Unknown action: ${step.action}`, { stepNumber: step.stepNumber });
       }
 
       const duration = Date.now() - stepStartTime;
@@ -260,7 +437,7 @@ export class PlaywrightRunnerService {
         await this.browser.close();
       }
     } catch (error) {
-      console.error('Error during cleanup:', error);
+      logger.error('Error during cleanup', { error });
     } finally {
       this.page = null;
       this.context = null;

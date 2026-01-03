@@ -8,6 +8,7 @@ import {
   deleteExecution,
   getExecutionLogs,
   getExecutionScreenshots,
+  updateExecution,
 } from '../controllers/executionController';
 import { authenticate } from '../middleware/auth';
 
@@ -19,6 +20,7 @@ router.use(authenticate);
 router.get('/', listExecutions);
 router.get('/:id', getExecution);
 router.post('/', createExecution);
+router.put('/:id', updateExecution);
 router.post('/:id/rerun', rerunExecution);
 router.delete('/:id', deleteExecution);
 router.get('/:id/logs', getExecutionLogs);

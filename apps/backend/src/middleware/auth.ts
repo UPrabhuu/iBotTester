@@ -20,14 +20,22 @@ declare global {
 // Authentication middleware using JWT
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Check for Authorization header
+    // Check for Authorization header or query parameter (for SSE/EventSource)
+    let token = '';
     const authHeader = req.headers.authorization;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.replace('Bearer ', '');
+    } else if (req.query.token) {
+      // Allow token in query parameter for EventSource connections (SSE)
+      token = req.query.token as string;
+    } else {
       return res.status(401).json(errorResponse('No token provided'));
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json(errorResponse('No token provided'));
+    }
 
     // Verify token
     const decoded = verifyToken(token);

@@ -606,13 +606,13 @@ ibottester config set <key> <value>
     return lines.map((line, i) => {
       // Headers
       if (line.startsWith('# ')) {
-        return <h1 key={i} className="text-3xl font-bold text-slate-900 mb-4 mt-8">{line.slice(2)}</h1>;
+        return <h1 key={i} className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-4 mt-8">{line.slice(2)}</h1>;
       }
       if (line.startsWith('## ')) {
-        return <h2 key={i} className="text-2xl font-bold text-slate-800 mb-3 mt-6">{line.slice(3)}</h2>;
+        return <h2 key={i} className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 mt-6">{line.slice(3)}</h2>;
       }
       if (line.startsWith('### ')) {
-        return <h3 key={i} className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2 mt-4">{line.slice(4)}</h3>;
+        return <h3 key={i} className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-4">{line.slice(4)}</h3>;
       }
       
       // Code blocks
@@ -623,7 +623,7 @@ ibottester config set <key> <value>
       // Lists
       if (line.startsWith('- ')) {
         return (
-          <li key={i} className="ml-6 text-slate-700 dark:text-slate-300 mb-1">
+          <li key={i} className="ml-6 text-gray-700 dark:text-gray-300 mb-1">
             {line.slice(2)}
           </li>
         );
@@ -631,16 +631,16 @@ ibottester config set <key> <value>
       
       // Bold
       if (line.startsWith('**') && line.endsWith('**')) {
-        return <p key={i} className="font-semibold text-slate-800 mb-2">{line.slice(2, -2)}</p>;
+        return <p key={i} className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{line.slice(2, -2)}</p>;
       }
       
       // Code inline
       if (line.includes('`') && !line.startsWith('```')) {
         const parts = line.split('`');
         return (
-          <p key={i} className="text-slate-700 dark:text-slate-300 mb-2">
+          <p key={i} className="text-gray-700 dark:text-gray-300 mb-2">
             {parts.map((part, j) => 
-              j % 2 === 0 ? part : <code key={j} className="bg-slate-100 px-2 py-0.5 rounded text-sm font-mono text-blue-600">{part}</code>
+              j % 2 === 0 ? part : <code key={j} className="bg-gray-100 dark:bg-gray-700/50 px-2 py-0.5 rounded text-sm font-mono text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-600">{part}</code>
             )}
           </p>
         );
@@ -648,33 +648,33 @@ ibottester config set <key> <value>
       
       // Regular paragraph
       if (line.trim()) {
-        return <p key={i} className="text-slate-700 dark:text-slate-300 mb-3">{line}</p>;
+        return <p key={i} className="text-gray-700 dark:text-gray-300 mb-2 leading-relaxed">{line}</p>;
       }
       
-      return <br key={i} />;
+      return <div key={i}></div>;
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="flex h-screen">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Sidebar Navigation */}
-        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto shadow-sm">
           <div className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <FileText className="text-blue-600" size={24} />
-              <h2 className="text-xl font-bold text-slate-900">Documentation</h2>
+              <FileText className="text-blue-600 dark:text-blue-400" size={24} />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Documentation</h2>
             </div>
 
             {/* Search */}
             <div className="relative mb-6">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search docs..."
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-sm transition-colors"
               />
             </div>
 
@@ -687,10 +687,10 @@ ibottester config set <key> <value>
                       setActiveSection(section.id);
                       setActiveSubsection(section.subsections[0].id);
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left font-medium transition-colors ${
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left font-medium transition-all ${
                       activeSection === section.id
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400'
+                        : 'text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 border-l-2 border-transparent'
                     }`}
                   >
                     {section.icon}
@@ -703,10 +703,10 @@ ibottester config set <key> <value>
                         <button
                           key={subsection.id}
                           onClick={() => setActiveSubsection(subsection.id)}
-                          className={`w-full text-left px-3 py-1.5 rounded text-sm transition-colors ${
+                          className={`w-full text-left px-3 py-1.5 rounded text-sm transition-all ${
                             activeSubsection === subsection.id
-                              ? 'text-blue-600 font-medium'
-                              : 'text-slate-600 hover:text-slate-900'
+                              ? 'text-blue-600 dark:text-blue-300 font-medium bg-blue-50/50 dark:bg-blue-900/20'
+                              : 'text-gray-600 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
                           }`}
                         >
                           {subsection.title}
@@ -724,27 +724,29 @@ ibottester config set <key> <value>
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto px-8 py-12">
             {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm text-slate-600 mb-8">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-8">
               <span>Docs</span>
               <ChevronRight size={16} />
-              <span>{currentSection?.title}</span>
+              <span className="text-gray-700 dark:text-gray-300">{currentSection?.title}</span>
               <ChevronRight size={16} />
-              <span className="text-slate-900 font-medium">
+              <span className="text-gray-900 dark:text-gray-100 font-medium">
                 {currentSection?.subsections.find(s => s.id === activeSubsection)?.title}
               </span>
             </div>
 
             {/* Content */}
-            <div className="prose prose-slate max-w-none">
-              {renderContent(currentContent)}
+            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+              <div className="prose prose-slate dark:prose-invert max-w-none">
+                {renderContent(currentContent)}
+              </div>
             </div>
 
             {/* Footer Navigation */}
-            <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-              <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+            <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-between">
+              <button className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
                 ← Previous
               </button>
-              <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+              <button className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
                 Next →
               </button>
             </div>
@@ -752,12 +754,12 @@ ibottester config set <key> <value>
         </div>
 
         {/* Right Sidebar - Table of Contents */}
-        <div className="w-64 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-6 overflow-y-auto hidden xl:block">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">On This Page</h3>
+        <div className="w-64 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-6 overflow-y-auto hidden xl:block shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50 mb-4">On This Page</h3>
           <nav className="space-y-2 text-sm">
-            <a href="#" className="block text-blue-600 hover:text-blue-700">Introduction</a>
-            <a href="#" className="block text-slate-600 hover:text-slate-900">Key Features</a>
-            <a href="#" className="block text-slate-600 hover:text-slate-900">Quick Start</a>
+            <a href="#" className="block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Introduction</a>
+            <a href="#" className="block text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">Key Features</a>
+            <a href="#" className="block text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">Quick Start</a>
           </nav>
         </div>
       </div>

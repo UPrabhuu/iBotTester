@@ -321,6 +321,12 @@ export const chatApi = {
       method: 'DELETE',
     });
   },
+
+  streamExecutionUpdates(conversationId: string): EventSource {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const url = `${API_BASE_URL}/api/chat/${conversationId}/execution-stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    return new EventSource(url);
+  },
 };
 
 // Intent Parser API
@@ -367,6 +373,53 @@ export const configApi = {
   },
 };
 
+// Batch Executions API
+export const batchExecutionsApi = {
+  async create(data: {
+    projectId: string;
+    branchId?: string;
+    conversationId?: string;
+    testCaseIds: string[];
+    batchName?: string;
+  }): Promise<ApiResponse<any>> {
+    return fetchApi('/api/batch-executions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getAll(filters?: {
+    projectId?: string;
+    status?: 'pending' | 'running' | 'completed' | 'failed';
+    limit?: number;
+  }): Promise<ApiResponse<any[]>> {
+    const query = new URLSearchParams();
+    if (filters?.projectId) query.append('projectId', filters.projectId);
+    if (filters?.status) query.append('status', filters.status);
+    if (filters?.limit) query.append('limit', filters.limit.toString());
+    const queryString = query.toString();
+    return fetchApi(`/api/batch-executions${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getById(id: string): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/batch-executions/${id}`);
+  },
+
+  async update(id: string, data: any): Promise<ApiResponse<any>> {
+    return fetchApi(`/api/batch-executions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async streamUpdates(id: string): Promise<EventSource> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const url = `${baseUrl}/api/batch-executions/${id}/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    return new EventSource(url);
+  },
+};
+
 // Health Check API
 export const healthApi = {
   async check(): Promise<ApiResponse<any>> {
@@ -385,6 +438,7 @@ export const api = {
   chat: chatApi,
   intent: intentApi,
   config: configApi,
+  batchExecutions: batchExecutionsApi,
   health: healthApi,
 };
 

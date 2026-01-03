@@ -156,15 +156,8 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     >
       {children}
       <div className="fixed top-4 right-4 z-50 space-y-2">
-        {alerts.map((alert, index) => (
-          <div
-            key={alert.id}
-            style={{ 
-              marginTop: index > 0 ? '8px' : '0',
-              position: 'relative',
-              top: `${index * 10}px`
-            }}
-          >
+        {alerts.map((alert) => (
+          <div key={alert.id}>
             <Alert
               message={alert.message}
               type={alert.type}

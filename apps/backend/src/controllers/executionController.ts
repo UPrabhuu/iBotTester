@@ -281,3 +281,107 @@ export const getExecutionScreenshots = async (req: Request, res: Response) => {
     res.status(500).json(errorResponse('Internal server error'));
   }
 };
+
+// PUT /api/executions/:id - Update execution status
+export const updateExecution = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    const { status, resultsJson, screenshotsJson, errorMessage, completedAt } = req.body;
+
+    // Verify execution exists and user has access
+    const execution = await prisma.execution.findUnique({
+      where: { id },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { userId: true },
+            },
+          },
+        },
+        batch: true,
+      },
+    });
+
+    if (!execution) {
+      return res.status(404).json(errorResponse('Execution not found'));
+    }
+
+    if (execution.testCase.project.userId !== userId) {
+      return res.status(403).json(errorResponse('Access denied'));
+    }
+
+    // Calculate duration if completed
+    let duration: number | null = null;
+    if (completedAt && execution.startedAt) {
+      duration = Math.floor((new Date(completedAt).getTime() - execution.startedAt.getTime()) / 1000);
+    }
+
+    // Update execution
+    const updatedExecution = await prisma.execution.update({
+      where: { id },
+      data: {
+        status,
+        resultsJson: resultsJson ?? undefined,
+        screenshotsJson: screenshotsJson ?? undefined,
+        errorMessage: errorMessage ?? undefined,
+        completedAt: completedAt ? new Date(completedAt) : undefined,
+        duration,
+      },
+      include: {
+        testCase: {
+          include: {
+            project: {
+              select: { id: true, name: true, userId: true },
+            },
+          },
+        },
+        batch: true,
+      },
+    });
+
+    // If part of a batch, update batch statistics
+    if (execution.batchId) {
+      const batch = await prisma.executionBatch.findUnique({
+        where: { id: execution.batchId },
+        include: {
+          executions: true,
+        },
+      });
+
+      if (batch) {
+        // Calculate batch stats
+        const allExecutions = await prisma.execution.findMany({
+          where: { batchId: execution.batchId },
+        });
+
+        const completedTests = allExecutions.filter(e => e.status === 'completed').length;
+        const passedTests = allExecutions.filter(e => e.status === 'completed' && !e.errorMessage).length;
+        const failedTests = allExecutions.filter(e => e.status === 'failed' || (e.status === 'completed' && e.errorMessage)).length;
+
+        // Check if all tests are completed
+        const allCompleted = allExecutions.every(e => ['completed', 'failed'].includes(e.status));
+        const batchStatus = allCompleted ? 'completed' : 'running';
+
+        // Update batch
+        await prisma.executionBatch.update({
+          where: { id: execution.batchId },
+          data: {
+            status: batchStatus,
+            completedTests,
+            passedTests,
+            failedTests,
+            completedAt: allCompleted ? new Date() : undefined,
+            duration: allCompleted && batch.startedAt ? Math.floor((new Date().getTime() - batch.startedAt.getTime()) / 1000) : undefined,
+          },
+        });
+      }
+    }
+
+    res.json(successResponse(updatedExecution));
+  } catch (error) {
+    console.error('Update execution error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
+};

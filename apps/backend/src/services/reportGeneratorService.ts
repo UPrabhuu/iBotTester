@@ -1,4 +1,7 @@
 import { prisma } from '../utils/prisma';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('ReportGenerator');
 
 export interface ReportMetrics {
   totalSteps: number;
@@ -119,7 +122,7 @@ export class ReportGeneratorService {
 
       return report.id;
     } catch (error) {
-      console.error('Error generating report:', error);
+      logger.error('Error generating report', { error });
       throw error;
     }
   }

@@ -1,6 +1,9 @@
 // Test Execution Agent Service
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
 import { TestPlan, TestStep, StepResult, TestOutput, TestEvidence, FlowDifference } from '../models/agentTypes';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('ExecutionAgent');
 
 export class ExecutionAgentService {
   private browser: Browser | null = null;
@@ -396,7 +399,7 @@ export class ExecutionAgentService {
   private log(message: string): void {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}`;
-    console.log(logMessage);
+    logger.info(logMessage);
     this.logs.push(logMessage);
   }
 
@@ -409,7 +412,7 @@ export class ExecutionAgentService {
       if (this.context) await this.context.close();
       if (this.browser) await this.browser.close();
     } catch (error) {
-      console.error('Cleanup error:', error);
+      logger.error('Cleanup error', { error });
     }
   }
 }

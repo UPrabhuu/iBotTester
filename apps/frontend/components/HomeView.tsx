@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { chatApi, intentApi, ParsedIntent } from '../services/api';
 import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
 import { useAlert } from '../contexts/AlertContext';
+import LiveExecutionStream from './LiveExecutionStream';
 
 interface Branch {
   id: string;
@@ -76,6 +77,7 @@ const HomeView: React.FC<HomeViewProps> = ({
   const [showChat, setShowChat] = useState(false);
   const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
   const [isParsingIntent, setIsParsingIntent] = useState(false);
+  const [showLiveExecution, setShowLiveExecution] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Update branch when project changes
@@ -393,8 +395,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                     }}
                     placeholder="Message iBotTester..."
                     disabled={isLoading}
-                    className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ minHeight: '56px' }}
+                    className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
                     aria-label="Chat message input"
                     aria-describedby="chat-help-text"
                     autoComplete="off"
@@ -515,9 +516,9 @@ const HomeView: React.FC<HomeViewProps> = ({
                                       <div className="text-sm text-gray-700 dark:text-gray-300 font-medium flex items-center space-x-2">
                                         <span>Creating test case</span>
                                         <span className="inline-flex space-x-0.5">
-                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
+                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
+                                          <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]"></span>
                                         </span>
                                       </div>
                                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Generating test structure</div>
@@ -541,7 +542,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                                 {/* Progress bar */}
                                 <div className="pt-2">
                                   <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                                    <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-progress" style={{ width: '66%' }}></div>
+                                    <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-progress w-2/3"></div>
                                   </div>
                                 </div>
                               </div>
@@ -666,9 +667,9 @@ const HomeView: React.FC<HomeViewProps> = ({
                       <span className="text-xs text-gray-400">thinking...</span>
                     </div>
                     <div className="inline-flex items-center space-x-1 px-4 py-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-2xl border border-gray-200">
-                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce [animation-delay:0ms]"></div>
+                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce [animation-delay:150ms]"></div>
+                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce [animation-delay:300ms]"></div>
                     </div>
                   </div>
                 </div>
@@ -748,8 +749,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                 }}
                 placeholder="Message iBotTester..."
                 disabled={isLoading}
-                className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ minHeight: '56px' }}
+                className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
                 aria-label="Chat message input"
                 aria-describedby="chat-help-text"
                 autoComplete="off"
@@ -781,6 +781,15 @@ const HomeView: React.FC<HomeViewProps> = ({
           </div>
           </div>
         </div>
+      )}
+      
+      {/* Live Execution Stream */}
+      {showChat && (
+        <LiveExecutionStream
+          conversationId={conversationId}
+          autoStart={showLiveExecution}
+          onClose={() => setShowLiveExecution(false)}
+        />
       )}
     </div>
   );
