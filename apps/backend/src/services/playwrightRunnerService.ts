@@ -1,7 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import { EvidenceCollectorService } from './evidenceCollectorService';
-import { ExecutionEvent, ExecutionEventListener } from '../types/execution-events';
-import { executionWebSocketHub } from './executionWebSocketHub';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('PlaywrightRunner');
@@ -58,11 +56,11 @@ export class PlaywrightRunnerService {
   }
 
   /**
-   * Emit execution event to WebSocket clients
+   * Emit execution event (no-op, live execution removed)
    */
-  private emitEvent(event: ExecutionEvent): void {
-    logger.debug(`Event: ${event.type}`, { executionId: event.executionId });
-    executionWebSocketHub.broadcastEvent(event);
+  private emitEvent(event: any): void {
+    // Live execution events removed
+    logger.debug(`Event (not broadcast): ${event.type}`, { executionId: event.executionId });
   }
 
   async executeTest(
