@@ -112,7 +112,7 @@ model TestStep {
 model ExecutionBatch {
   id              String    @id @default(uuid())
   userId          String    @map("user_id")
-  projectId       String    @map("project_id")
+  projectId       String?   @map("project_id")
   branchId        String?   @map("branch_id")
   conversationId  String?   @map("conversation_id")
   batchName       String    @map("batch_name")

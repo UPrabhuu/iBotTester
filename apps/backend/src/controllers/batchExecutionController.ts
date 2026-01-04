@@ -53,30 +53,44 @@ export const createExecutionBatch = async (req: Request, res: Response) => {
     const { projectId, branchId, conversationId, testCaseIds, batchName } = req.body;
     const userId = req.user?.id;
 
-    if (!projectId || !testCaseIds || testCaseIds.length === 0) {
-      return res.status(400).json(errorResponse('projectId and testCaseIds are required'));
+    if (!testCaseIds || testCaseIds.length === 0) {
+      return res.status(400).json(errorResponse('testCaseIds are required'));
     }
 
-    // Verify user has access to project
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { userId: true },
-    });
+    // Verify user has access to project (if projectId is provided)
+    if (projectId) {
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { userId: true },
+      });
 
-    if (!project || project.userId !== userId) {
-      return res.status(403).json(errorResponse('Access denied to project'));
+      if (!project || project.userId !== userId) {
+        return res.status(403).json(errorResponse('Access denied to project'));
+      }
     }
 
-    // Verify all test cases exist and belong to this project
+    // Verify all test cases exist and belong to user (and project if specified)
+    const testCasesQuery: any = {
+      id: { in: testCaseIds },
+    };
+    
+    if (projectId) {
+      testCasesQuery.projectId = projectId;
+    }
+    
     const testCases = await prisma.testCase.findMany({
-      where: {
-        id: { in: testCaseIds },
-        projectId,
+      where: testCasesQuery,
+      include: {
+        project: {
+          select: { userId: true },
+        },
       },
     });
 
-    if (testCases.length !== testCaseIds.length) {
-      return res.status(400).json(errorResponse('Some test cases not found or do not belong to this project'));
+    // Verify user owns all test cases
+    const allOwnedByUser = testCases.every(tc => tc.project.userId === userId);
+    if (!allOwnedByUser || testCases.length !== testCaseIds.length) {
+      return res.status(400).json(errorResponse('Some test cases not found or access denied'));
     }
 
     // Create execution batch

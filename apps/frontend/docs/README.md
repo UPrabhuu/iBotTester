@@ -69,54 +69,15 @@ interface ExecutionStep {
 }
 ```
 
-### LiveExecutionPanel.tsx
-
-**Right panel for live test execution visualization**
-
-**Features:**
-
-- Live execution indicator with pulse animation
-- Mock browser window with:
-  - Browser chrome (traffic light buttons, URL bar)
-  - Simulated product page content
-  - Loading state during execution
-- Tabbed interface:
-  - **Results**: Step-by-step execution logs with checkmarks
-  - **Diff**: Screenshot comparison (before/after)
-  - **Video**: Video recording placeholder
-  - **Logs**: Terminal-style technical logs with timestamps
-
-**Props:**
-
-```typescript
-interface LiveExecutionPanelProps {
-  isExecuting: boolean; // Whether test is currently running
-  currentUrl?: string; // URL shown in browser mock
-  screenshots: Screenshot[]; // Array of screenshots for diff view
-  logs: string[]; // Execution log messages
-}
-
-interface Screenshot {
-  id: string;
-  label: string;
-  url: string;
-  timestamp: Date;
-}
-```
-
 ## Usage Example
 
 ```typescript
 import Sidebar from "@/components/Sidebar";
 import ChatPanel from "@/components/ChatPanel";
-import LiveExecutionPanel from "@/components/LiveExecutionPanel";
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100">
@@ -131,13 +92,6 @@ export default function Home() {
         messages={messages}
         onSendMessage={handleSendMessage}
         isProcessing={isProcessing}
-      />
-
-      <LiveExecutionPanel
-        isExecuting={isExecuting}
-        currentUrl="https://www.amazon.com"
-        screenshots={screenshots}
-        logs={logs}
       />
     </div>
   );

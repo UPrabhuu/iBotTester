@@ -211,3 +211,73 @@ kbd {
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* Chat message styling improvements */
+/* Code blocks in chat messages */
+.chat-message code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html.dark .chat-message code {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.chat-message pre {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+html.dark .chat-message pre {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+.chat-message pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Links in chat messages */
+.chat-message a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html.dark .chat-message a {
+  color: #60a5fa;
+}
+
+.chat-message a:hover {
+  color: #1d4ed8;
+}
+
+html.dark .chat-message a:hover {
+  color: #93c5fd;
+}
+
+/* Selection in chat messages */
+.chat-message ::selection {
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
+
+html.dark .chat-message ::selection {
+  background-color: #1e3a8a;
+  color: #dbeafe;
+}

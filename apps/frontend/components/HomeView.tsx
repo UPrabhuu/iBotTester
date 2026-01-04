@@ -330,59 +330,9 @@ const HomeView: React.FC<HomeViewProps> = ({
             <div className="mt-8 max-w-3xl mx-auto w-full">
               
               <form onSubmit={handleSubmit} className="relative">
-                {/* Context Selection */}
-                {projects.length > 0 && selectedProject && (
-                  <div className="mb-3 flex items-center space-x-2 px-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-medium text-gray-500">CONTEXT:</span>
-                      
-                      {/* Project Selector */}
-                      <Select
-                        value={selectedProject.id}
-                        onChange={(e) => onProjectChange?.(e.target.value)}
-                        size="sm"
-                        fullWidth={false}
-                        className="min-w-[140px]"
-                        leftIcon={
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                          </svg>
-                        }
-                      >
-                        {projects.map((project) => (
-                          <option key={project.id} value={project.id}>
-                            {project.name}
-                          </option>
-                        ))}
-                      </Select>
-
-                      {/* Branch Selector */}
-                      <Select
-                        value={selectedBranchId}
-                        onChange={(e) => handleBranchChange(e.target.value)}
-                        size="sm"
-                        fullWidth={false}
-                        className="min-w-[140px]"
-                        leftIcon={
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                          </svg>
-                        }
-                      >
-                        {selectedProject.branches.map((branch) => (
-                          <option key={branch.id} value={branch.id}>
-                            {branch.name} {branch.isDefault ? '(default)' : ''}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                  </div>
-                )}
-
                 {/* Chat Input */}
-                <div className="relative flex items-end bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
-                  <input
-                    type="text"
+                <div className="relative flex items-end bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-purple-400 dark:focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100 dark:focus-within:ring-purple-900/50 transition-all">
+                  <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => {
@@ -393,15 +343,25 @@ const HomeView: React.FC<HomeViewProps> = ({
                     }}
                     placeholder="Message iBotTester..."
                     disabled={isLoading}
-                    className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
+                    rows={1}
+                    className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none min-h-[56px] max-h-[200px] overflow-y-auto"
                     aria-label="Chat message input"
                     aria-describedby="chat-help-text"
                     autoComplete="off"
+                    style={{
+                      height: 'auto',
+                      minHeight: '56px'
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                    }}
                   />
                   <button
                     type="submit"
                     disabled={!message.trim() || isLoading}
-                    className="mb-2 mr-2 p-2.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-lg disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+                    className="mb-2 mr-2 p-2.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-lg disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                     title="Send message"
                     aria-label={isLoading ? 'Sending message...' : 'Send message'}
                   >
@@ -419,7 +379,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               </form>
               <div className="flex items-center justify-center mt-3">
-                <p id="chat-help-text" className="text-xs text-gray-400">
+                <p id="chat-help-text" className="text-xs text-gray-400 dark:text-gray-500">
                   iBotTester can make mistakes. Consider verifying important information.
                 </p>
               </div>
@@ -463,7 +423,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                         </span>
                       </div>
                       
-                      <div className={`rounded-2xl px-5 py-3.5 ${
+                      <div className={`rounded-2xl px-5 py-3.5 chat-message ${
                         msg.role === 'user'
                           ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-md'
                           : 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100'
@@ -688,59 +648,9 @@ const HomeView: React.FC<HomeViewProps> = ({
         <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pt-4 pb-6">
           <div className="max-w-3xl mx-auto px-6">
           <form onSubmit={handleSubmit} className="relative">
-            {/* Context Selection */}
-            {projects.length > 0 && selectedProject && (
-              <div className="mb-3 flex items-center space-x-2 px-2">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">CONTEXT:</span>
-                  
-                  {/* Project Selector */}
-                  <Select
-                    value={selectedProject.id}
-                    onChange={(e) => onProjectChange?.(e.target.value)}
-                    size="sm"
-                    fullWidth={false}
-                    className="min-w-[140px]"
-                    leftIcon={
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                      </svg>
-                    }
-                  >
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name}
-                      </option>
-                    ))}
-                  </Select>
-
-                  {/* Branch Selector */}
-                  <Select
-                    value={selectedBranchId}
-                    onChange={(e) => handleBranchChange(e.target.value)}
-                    size="sm"
-                    fullWidth={false}
-                    className="min-w-[140px]"
-                    leftIcon={
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                      </svg>
-                    }
-                  >
-                    {selectedProject.branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name} {branch.isDefault ? '(default)' : ''}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-              </div>
-            )}
-
             {/* Chat Input */}
-            <div className="relative flex items-end bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-purple-400 dark:focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100 dark:focus-within:ring-purple-900/50 transition-all">
-              <input
-                type="text"
+            <div className="relative flex items-end bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-purple-400 dark:focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100 dark:focus-within:ring-purple-900/50 transition-all">
+              <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => {
@@ -751,15 +661,25 @@ const HomeView: React.FC<HomeViewProps> = ({
                 }}
                 placeholder="Message iBotTester..."
                 disabled={isLoading}
-                className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
+                rows={1}
+                className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none min-h-[56px] max-h-[200px] overflow-y-auto"
                 aria-label="Chat message input"
                 aria-describedby="chat-help-text"
                 autoComplete="off"
+                style={{
+                  height: 'auto',
+                  minHeight: '56px'
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                }}
               />
               <button
                 type="submit"
                 disabled={!message.trim() || isLoading}
-                className="mb-2 mr-2 p-2.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-lg disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+                className="mb-2 mr-2 p-2.5 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-lg disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 title="Send message"
                 aria-label={isLoading ? 'Sending message...' : 'Send message'}
               >
