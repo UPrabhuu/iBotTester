@@ -23,7 +23,7 @@ export class AIAgentService {
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -34,7 +34,6 @@ export class AIAgentService {
             content: `Generate a test plan for: ${input.prompt}`,
           },
         ],
-        temperature: 0.3, // Lower temperature for more deterministic output
         max_completion_tokens: 1500,
       });
 
@@ -152,7 +151,7 @@ export class AIAgentService {
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-5-nano',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -163,7 +162,6 @@ export class AIAgentService {
             content: `Test Plan: ${JSON.stringify(testPlan, null, 2)}\n\nResults: ${JSON.stringify(results, null, 2)}\n\nProvide a summary:`,
           },
         ],
-        temperature: 0.5,
         max_completion_tokens: 500,
       });
 

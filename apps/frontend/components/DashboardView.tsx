@@ -349,23 +349,23 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             ) : (
               data.recentActivity.slice(0, 6).map((activity) => (
-                <div key={activity.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:bg-gray-900 rounded-lg transition-colors">
+                <div key={activity.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                   <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    activity.status === 'passed' ? 'bg-green-100' :
-                    activity.status === 'failed' ? 'bg-red-100' : 'bg-blue-100'
+                    activity.status === 'passed' ? 'bg-green-100 dark:bg-green-900/30' :
+                    activity.status === 'failed' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
                   }`}>
                     {activity.status === 'passed' && (
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                     {activity.status === 'failed' && (
-                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     )}
                     {activity.status === 'running' && (
-                      <svg className="w-5 h-5 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                     )}
@@ -375,8 +375,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <p className="text-xs text-gray-500">{formatTimeAgo(activity.timestamp)} • {formatDuration(activity.duration || 0)}</p>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    activity.status === 'passed' ? 'bg-green-100 text-green-700' :
-                    activity.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                    activity.status === 'passed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                    activity.status === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                   }`}>
                     {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                   </div>

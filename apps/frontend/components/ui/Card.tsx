@@ -40,8 +40,8 @@ const Card: React.FC<CardProps> = ({
   const baseStyles = 'bg-white dark:bg-gray-800 rounded-xl transition-all duration-200';
 
   const variantStyles: Record<CardVariant, string> = {
-    default: 'border border-neutral-200',
-    bordered: 'border-2 border-neutral-300',
+    default: 'border border-neutral-200 dark:border-gray-700',
+    bordered: 'border-2 border-neutral-300 dark:border-gray-600',
     elevated: 'shadow-medium',
   };
 

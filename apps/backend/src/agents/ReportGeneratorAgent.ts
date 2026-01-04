@@ -198,7 +198,6 @@ ${selfHealingUsed ? 'Self-healing was used during execution' : 'No self-healing 
 Provide analysis in JSON format.`,
         },
       ],
-      temperature: 0.5,
       max_completion_tokens: 600,
     });
 

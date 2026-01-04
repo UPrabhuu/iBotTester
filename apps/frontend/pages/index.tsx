@@ -325,6 +325,27 @@ export default function Home() {
         console.log('✅ User authenticated from localStorage:', userData);
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Validate token by making a test API call
+        authApi.validateToken().then(response => {
+          if (!response.success) {
+            console.log('⚠️ Token validation failed - clearing auth data');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+            setIsAuthenticated(false);
+            setActiveTab('login');
+          } else {
+            console.log('✅ Token validated successfully');
+          }
+        }).catch(error => {
+          console.error('❌ Token validation error:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+          setIsAuthenticated(false);
+          setActiveTab('login');
+        });
       } catch (error) {
         console.error('❌ Error parsing saved user:', error);
         // Clear invalid data

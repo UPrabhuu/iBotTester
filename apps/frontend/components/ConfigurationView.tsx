@@ -87,8 +87,8 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
           <div className="max-w-3xl mx-auto">
             {/* Environment Settings */}
             {activeSection === 'environment' && (
-              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Environment Settings</h4>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Environment Settings</h4>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -104,7 +104,7 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
                 </div>
 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Credentials (Optional)</h5>
+                  <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Credentials (Optional)</h5>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -261,7 +261,7 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
                 <div className="text-center py-8">
                   <div className="text-4xl mb-2">🔗</div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">No integrations configured</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Add integrations to connect with external services</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Add integrations to connect with external services</p>
                 </div>
               </div>
             )}
@@ -273,7 +273,7 @@ const ConfigurationView: React.FC<ConfigurationViewProps> = ({
                 <div className="text-center py-8">
                   <div className="text-4xl mb-2">📝</div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">No variables defined</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Add variables to reuse across your tests</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Add variables to reuse across your tests</p>
                 </div>
               </div>
             )}

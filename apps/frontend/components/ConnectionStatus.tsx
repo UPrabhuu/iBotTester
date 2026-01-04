@@ -60,7 +60,7 @@ export default function ConnectionStatus() {
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-neutral-900">Connection Status</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Connection Status</h2>
         <button
           onClick={checkConnection}
           disabled={status.backend === 'checking'}
@@ -76,7 +76,7 @@ export default function ConnectionStatus() {
 
       <div className="space-y-4">
         {/* Backend Status */}
-        <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <div className="flex items-center gap-3">
             {status.backend === 'connected' && (
               <CheckCircle2 size={24} className="text-green-500" />
@@ -88,7 +88,7 @@ export default function ConnectionStatus() {
               <AlertCircle size={24} className="text-yellow-500 animate-pulse" />
             )}
             <div>
-              <h3 className="font-medium text-neutral-900">Backend API</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Backend API</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">{status.backendUrl}</p>
             </div>
           </div>
@@ -96,10 +96,10 @@ export default function ConnectionStatus() {
             <span
               className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                 status.backend === 'connected'
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                   : status.backend === 'disconnected'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-yellow-100 text-yellow-700'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
               }`}
             >
               {status.backend === 'connected'
@@ -113,11 +113,11 @@ export default function ConnectionStatus() {
 
         {/* Error Message */}
         {status.error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-700">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-sm text-red-700 dark:text-red-300">
               <strong>Error:</strong> {status.error}
             </p>
-            <p className="text-xs text-red-600 mt-2">
+            <p className="text-xs text-red-600 dark:text-red-400 mt-2">
               Make sure the backend server is running at {status.backendUrl}
             </p>
           </div>
@@ -125,8 +125,8 @@ export default function ConnectionStatus() {
 
         {/* Backend Features */}
         {status.backend === 'connected' && status.features && (
-          <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
-            <h4 className="font-medium text-neutral-900 mb-3">Backend Features</h4>
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Backend Features</h4>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-700 dark:text-gray-300">Playwright</span>
@@ -150,12 +150,12 @@ export default function ConnectionStatus() {
 
         {/* Connection Instructions */}
         {status.backend === 'disconnected' && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">How to start the backend:</h4>
-            <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">How to start the backend:</h4>
+            <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800 dark:text-blue-300">
               <li>Open a terminal in the backend directory</li>
               <li>
-                Run: <code className="bg-blue-100 px-2 py-1 rounded">npm run dev</code>
+                Run: <code className="bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 px-2 py-1 rounded">npm run dev</code>
               </li>
               <li>The backend should start on port 3001</li>
               <li>Click the refresh button above to check again</li>

@@ -12,6 +12,7 @@ import {
   logout,
   forgotPassword,
   getCurrentUser,
+  validateToken,
 } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 
@@ -23,6 +24,7 @@ router.post('/register', register);
 router.post('/logout', logout);
 router.post('/forgot-password', forgotPassword);
 router.get('/me', authenticate, getCurrentUser);
+router.get('/validate', authenticate, validateToken);
 
 // OAuth routes
 router.get('/google', googleOAuthInitiate);

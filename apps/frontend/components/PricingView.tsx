@@ -146,7 +146,7 @@ const PricingView: React.FC = () => {
               }`}
             >
               Annual
-              <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+              <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full">
                 Save 17%
               </span>
             </button>

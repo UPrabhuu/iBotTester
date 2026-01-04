@@ -351,8 +351,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white dark:text-white mb-2">Settings</h1>
-      <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mb-8">Manage your account settings and preferences</p>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Settings</h1>
+      <p className="text-gray-600 dark:text-gray-400 mb-8">Manage your account settings and preferences</p>
 
       <div className="flex gap-8">
         {/* Sidebar Navigation */}
@@ -363,7 +363,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'appearance'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
@@ -374,7 +374,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'profile'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <User size={20} />
@@ -385,7 +385,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'payment'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <CreditCard size={20} />
@@ -396,7 +396,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'security'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <Lock size={20} />
@@ -407,7 +407,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'integrations'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <Link2 size={20} />
@@ -418,7 +418,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'pricing'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -431,7 +431,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeSection === 'connection'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <Activity size={20} />
@@ -446,8 +446,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
           {activeSection === 'appearance' && (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white dark:text-white">Appearance</h2>
-                <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Customize how iBotTester looks for you</p>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Appearance</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Customize how iBotTester looks for you</p>
               </div>
 
               <div className="space-y-6">
@@ -463,7 +463,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       className={`relative p-6 rounded-xl border-2 transition-all ${
                         theme === 'light'
                           ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-600'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
                       <div className="flex flex-col items-center gap-3">
@@ -471,8 +471,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                           <Sun className="w-8 h-8 text-white" />
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-gray-900 dark:text-white dark:text-white">Light</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Clean and bright</div>
+                          <div className="font-semibold text-gray-900 dark:text-white">Light</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Clean and bright</div>
                         </div>
                       </div>
                       {theme === 'light' && (
@@ -490,7 +490,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       className={`relative p-6 rounded-xl border-2 transition-all ${
                         theme === 'dark'
                           ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-600'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
                       <div className="flex flex-col items-center gap-3">
@@ -498,8 +498,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                           <Moon className="w-8 h-8 text-white" />
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-gray-900 dark:text-white dark:text-white">Dark</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-1">Easy on the eyes</div>
+                          <div className="font-semibold text-gray-900 dark:text-white">Dark</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Easy on the eyes</div>
                         </div>
                       </div>
                       {theme === 'dark' && (
@@ -518,7 +518,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Preview
                   </label>
-                  <div className="bg-gray-100 dark:bg-gray-700 dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
                     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
@@ -527,8 +527,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                           </svg>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white dark:text-white">iBotTester</h3>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">AI-Powered Testing</p>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">iBotTester</h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">AI-Powered Testing</p>
                         </div>
                       </div>
                       <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
@@ -566,8 +566,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white dark:text-white">User Profile</h2>
-                  <p className="text-slate-600 mt-1">Manage your personal information</p>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">User Profile</h2>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your personal information</p>
                 </div>
                 {!isEditingProfile && !isLoadingProfile && (
                   <button
@@ -583,15 +583,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               {/* Loading State */}
               {isLoadingProfile && (
                 <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="mt-4 text-slate-600">Loading profile...</p>
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                  <p className="mt-4 text-gray-600 dark:text-gray-400">Loading profile...</p>
                 </div>
               )}
 
               {/* Error State */}
               {profileError && !isLoadingProfile && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <p className="text-red-800">{profileError}</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+                  <p className="text-red-800 dark:text-red-300">{profileError}</p>
                 </div>
               )}
 
@@ -604,7 +604,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       {userProfile.firstName?.[0] || userProfile.name?.[0] || 'U'}{userProfile.lastName?.[0] || userProfile.name?.[1] || ''}
                     </div>
                     {isEditingProfile && (
-                      <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                      <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium">
                         Change Avatar
                       </button>
                     )}
@@ -622,7 +622,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                         onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
                         disabled={!isEditingProfile}
                         placeholder="Enter your full name"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                       />
                     </div>
                     <div>
@@ -634,7 +634,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                         value={userProfile.email || ''}
                         disabled={true}
                         placeholder="email@example.com"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 text-slate-600 cursor-not-allowed"
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 rounded-lg bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-400 cursor-not-allowed"
                         title="Email cannot be changed"
                       />
                     </div>
@@ -648,7 +648,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                         onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })}
                         disabled={!isEditingProfile}
                         placeholder="Enter phone number"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                       />
                     </div>
                     <div>
@@ -661,7 +661,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                         onChange={(e) => setEditedProfile({ ...editedProfile, company: e.target.value })}
                         disabled={!isEditingProfile}
                         placeholder="Enter company name"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                       />
                     </div>
                     <div className="col-span-2">
@@ -674,7 +674,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                         onChange={(e) => setEditedProfile({ ...editedProfile, role: e.target.value })}
                         disabled={!isEditingProfile}
                         placeholder="Enter your role"
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                       />
                     </div>
                   </div>
@@ -708,8 +708,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-800">Payment Details</h2>
-                  <p className="text-slate-600 mt-1">Manage your billing information</p>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Payment Details</h2>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your billing information</p>
                 </div>
                 {!isEditingPayment && (
                   <button
@@ -760,7 +760,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       onChange={(e) => setEditedPayment({ ...editedPayment, cardNumber: e.target.value })}
                       disabled={!isEditingPayment}
                       placeholder="**** **** **** ****"
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                     />
                   </div>
                   <div className="col-span-2">
@@ -772,7 +772,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       value={isEditingPayment ? editedPayment.cardHolder : paymentDetails.cardHolder}
                       onChange={(e) => setEditedPayment({ ...editedPayment, cardHolder: e.target.value })}
                       disabled={!isEditingPayment}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                     />
                   </div>
                   <div>
@@ -785,7 +785,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       onChange={(e) => setEditedPayment({ ...editedPayment, expiryDate: e.target.value })}
                       disabled={!isEditingPayment}
                       placeholder="MM/YY"
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                     />
                   </div>
                   <div>
@@ -797,7 +797,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       value={isEditingPayment ? editedPayment.zipCode : paymentDetails.zipCode}
                       onChange={(e) => setEditedPayment({ ...editedPayment, zipCode: e.target.value })}
                       disabled={!isEditingPayment}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                     />
                   </div>
                   <div className="col-span-2">
@@ -809,7 +809,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       value={isEditingPayment ? editedPayment.billingAddress : paymentDetails.billingAddress}
                       onChange={(e) => setEditedPayment({ ...editedPayment, billingAddress: e.target.value })}
                       disabled={!isEditingPayment}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                     />
                   </div>
                   <div className="col-span-2">
@@ -821,7 +821,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       value={isEditingPayment ? editedPayment.country : paymentDetails.country}
                       onChange={(e) => setEditedPayment({ ...editedPayment, country: e.target.value })}
                       disabled={!isEditingPayment}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-600"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-gray-800 disabled:text-slate-600 dark:disabled:text-gray-400"
                     />
                   </div>
                 </div>
@@ -853,8 +853,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
           {activeSection === 'security' && (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Security Settings</h2>
-                <p className="text-slate-600 mt-1">Update your password and security preferences</p>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Security Settings</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Update your password and security preferences</p>
               </div>
 
               <div className="space-y-6">
@@ -867,7 +867,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       type={showPasswords.current ? 'text' : 'password'}
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                      className="w-full px-4 py-2 pr-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 pr-12 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter current password"
                     />
                     <button
@@ -889,7 +889,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       type={showPasswords.new ? 'text' : 'password'}
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                      className="w-full px-4 py-2 pr-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 pr-12 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter new password"
                     />
                     <button
@@ -900,7 +900,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                     Password must be at least 8 characters long
                   </p>
                 </div>
@@ -914,7 +914,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       type={showPasswords.confirm ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      className="w-full px-4 py-2 pr-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 pr-12 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Confirm new password"
                     />
                     <button
@@ -937,19 +937,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
                 {/* Additional Security Options */}
                 <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Additional Security</h3>
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Additional Security</h3>
                   <div className="space-y-3">
-                    <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
                       <div>
-                        <div className="font-medium text-slate-800">Two-Factor Authentication</div>
-                        <div className="text-sm text-slate-600">Add an extra layer of security</div>
+                        <div className="font-medium text-slate-800 dark:text-white">Two-Factor Authentication</div>
+                        <div className="text-sm text-slate-600 dark:text-gray-400">Add an extra layer of security</div>
                       </div>
                       <input type="checkbox" className="w-5 h-5 text-blue-600 rounded" />
                     </label>
-                    <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
                       <div>
-                        <div className="font-medium text-slate-800">Login Notifications</div>
-                        <div className="text-sm text-slate-600">Get notified of new login attempts</div>
+                        <div className="font-medium text-slate-800 dark:text-white">Login Notifications</div>
+                        <div className="text-sm text-slate-600 dark:text-gray-400">Get notified of new login attempts</div>
                       </div>
                       <input type="checkbox" className="w-5 h-5 text-blue-600 rounded" defaultChecked />
                     </label>
@@ -963,8 +963,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
           {activeSection === 'integrations' && (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Integrations</h2>
-                <p className="text-slate-600 mt-1">Connect your favorite tools and services</p>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Integrations</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Connect your favorite tools and services</p>
               </div>
 
               <div className="space-y-4">
@@ -977,8 +977,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       <div className="flex items-center gap-3">
                         <div className="text-4xl">{integration.icon}</div>
                         <div>
-                          <h3 className="text-lg font-semibold text-slate-800">{integration.name}</h3>
-                          <p className="text-sm text-slate-600">
+                          <h3 className="text-lg font-semibold text-slate-800 dark:text-white">{integration.name}</h3>
+                          <p className="text-sm text-slate-600 dark:text-gray-400">
                             {integration.connected ? (
                               <span className="text-green-600 flex items-center gap-1">
                                 <Check size={14} /> Connected
@@ -1015,7 +1015,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                                 value={integration.config?.workspace || ''}
                                 onChange={(e) => updateIntegrationConfig(integration.name, 'workspace', e.target.value)}
                                 placeholder="your-workspace"
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
                             </div>
                             <div>
@@ -1027,7 +1027,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                                 value={integration.config?.apiKey || ''}
                                 onChange={(e) => updateIntegrationConfig(integration.name, 'apiKey', e.target.value)}
                                 placeholder="xoxb-your-token"
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
                             </div>
                           </>
@@ -1042,7 +1042,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                                 value={integration.config?.url || ''}
                                 onChange={(e) => updateIntegrationConfig(integration.name, 'url', e.target.value)}
                                 placeholder={`https://${integration.name.toLowerCase()}.example.com`}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
                             </div>
                             <div>
@@ -1054,7 +1054,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                                 value={integration.config?.apiKey || ''}
                                 onChange={(e) => updateIntegrationConfig(integration.name, 'apiKey', e.target.value)}
                                 placeholder="Enter your API key"
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
                             </div>
                           </>
@@ -1082,13 +1082,13 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                     {integration.connected && editingIntegration !== integration.name && (
                       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div className="text-sm">
-                          <div className="text-slate-600 mb-2">Configuration:</div>
+                          <div className="text-gray-600 dark:text-gray-400 mb-2">Configuration:</div>
                           {integration.name === 'Slack' ? (
-                            <div className="text-slate-800">
+                            <div className="text-slate-800 dark:text-white">
                               <strong>Workspace:</strong> {integration.config?.workspace}
                             </div>
                           ) : (
-                            <div className="text-slate-800">
+                            <div className="text-slate-800 dark:text-white">
                               <strong>URL:</strong> {integration.config?.url}
                             </div>
                           )}
@@ -1100,9 +1100,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
               </div>
 
               {/* Integration Benefits */}
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-2">Why integrate?</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Why integrate?</h4>
+                <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
                   <li>• Sync test results with your project management tools</li>
                   <li>• Get real-time notifications in Slack</li>
                   <li>• Automate workflows with GitLab CI/CD</li>
@@ -1116,18 +1116,18 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
           {activeSection === 'pricing' && (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Pricing & Plans</h2>
-                <p className="text-slate-600 mt-1">Choose the perfect plan for your testing needs</p>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Pricing & Plans</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Choose the perfect plan for your testing needs</p>
               </div>
 
               {/* Billing Toggle */}
-              <div className="mb-8 inline-flex items-center bg-slate-100 rounded-full p-1">
+              <div className="mb-8 inline-flex items-center bg-slate-100 dark:bg-gray-700 rounded-full p-1">
                 <button
                   onClick={() => setBillingPeriod('monthly')}
                   className={`px-6 py-2 rounded-full font-medium transition-all ${
                     billingPeriod === 'monthly'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-md'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-md'
+                      : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   Monthly
@@ -1136,31 +1136,31 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                   onClick={() => setBillingPeriod('annual')}
                   className={`px-6 py-2 rounded-full font-medium transition-all ${
                     billingPeriod === 'annual'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-md'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-md'
+                      : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   Annual
-                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
                     Save 17%
                   </span>
                 </button>
               </div>
 
               {/* Current Plan */}
-              <div className="mb-8 p-6 bg-blue-50 rounded-lg border-2 border-blue-200">
+              <div className="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-blue-600 font-medium mb-1">Current Plan</div>
-                    <h3 className="text-2xl font-bold text-slate-900">Professional</h3>
-                    <p className="text-slate-600 mt-1">Up to 1,000 test executions/month</p>
+                    <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Current Plan</div>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Professional</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">Up to 1,000 test executions/month</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-slate-900">
+                    <div className="text-3xl font-bold text-slate-900 dark:text-white">
                       ${billingPeriod === 'monthly' ? '99' : '82'}
-                      <span className="text-lg font-normal text-slate-600">/mo</span>
+                      <span className="text-lg font-normal text-gray-600 dark:text-gray-400">/mo</span>
                     </div>
-                    <p className="text-sm text-slate-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {billingPeriod === 'annual' ? 'Billed annually' : 'Billed monthly'}
                     </p>
                   </div>
@@ -1169,19 +1169,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
               {/* Available Plans */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Available Plans</h3>
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Available Plans</h3>
                 
                 {/* Starter Plan */}
-                <div className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 transition-colors">
+                <div className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h4 className="text-xl font-bold text-slate-900">Starter</h4>
-                      <p className="text-slate-600 text-sm mt-1">Perfect for individuals and small teams</p>
+                      <h4 className="text-xl font-bold text-slate-900 dark:text-white">Starter</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Perfect for individuals and small teams</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-slate-900">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-white">
                         ${billingPeriod === 'monthly' ? '29' : '24'}
-                        <span className="text-sm font-normal text-slate-600">/mo</span>
+                        <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/mo</span>
                       </div>
                     </div>
                   </div>
@@ -1199,27 +1199,27 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                       Basic test automation
                     </li>
                   </ul>
-                  <button className="w-full py-2 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-200 transition-colors font-medium">
+                  <button className="w-full py-2 bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors font-medium">
                     Downgrade to Starter
                   </button>
                 </div>
 
                 {/* Professional Plan (Current) */}
-                <div className="p-6 border-2 border-blue-500 bg-blue-50 rounded-lg relative">
+                <div className="p-6 border-2 border-blue-500 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg relative">
                   <div className="absolute -top-3 left-6">
-                    <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    <span className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold">
                       Current Plan
                     </span>
                   </div>
                   <div className="flex items-start justify-between mb-4 mt-2">
                     <div>
-                      <h4 className="text-xl font-bold text-slate-900">Professional</h4>
-                      <p className="text-slate-600 text-sm mt-1">For growing teams with advanced needs</p>
+                      <h4 className="text-xl font-bold text-slate-900 dark:text-white">Professional</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">For growing teams with advanced needs</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-slate-900">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-white">
                         ${billingPeriod === 'monthly' ? '99' : '82'}
-                        <span className="text-sm font-normal text-slate-600">/mo</span>
+                        <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/mo</span>
                       </div>
                     </div>
                   </div>
@@ -1247,16 +1247,16 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
                 </div>
 
                 {/* Enterprise Plan */}
-                <div className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 transition-colors">
+                <div className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h4 className="text-xl font-bold text-slate-900">Enterprise</h4>
-                      <p className="text-slate-600 text-sm mt-1">For large organizations</p>
+                      <h4 className="text-xl font-bold text-slate-900 dark:text-white">Enterprise</h4>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">For large organizations</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-slate-900">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-white">
                         ${billingPeriod === 'monthly' ? '299' : '249'}
-                        <span className="text-sm font-normal text-slate-600">/mo</span>
+                        <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/mo</span>
                       </div>
                     </div>
                   </div>
@@ -1286,26 +1286,26 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onSave }) => {
 
               {/* Billing History */}
               <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Billing History</h3>
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Billing History</h3>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-700 rounded-lg">
                     <div>
-                      <div className="font-medium text-slate-900">December 2025</div>
-                      <div className="text-sm text-slate-600">Professional Plan</div>
+                      <div className="font-medium text-slate-900 dark:text-white">December 2025</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Professional Plan</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-slate-900">$99.00</div>
-                      <a href="#" className="text-sm text-blue-600 hover:text-blue-700">Download</a>
+                      <div className="font-semibold text-slate-900 dark:text-white">$99.00</div>
+                      <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Download</a>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-700 rounded-lg">
                     <div>
-                      <div className="font-medium text-slate-900">November 2025</div>
-                      <div className="text-sm text-slate-600">Professional Plan</div>
+                      <div className="font-medium text-slate-900 dark:text-white">November 2025</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Professional Plan</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-slate-900">$99.00</div>
-                      <a href="#" className="text-sm text-blue-600 hover:text-blue-700">Download</a>
+                      <div className="font-semibold text-slate-900 dark:text-white">$99.00</div>
+                      <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Download</a>
                     </div>
                   </div>
                 </div>

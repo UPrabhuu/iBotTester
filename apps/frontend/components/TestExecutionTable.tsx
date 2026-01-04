@@ -176,7 +176,7 @@ const TestExecutionTable: React.FC<TestExecutionTableProps> = ({
                       </button>
                       <button
                         onClick={() => onRerun(execution.id)}
-                        className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                        className="p-2 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
                         title="Re-run test"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>

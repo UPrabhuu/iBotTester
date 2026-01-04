@@ -53,6 +53,10 @@ export const createExecutionBatch = async (req: Request, res: Response) => {
     const { projectId, branchId, conversationId, testCaseIds, batchName } = req.body;
     const userId = req.user?.id;
 
+    if (!userId) {
+      return res.status(401).json(errorResponse('User not authenticated'));
+    }
+
     if (!testCaseIds || testCaseIds.length === 0) {
       return res.status(400).json(errorResponse('testCaseIds are required'));
     }

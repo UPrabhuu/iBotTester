@@ -52,28 +52,28 @@ const Badge: React.FC<BadgeProps> = ({
 
   const variantStyles: Record<BadgeVariant, { solid: string; outlined: string }> = {
     default: {
-      solid: 'bg-neutral-100 text-neutral-800',
-      outlined: 'border border-neutral-300 text-neutral-700 bg-transparent',
+      solid: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200',
+      outlined: 'border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 bg-transparent',
     },
     primary: {
-      solid: 'bg-blue-100 text-blue-800',
-      outlined: 'border border-blue-300 text-blue-700 bg-transparent',
+      solid: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+      outlined: 'border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 bg-transparent',
     },
     success: {
-      solid: 'bg-green-100 text-green-800',
-      outlined: 'border border-green-300 text-green-700 bg-transparent',
+      solid: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+      outlined: 'border border-green-300 dark:border-green-600 text-green-700 dark:text-green-400 bg-transparent',
     },
     warning: {
-      solid: 'bg-yellow-100 text-yellow-800',
-      outlined: 'border border-yellow-300 text-yellow-700 bg-transparent',
+      solid: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+      outlined: 'border border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-400 bg-transparent',
     },
     danger: {
-      solid: 'bg-red-100 text-red-800',
-      outlined: 'border border-red-300 text-red-700 bg-transparent',
+      solid: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+      outlined: 'border border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 bg-transparent',
     },
     info: {
-      solid: 'bg-blue-100 text-blue-800',
-      outlined: 'border border-blue-300 text-blue-700 bg-transparent',
+      solid: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+      outlined: 'border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 bg-transparent',
     },
   };
 

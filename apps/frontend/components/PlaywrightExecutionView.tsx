@@ -281,9 +281,9 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
               </div>
 
               {report && (
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2">Summary</h3>
-                  <p className="text-sm text-blue-800 whitespace-pre-line">{report.summary}</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Summary</h3>
+                  <p className="text-sm text-blue-800 dark:text-blue-300 whitespace-pre-line">{report.summary}</p>
                 </div>
               )}
             </div>
@@ -321,9 +321,9 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
                 <>
                   <div className="flex items-center space-x-4">
                     <div className={`px-4 py-2 rounded-lg font-semibold ${
-                      validation.overallStatus === 'passed' ? 'bg-green-100 text-green-800' :
-                      validation.overallStatus === 'failed' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
+                      validation.overallStatus === 'passed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                      validation.overallStatus === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
+                      'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                     }`}>
                       {validation.overallStatus.toUpperCase()}
                     </div>
@@ -335,10 +335,10 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
                   {validation.issuesJson && validation.issuesJson.length > 0 && (
                     <div className="space-y-2">
                       {validation.issuesJson.map((issue: any, idx: number) => (
-                        <div key={idx} className="border-l-4 border-red-500 bg-red-50 p-4 rounded">
-                          <p className="font-semibold text-red-900">{issue.message}</p>
+                        <div key={idx} className="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded">
+                          <p className="font-semibold text-red-900 dark:text-red-200">{issue.message}</p>
                           {issue.details && (
-                            <p className="text-sm text-red-700 mt-1">{issue.details}</p>
+                            <p className="text-sm text-red-700 dark:text-red-300 mt-1">{issue.details}</p>
                           )}
                         </div>
                       ))}
@@ -346,9 +346,9 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
                   )}
 
                   {validation.aiAnalysis && (
-                    <div className="bg-purple-50 rounded-lg p-4">
-                      <h3 className="font-semibold text-purple-900 mb-2">AI Analysis</h3>
-                      <p className="text-sm text-purple-800 whitespace-pre-line">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                      <h3 className="font-semibold text-purple-900 dark:text-purple-200 mb-2">AI Analysis</h3>
+                      <p className="text-sm text-purple-800 dark:text-purple-300 whitespace-pre-line">
                         {validation.aiAnalysis}
                       </p>
                     </div>
@@ -365,33 +365,33 @@ const ExecutionDetailsPanel: React.FC<ExecutionDetailsPanelProps> = ({
               {report ? (
                 <>
                   <div className="grid grid-cols-4 gap-4">
-                    <div className="bg-green-50 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-green-700">{report.passedSteps}</p>
-                      <p className="text-xs text-green-600">Passed</p>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-400">{report.passedSteps}</p>
+                      <p className="text-xs text-green-600 dark:text-green-500">Passed</p>
                     </div>
-                    <div className="bg-red-50 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-red-700">{report.failedSteps}</p>
-                      <p className="text-xs text-red-600">Failed</p>
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-red-700 dark:text-red-400">{report.failedSteps}</p>
+                      <p className="text-xs text-red-600 dark:text-red-500">Failed</p>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-gray-700">{report.skippedSteps}</p>
-                      <p className="text-xs text-gray-600">Skipped</p>
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{report.skippedSteps}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Skipped</p>
                     </div>
-                    <div className="bg-blue-50 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-blue-700">{report.totalSteps}</p>
-                      <p className="text-xs text-blue-600">Total</p>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{report.totalSteps}</p>
+                      <p className="text-xs text-blue-600 dark:text-blue-500">Total</p>
                     </div>
                   </div>
 
                   {report.recommendationsJson && report.recommendationsJson.length > 0 && (
                     <div>
-                      <h3 className="font-semibold mb-3">Recommendations</h3>
+                      <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Recommendations</h3>
                       <div className="space-y-2">
                         {report.recommendationsJson.map((rec: any, idx: number) => (
-                          <div key={idx} className="border-l-4 border-blue-500 bg-blue-50 p-3 rounded">
-                            <p className="font-medium text-blue-900">{rec.message}</p>
+                          <div key={idx} className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                            <p className="font-medium text-blue-900 dark:text-blue-200">{rec.message}</p>
                             {rec.details && (
-                              <p className="text-sm text-blue-700 mt-1">{rec.details}</p>
+                              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">{rec.details}</p>
                             )}
                           </div>
                         ))}

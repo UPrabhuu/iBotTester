@@ -233,6 +233,10 @@ export class ExecutionAgentService {
       'input[aria-label*="search" i]',
       '#search',
       '[role="searchbox"]',
+      'input[id*="query" i]',
+      'input[name*="q" i]',
+      'input[placeholder*="find" i]',
+      'input[placeholder*="query" i]',
     ];
 
     for (const selector of selectors) {
@@ -245,6 +249,17 @@ export class ExecutionAgentService {
       } catch (e) {
         // Continue to next selector
       }
+    }
+
+    // Last resort: try to find any visible input on the page
+    try {
+      const inputs = await this.page.$$('input:visible, input:not([style*="display:none"])');
+      if (inputs.length > 0) {
+        this.log('Falling back to first visible input element');
+        return 'input:first-of-type';
+      }
+    } catch (e) {
+      // Continue to error handling
     }
 
     throw new Error('Could not find search input');

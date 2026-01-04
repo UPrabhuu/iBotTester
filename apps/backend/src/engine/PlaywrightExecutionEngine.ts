@@ -454,6 +454,10 @@ export class PlaywrightExecutionEngine {
       '#search',
       '[role="searchbox"]',
       'input[id*="search" i]',
+      'input[id*="query" i]',
+      'input[name*="q" i]',
+      'input[placeholder*="find" i]',
+      'input[placeholder*="query" i]',
     ];
 
     for (const selector of selectors) {
@@ -464,6 +468,17 @@ export class PlaywrightExecutionEngine {
           return selector;
         }
       } catch (e) {}
+    }
+
+    // Last resort: try to find any visible input on the page
+    try {
+      const inputs = await this.page.$$('input:visible, input:not([style*="display:none"])');
+      if (inputs.length > 0) {
+        this.log('   Falling back to first visible input element');
+        return 'input:first-of-type';
+      }
+    } catch (e) {
+      // Continue to error handling
     }
 
     throw new Error('Could not find search input');

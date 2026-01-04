@@ -79,30 +79,30 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
     switch (status) {
       case 'PASS':
       case 'passed':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
       case 'FAIL':
       case 'failed':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
       case 'PARTIAL':
       case 'skipped':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
       default:
-        return 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 bg-gray-100';
+        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800';
     }
   };
 
   const getDiffTypeColor = (type: string) => {
     switch (type) {
       case 'BREAKING':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
       case 'NON_BREAKING':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
       case 'COSMETIC':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
       case 'SELF_HEALED':
-        return 'text-purple-600 bg-purple-100';
+        return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30';
       default:
-        return 'text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 bg-gray-100';
+        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800';
     }
   };
 
@@ -195,7 +195,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                       {step.step}
                     </span>
                     <div className="text-left">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-gray-900 dark:text-white">
                         {step.action}
                       </div>
                       {step.duration && (
@@ -308,7 +308,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
               <h3 className="font-medium text-gray-900 dark:text-white mb-2">Summary</h3>
-              <p className="text-gray-700">{result.report.summary}</p>
+              <p className="text-gray-700 dark:text-gray-300">{result.report.summary}</p>
             </div>
 
             {result.report.suggestedFixes && result.report.suggestedFixes.length > 0 && (
@@ -318,11 +318,11 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                   {result.report.suggestedFixes.map((fix, index) => (
                     <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900">{fix.issue}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{fix.issue}</span>
                         <span className={`px-2 py-0.5 text-xs rounded-full ${
-                          fix.priority === 'high' ? 'bg-red-100 text-red-600' :
-                          fix.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                          'bg-blue-100 text-blue-600'
+                          fix.priority === 'high' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                          fix.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
+                          'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                         }`}>
                           {fix.priority}
                         </span>
@@ -344,7 +344,7 @@ export default function ExecutionResultsViewer({ result }: ExecutionResultsViewe
                         <span className="text-blue-600">💡</span>
                         <div>
                           <div className="text-xs text-blue-600 font-medium uppercase">{insight.category}</div>
-                          <p className="text-sm text-gray-700">{insight.description}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{insight.description}</p>
                         </div>
                       </div>
                     </div>

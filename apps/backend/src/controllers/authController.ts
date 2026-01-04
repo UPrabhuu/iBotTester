@@ -262,3 +262,19 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     res.status(500).json(errorResponse('Internal server error'));
   }
 };
+
+// GET /api/auth/validate - Validate JWT token
+export const validateToken = async (req: Request, res: Response) => {
+  try {
+    // If we reach here, the authenticate middleware has already validated the token
+    // and attached the user to the request
+    if (!req.user) {
+      return res.status(401).json(errorResponse('Invalid token'));
+    }
+
+    res.json(successResponse({ valid: true, user: req.user }));
+  } catch (error) {
+    console.error('Validate token error:', error);
+    res.status(500).json(errorResponse('Internal server error'));
+  }
+};

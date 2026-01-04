@@ -115,7 +115,7 @@ export class IntentParserAgent {
     // Set defaults
     this.options.model = this.options.model || 'gpt-4o';
     this.options.maxTokens = this.options.maxTokens || 1500;
-    this.options.temperature = this.options.temperature || 0.1;
+    // Use model default temperature (removed custom values due to API model restrictions)
     this.options.enableCache = this.options.enableCache ?? true;
     this.options.cacheTTL = this.options.cacheTTL || this.DEFAULT_CACHE_TTL;
   }

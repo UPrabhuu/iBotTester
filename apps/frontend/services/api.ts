@@ -68,6 +68,20 @@ async function fetchApi<T>(
     const data = await response.json();
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - token is invalid or expired
+      if (response.status === 401) {
+        // Clear auth data from localStorage
+        if (typeof window !== 'undefined') {
+          const hadToken = localStorage.getItem('token');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          // Only reload if we had a token (prevents reload loop on login page)
+          if (hadToken && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/register')) {
+            window.location.reload();
+          }
+        }
+      }
+      
       return {
         success: false,
         error: data.message || data.error || `Error: ${response.status} ${response.statusText}`,
@@ -128,6 +142,12 @@ export const authApi = {
     return fetchApi('/api/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, newPassword }),
+    });
+  },
+
+  async validateToken(): Promise<ApiResponse<{ valid: boolean }>> {
+    return fetchApi('/api/auth/validate', {
+      method: 'GET',
     });
   },
 };

@@ -131,7 +131,7 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
               </button>
             )}
             <div>
-              <h1 className="text-xl font-normal text-gray-900">
+              <h1 className="text-xl font-normal text-gray-900 dark:text-white">
                 {selectedFolder || testCaseName}
               </h1>
               {!selectedFolder && (
@@ -316,7 +316,7 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Test Data & Mappings</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Test Data & Mappings</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{Object.keys(testData).length} variables, {Object.keys(autoMappedData).length} auto-mapped</p>
               </div>
               <button
@@ -332,7 +332,7 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
               {/* Auto-mapped data section */}
               {Object.keys(autoMappedData).length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-green-700 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -340,9 +340,9 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {Object.entries(autoMappedData).map(([key, value]) => (
-                      <div key={key} className="p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div className="text-xs font-medium text-green-700 uppercase tracking-wide mb-1">{key}</div>
-                        <div className="text-sm text-green-900 font-mono break-all">{value}</div>
+                      <div key={key} className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wide mb-1">{key}</div>
+                        <div className="text-sm text-green-900 dark:text-green-200 font-mono break-all">{value}</div>
                       </div>
                     ))}
                   </div>
@@ -354,7 +354,7 @@ const TestEditorView: React.FC<TestEditorViewProps> = ({
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">All Test Variables</h3>
                 <div className="space-y-3">
                   {Object.entries(testData).map(([key, value]) => (
-                    <div key={key} className="flex items-start gap-4 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 transition-colors">
+                    <div key={key} className="flex items-start gap-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                       <div className="flex-1">
                         <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{key}</div>
                         {isEditingTestData ? (

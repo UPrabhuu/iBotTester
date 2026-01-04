@@ -332,11 +332,11 @@ const TestListView: React.FC<TestListViewProps> = ({
           {/* Right Section: Actions */}
           <div className="flex items-center gap-3">
             {selectedTests.size > 0 && (
-              <div className="flex items-center gap-3 mr-2 px-4 py-2 bg-blue-50 rounded-xl border border-blue-200/60 shadow-sm">
-                <span className="text-sm text-blue-700 font-semibold">{selectedTests.size} selected</span>
+              <div className="flex items-center gap-3 mr-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200/60 dark:border-blue-800/60 shadow-sm">
+                <span className="text-sm text-blue-700 dark:text-blue-400 font-semibold">{selectedTests.size} selected</span>
                 <button
                   onClick={() => setSelectedTests(new Set())}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 p-1 rounded-md transition-colors"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 p-1 rounded-md transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -453,7 +453,7 @@ const TestListView: React.FC<TestListViewProps> = ({
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900">Create New Folder</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Create New Folder</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Organize your test cases</p>
               </div>
             </div>
