@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { chatApi, intentApi, ParsedIntent } from '../services/api';
 import { Button, Input, Heading, Text, Card, CardContent, Badge, Select } from './ui';
 import { useAlert } from '../contexts/AlertContext';
-import LiveExecutionStream from './LiveExecutionStream';
 
 interface Branch {
   id: string;
@@ -77,7 +76,6 @@ const HomeView: React.FC<HomeViewProps> = ({
   const [showChat, setShowChat] = useState(false);
   const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
   const [isParsingIntent, setIsParsingIntent] = useState(false);
-  const [showLiveExecution, setShowLiveExecution] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Update branch when project changes
@@ -285,7 +283,7 @@ const HomeView: React.FC<HomeViewProps> = ({
   ];
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 h-full relative overflow-hidden">
+    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 h-full relative overflow-hidden">
       {!showChat ? (
         /* Initial view with content positioned higher */
         <div className="flex-1 flex flex-col pt-24">
@@ -299,13 +297,13 @@ const HomeView: React.FC<HomeViewProps> = ({
               <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
                 Welcome to iBotTester ✨
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 Your AI-powered testing companion. I can help you create, run, and analyze functional tests with ease. Just describe what you want to test!
               </p>
             </div>
             <div className="grid gap-3 mt-4">
               <div 
-                className="group bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/30 dark:to-blue-900/30 rounded-2xl p-5 border border-purple-200/50 dark:border-purple-700/50 text-left hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-lg dark:hover:shadow-purple-900/50 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-purple-400 dark:focus-within:ring-purple-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-800"
+                className="group bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl p-5 border border-purple-200/50 dark:border-gray-700 text-left hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-lg dark:hover:shadow-purple-900/30 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-purple-400 dark:focus-within:ring-purple-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-900"
                 role="button"
                 tabIndex={0}
                 onClick={() => setMessage(examplePrompt)}
@@ -319,8 +317,8 @@ const HomeView: React.FC<HomeViewProps> = ({
                 <div className="flex items-start space-x-3">
                   <span className="text-2xl">✨</span>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-800 dark:text-gray-100 font-semibold mb-1.5">Test Creation</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 font-semibold mb-1.5">Test Creation</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                       {examplePrompt}
                     </p>
                   </div>
@@ -468,7 +466,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                       <div className={`rounded-2xl px-5 py-3.5 ${
                         msg.role === 'user'
                           ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-md'
-                          : 'bg-gray-100 dark:bg-gray-700 border border-gray-200'
+                          : 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100'
                       }`}>
                         {(() => {
                           // Parse metadata if it's a string
@@ -529,19 +527,19 @@ const HomeView: React.FC<HomeViewProps> = ({
                                   <div className="flex items-start space-x-3 group opacity-50">
                                     <div className="flex-shrink-0 mt-0.5">
                                       <div className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                                        <div className="w-2 h-2 bg-gray-300 dark:bg-gray-500 rounded-full"></div>
                                       </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">Saving to database</div>
-                                      <div className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-400 mt-0.5">Pending</div>
+                                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Pending</div>
                                     </div>
                                   </div>
                                 </div>
 
                                 {/* Progress bar */}
                                 <div className="pt-2">
-                                  <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                                  <div className="h-1 bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden">
                                     <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-progress w-2/3"></div>
                                   </div>
                                 </div>
@@ -559,17 +557,17 @@ const HomeView: React.FC<HomeViewProps> = ({
                                   </svg>
                                   <div className="text-sm text-gray-800 dark:text-white whitespace-pre-wrap flex-1">{msg.content}</div>
                                 </div>
-                                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-semibold text-green-700">TEST CASE CREATED</span>
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span className="text-xs font-semibold text-green-700 dark:text-green-400">TEST CASE CREATED</span>
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
                                       Active
                                     </span>
                                   </div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 space-y-1">
+                                  <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                                     <div className="flex items-center space-x-2">
-                                      <span className="font-medium text-gray-700">ID:</span>
-                                      <code className="bg-white dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-purple-600">{metadata.testCase.id}</code>
+                                      <span className="font-medium text-gray-700 dark:text-gray-300">ID:</span>
+                                      <code className="bg-white dark:bg-gray-900 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-purple-600 dark:text-purple-400">{metadata.testCase.id}</code>
                                     </div>
                                   </div>
                                 </div>
@@ -580,25 +578,29 @@ const HomeView: React.FC<HomeViewProps> = ({
                           // Show execution result for orchestrator workflow
                           if (metadata?.type === 'execution-result' && metadata?.result) {
                             const statusColor = metadata.result.status === 'PASS' ? 'green' : metadata.result.status === 'FAIL' ? 'red' : 'yellow';
-                            const statusBg = metadata.result.status === 'PASS' ? 'bg-green-50 border-green-200' : metadata.result.status === 'FAIL' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200';
+                            const statusBg = metadata.result.status === 'PASS' 
+                              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' 
+                              : metadata.result.status === 'FAIL' 
+                              ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' 
+                              : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700';
                             
                             return (
                               <div className="space-y-3">
-                                <div className="whitespace-pre-wrap text-sm text-gray-800">{msg.content}</div>
+                                <div className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">{msg.content}</div>
                                 <div className={`mt-3 p-3 ${statusBg} border rounded-lg`}>
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className={`text-xs font-semibold text-${statusColor}-700`}>EXECUTION COMPLETE</span>
-                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
+                                    <span className={`text-xs font-semibold text-${statusColor}-700 dark:text-${statusColor}-400`}>EXECUTION COMPLETE</span>
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 dark:bg-${statusColor}-800 text-${statusColor}-800 dark:text-${statusColor}-200`}>
                                       {metadata.result.status}
                                     </span>
                                   </div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 space-y-1">
+                                  <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                                     <div className="flex items-center justify-between">
-                                      <span className="font-medium text-gray-700">Confidence:</span>
+                                      <span className="font-medium text-gray-700 dark:text-gray-300">Confidence:</span>
                                       <span className="font-semibold">{(metadata.result.confidence * 100).toFixed(0)}%</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                      <span className="font-medium text-gray-700">Steps:</span>
+                                      <span className="font-medium text-gray-700 dark:text-gray-300">Steps:</span>
                                       <span>{metadata.result.stepCount}</span>
                                     </div>
                                   </div>
@@ -632,7 +634,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                           return (
                             <>
                               <div className={`text-sm leading-relaxed ${
-                                msg.role === 'user' ? 'text-white' : 'text-gray-800'
+                                msg.role === 'user' ? 'text-white' : 'text-gray-900 dark:text-gray-100'
                               }`}>
                                 <div className="whitespace-pre-wrap">{msg.content}</div>
                               </div>
@@ -666,10 +668,10 @@ const HomeView: React.FC<HomeViewProps> = ({
                       <span className="font-semibold text-gray-900 dark:text-white text-sm">iBotTester</span>
                       <span className="text-xs text-gray-400">thinking...</span>
                     </div>
-                    <div className="inline-flex items-center space-x-1 px-4 py-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-2xl border border-gray-200">
-                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce [animation-delay:0ms]"></div>
-                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce [animation-delay:150ms]"></div>
-                      <div className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full animate-bounce [animation-delay:300ms]"></div>
+                    <div className="inline-flex items-center space-x-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                      <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce [animation-delay:0ms]"></div>
+                      <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce [animation-delay:150ms]"></div>
+                      <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce [animation-delay:300ms]"></div>
                     </div>
                   </div>
                 </div>
@@ -690,7 +692,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             {projects.length > 0 && selectedProject && (
               <div className="mb-3 flex items-center space-x-2 px-2">
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-medium text-gray-500">CONTEXT:</span>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">CONTEXT:</span>
                   
                   {/* Project Selector */}
                   <Select
@@ -736,7 +738,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             )}
 
             {/* Chat Input */}
-            <div className="relative flex items-end bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+            <div className="relative flex items-end bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-purple-400 dark:focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100 dark:focus-within:ring-purple-900/50 transition-all">
               <input
                 type="text"
                 value={message}
@@ -749,7 +751,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                 }}
                 placeholder="Message iBotTester..."
                 disabled={isLoading}
-                className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
+                className="flex-1 px-5 py-4 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]"
                 aria-label="Chat message input"
                 aria-describedby="chat-help-text"
                 autoComplete="off"
@@ -775,21 +777,12 @@ const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </form>
           <div className="flex items-center justify-center mt-3">
-            <p id="chat-help-text" className="text-xs text-gray-400">
+            <p id="chat-help-text" className="text-xs text-gray-400 dark:text-gray-500">
               iBotTester can make mistakes. Consider verifying important information.
             </p>
           </div>
           </div>
         </div>
-      )}
-      
-      {/* Live Execution Stream */}
-      {showChat && (
-        <LiveExecutionStream
-          conversationId={conversationId}
-          autoStart={showLiveExecution}
-          onClose={() => setShowLiveExecution(false)}
-        />
       )}
     </div>
   );

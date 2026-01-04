@@ -6,7 +6,6 @@ import TestExecutionTable from '@/components/TestExecutionTable';
 import TestListView from '@/components/TestListView';
 import TestEditorView from '@/components/TestEditorView';
 import ConfigurationView from '@/components/ConfigurationView';
-import LiveExecutionView from '@/components/LiveExecutionView';
 import SettingsView from '@/components/SettingsView';
 import PricingView from '@/components/PricingView';
 import DocsView from '@/components/DocsView';
@@ -377,7 +376,7 @@ export default function Home() {
   // Handlers for test execution table
   const handleViewExecution = (executionId: string) => {
     console.log('View execution:', executionId);
-    setActiveTab('live-execution');
+    // Live execution view removed
   };
 
   const handleRerunExecution = async (executionId: string) => {
@@ -535,8 +534,7 @@ export default function Home() {
   // Handler for viewing execution from chat
   const handleViewExecutionFromChat = (executionId: string) => {
     console.log('Viewing execution:', executionId);
-    setActiveTab('live-execution');
-    // TODO: Load specific execution details
+    // Live execution view removed
   };
 
   // Handler for new chat
@@ -835,14 +833,8 @@ export default function Home() {
         );
       
       case 'live-execution':
-        return (
-          <LiveExecutionView
-            isExecuting={isExecuting}
-            currentUrl="https://www.amazon.com"
-            screenshots={screenshots}
-            logs={logs}
-          />
-        );
+        // Live execution view has been removed
+        return null;
       
       case 'settings':
         return (

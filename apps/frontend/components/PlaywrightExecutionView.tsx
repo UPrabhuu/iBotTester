@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { playwrightApi, PlaywrightExecution } from '@/services/playwrightApi';
 import TestExecutionTable, { TestExecution } from './TestExecutionTable';
-import LiveExecutionPanel from './LiveExecutionPanel';
 import { Button, Heading, Spinner } from './ui';
 import { useAlert } from '../contexts/AlertContext';
 
