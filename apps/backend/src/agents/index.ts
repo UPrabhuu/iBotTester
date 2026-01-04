@@ -5,6 +5,10 @@ export { DiffValidationAgent, ExecutionSnapshot } from './DiffValidationAgent';
 export { ReportGeneratorAgent, TestReport } from './ReportGeneratorAgent';
 export { OrchestratorAgent, OrchestratedTestOutput } from './OrchestratorAgent';
 
+// LangGraph State Machine Orchestrator
+export { LangGraphOrchestrator, TestFlowStateType } from './LangGraphOrchestrator';
+export { SimplifiedLangGraphOrchestrator } from './SimplifiedLangGraphOrchestrator';
+
 // New agent exports - Simplified Workflow
 export { 
   PlaywrightDiscoveryAgent, 

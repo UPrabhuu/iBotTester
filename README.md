@@ -138,8 +138,12 @@ ibottester/
 │       ├── Dockerfile
 │       └── package.json
 ├── docs/
-│   ├── SETUP_GUIDE.md    # Detailed setup guide
-│   └── API.md            # API documentation
+│   ├── SETUP_GUIDE.md                 # Detailed setup guide
+│   ├── API.md                         # API documentation
+│   ├── FINAL_REPORT.md                # Backend flow verification summary
+│   ├── BACKEND_FLOW_SUMMARY.md        # Implementation details
+│   ├── FLOW_VERIFICATION_REPORT.md    # Complete verification report
+│   └── ARCHITECTURE_FLOW_DIAGRAM.md   # Visual architecture diagram
 ├── .github/
 │   └── copilot-instructions.md  # AI coding guidelines
 ├── README.md
@@ -242,6 +246,44 @@ docker-compose up -d
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - PostgreSQL: localhost:5432
+
+---
+
+## 🔄 Backend Flow Architecture
+
+iBotTester follows a streamlined, AI-powered backend flow:
+
+```
+User Prompt
+    ↓
+Agent (Intent + Plan)              ← IntentParserAgent
+    ↓
+Playwright Discover Tool           ← PlaywrightDiscoveryAgent
+    ↓
+Test Model (JSON)                  ← TestModelGenerator
+    ↓
+[Optional] Code Generator          ← (Future enhancement)
+    ↓
+Playwright Runner                  ← PlaywrightRunnerService
+    ↓
+Result + Report                    ← Evidence + Validation + Report Services
+```
+
+### Flow Details
+
+1. **User Prompt → Agent**: Parse natural language to extract intent and plan
+2. **Playwright Discover**: Launch browser, discover UI elements and selectors
+3. **Test Model (JSON)**: Generate structured test cases with steps
+4. **Code Generator**: (Optional) Generate executable Playwright code
+5. **Playwright Runner**: Execute tests and capture evidence
+6. **Result + Report**: Generate comprehensive reports with screenshots/videos
+
+📚 **See detailed documentation:**
+
+- [Backend Flow Summary](./docs/BACKEND_FLOW_SUMMARY.md)
+- [Flow Verification Report](./docs/FLOW_VERIFICATION_REPORT.md)
+- [Architecture Diagram](./docs/ARCHITECTURE_FLOW_DIAGRAM.md)
+- [Final Report](./docs/FINAL_REPORT.md)
 
 ---
 
